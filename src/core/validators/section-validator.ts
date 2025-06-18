@@ -14,7 +14,7 @@ export class SectionValidator {
   validate(
     sections: ParsedSection[],
     lines: string[],
-    options: ValidatorOptions = {},
+    _options: ValidatorOptions = {},
   ): SectionValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -33,7 +33,7 @@ export class SectionValidator {
 
   private validateSectionHierarchy(
     sections: ParsedSection[],
-    errors: ValidationError[],
+    _errors: ValidationError[],
     warnings: ValidationWarning[],
   ): void {
     for (let i = 0; i < sections.length; i++) {
@@ -99,7 +99,7 @@ export class SectionValidator {
   private validateSectionContent(
     sections: ParsedSection[],
     lines: string[],
-    errors: ValidationError[],
+    _errors: ValidationError[],
     warnings: ValidationWarning[],
   ): void {
     for (const section of sections) {
@@ -133,7 +133,7 @@ export class SectionValidator {
       // Check for sections with only completed tasks
       if (section.tasks.length > 0) {
         const allCompleted = section.tasks.every((task) => task.checked);
-        const noneCompleted = section.tasks.every((task) => !task.checked);
+        // const noneCompleted = section.tasks.every((task) => !task.checked);
 
         if (allCompleted && section.name.toUpperCase() !== "DONE") {
           warnings.push({

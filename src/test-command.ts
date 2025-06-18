@@ -1,5 +1,5 @@
 // Test command for detecting test cases in TypeScript files
-import { $ } from "dax";
+// import { $ } from "dax";
 import { walk } from "@std/fs/walk";
 import { relative } from "@std/path";
 import {

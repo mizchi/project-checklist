@@ -187,7 +187,7 @@ export async function runDiagnostics(): Promise<void> {
   );
 
   // Git repository status
-  const isGitRepo = await checkGitRepository();
+  await checkGitRepository();
   const gitRoot = await getGitRoot();
 
   console.log("\nGit:");

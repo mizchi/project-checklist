@@ -78,7 +78,7 @@ export function isInsideCodeBlock(lines: string[], lineIndex: number): boolean {
         codeBlockType = null;
       }
     } // インデントコードブロック（4スペース以上）の検出
-    else if (line.match(/^    /) || line.match(/^\t/)) {
+    else if (line.match(/^ {4}/) || line.match(/^\t/)) {
       if (!inCodeBlock && line.trim() !== "") {
         inCodeBlock = true;
         codeBlockType = "indented";
@@ -87,7 +87,7 @@ export function isInsideCodeBlock(lines: string[], lineIndex: number): boolean {
     else if (
       codeBlockType === "indented" &&
       line.trim() !== "" &&
-      !line.match(/^    /) &&
+      !line.match(/^ {4}/) &&
       !line.match(/^\t/)
     ) {
       inCodeBlock = false;
@@ -236,7 +236,7 @@ export function sortTasksByPriority(tasks: ParsedTask[]): ParsedTask[] {
   }
 
   // Sort each indent level
-  for (const [indent, levelTasks] of tasksByIndent) {
+  for (const [_indent, levelTasks] of tasksByIndent) {
     levelTasks.sort((a, b) => {
       // Sort by priority value (lower = higher priority)
       if (a.priorityValue !== b.priorityValue) {

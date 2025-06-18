@@ -1,8 +1,10 @@
 # project-checklist
 
-An AI-friendly TODO management tool that helps you track and manage project tasks through Markdown checklists.
+An AI-friendly TODO management tool that helps you track and manage project
+tasks through Markdown checklists.
 
-Designed for seamless integration with AI assistants like Claude, ChatGPT, and other LLMs to enhance project planning and task management workflows.
+Designed for seamless integration with AI assistants like Claude, ChatGPT, and
+other LLMs to enhance project planning and task management workflows.
 
 ## Installation
 
@@ -58,7 +60,6 @@ $ pcheck
 └── README.md
     ├── [ ] Add feature of A
     └── [x] B
-
 ```
 
 ### AI Integration Examples
@@ -96,11 +97,14 @@ $ pcheck
 
 ## Why project-checklist?
 
-Traditional TODO management tools often create friction in the development workflow. `project-checklist` is designed to:
+Traditional TODO management tools often create friction in the development
+workflow. `project-checklist` is designed to:
 
 1. **Keep TODOs close to code** - Using Markdown files in your repository
-2. **Enable AI collaboration** - Structured output that LLMs can easily parse and understand
-3. **Maintain simplicity** - Just Markdown checklists, no complex syntax or external services
+2. **Enable AI collaboration** - Structured output that LLMs can easily parse
+   and understand
+3. **Maintain simplicity** - Just Markdown checklists, no complex syntax or
+   external services
 4. **Support modern workflows** - Interactive modes for AI-assisted development
 
 ## Documentation

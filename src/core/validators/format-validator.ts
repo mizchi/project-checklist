@@ -27,7 +27,7 @@ export class FormatValidator {
   validate(
     tasks: ParsedTask[],
     lines: string[],
-    options: ValidatorOptions = {},
+    _options: ValidatorOptions = {},
   ): FormatValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];

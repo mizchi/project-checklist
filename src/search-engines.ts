@@ -320,7 +320,9 @@ export class DenoNativeEngine implements SearchEngine {
       for await (
         const entry of walk(directory, {
           includeDirs: false,
-          skip: IGNORE_DIRS.map((dir) => new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`)),
+          skip: IGNORE_DIRS.map((dir) =>
+            new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`)
+          ),
         })
       ) {
         // Check if it's a code file

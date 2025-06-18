@@ -1,4 +1,4 @@
-import { bold, green, red, yellow } from "@std/fmt/colors";
+import { bold, green, yellow } from "@std/fmt/colors";
 import { runSortCommand } from "./sort-command.ts";
 import { loadConfig } from "./config.ts";
 import { $ } from "dax";
@@ -96,7 +96,7 @@ export async function runUpdateCommand(
     throw error;
   }
 
-  let operations: string[] = [];
+  const operations: string[] = [];
 
   // If no options provided, ask user what they want to do
   if (
@@ -184,7 +184,7 @@ export async function runUpdateCommand(
       null;
 
     // Process lines and collect completed tasks
-    let skipLines = new Set<number>();
+    const skipLines = new Set<number>();
 
     for (const section of sections) {
       const sectionNameUpper = section.name.toUpperCase();
@@ -314,7 +314,7 @@ export async function runUpdateCommand(
     const { sections, lines } = parseMarkdownFile(content);
     const newLines: string[] = [];
     let inCompletedSection = false;
-    let completedSection = sections.find((s) =>
+    const completedSection = sections.find((s) =>
       s.name.toUpperCase() === "COMPLETED"
     ) ||
       sections.find((s) => s.name.toUpperCase() === "DONE");

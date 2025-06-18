@@ -1,5 +1,5 @@
 import { bold, green, yellow } from "@std/fmt/colors";
-import { loadConfig } from "./config.ts";
+// import { loadConfig } from "./config.ts";
 
 interface TaskItem {
   line: string;
@@ -65,11 +65,11 @@ function parseTask(line: string): TaskItem | null {
 
 export async function runSortCommand(
   filePath: string,
-  indentSize?: number,
+  _indentSize?: number,
 ): Promise<void> {
   // Load config for default indent size
-  const config = await loadConfig();
-  const actualIndentSize = indentSize ?? config.indentSize ?? 2;
+  // const config = await loadConfig();
+  // const actualIndentSize = indentSize ?? config.indentSize ?? 2;
   // Read file
   let content: string;
   try {
@@ -84,7 +84,7 @@ export async function runSortCommand(
 
   const lines = content.split("\n");
   const result: string[] = [];
-  let currentSection: string | null = null;
+  // let currentSection: string | null = null;
   let sectionTasks: {
     startIdx: number;
     tasks: TaskItem[];
@@ -104,7 +104,7 @@ export async function runSortCommand(
       }
 
       // Sort each indent level
-      for (const [indent, tasks] of tasksByIndent) {
+      for (const [_indent, tasks] of tasksByIndent) {
         tasks.sort((a, b) => {
           // Sort by priority value (lower = higher priority)
           if (a.priorityValue !== b.priorityValue) {
@@ -121,9 +121,9 @@ export async function runSortCommand(
 
       // Rebuild the task list maintaining hierarchy
       const sortedTasks: TaskItem[] = [];
-      const indentLevels = Array.from(tasksByIndent.keys()).sort(
-        (a, b) => a - b,
-      );
+      // const indentLevels = Array.from(tasksByIndent.keys()).sort(
+      //   (a, b) => a - b,
+      // );
 
       // Process tasks level by level
       for (let i = 0; i < sectionTasks.tasks.length; i++) {
@@ -244,7 +244,7 @@ export async function runSortCommand(
     if (headerMatch) {
       // New section header
       flushSection();
-      currentSection = headerMatch[2];
+      // currentSection = headerMatch[2];
       result.push(line);
       sectionTasks = { startIdx: i + 1, tasks: [], otherLines: [] };
     } else {

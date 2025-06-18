@@ -26,7 +26,7 @@ export function displayTree(
   nodes: TreeNode[],
   options: TreeDisplayOptions = {},
   prefix = "",
-  isLast = true,
+  _isLast = true,
   currentDepth = 0,
 ): string[] {
   const lines: string[] = [];
@@ -64,8 +64,8 @@ export function displayTree(
       // Check if it has unchecked children
       if (node.children && hasUncheckedChildren(node.children)) {
         // Show it with indication
-        const branch = currentDepth === 0 
-          ? TREE_CHARS.LAST_BRANCH 
+        const branch = currentDepth === 0
+          ? TREE_CHARS.LAST_BRANCH
           : (isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH);
         const checkbox = "[x]";
         const idSuffix = options.showIds && node.id ? ` [${node.id}]` : "";
@@ -85,14 +85,14 @@ export function displayTree(
           currentDepth + 1,
         );
         lines.push(...childLines);
-        displayCount++
+        displayCount++;
       }
       continue;
     }
 
     // Build the display line
-    const branch = currentDepth === 0 
-      ? TREE_CHARS.LAST_BRANCH 
+    const branch = currentDepth === 0
+      ? TREE_CHARS.LAST_BRANCH
       : (isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH);
     let display = "";
 

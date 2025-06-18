@@ -81,7 +81,7 @@ export class IndentValidator {
 
   private validateIndentHierarchy(
     tasks: ParsedTask[],
-    errors: ValidationError[],
+    _errors: ValidationError[],
     warnings: ValidationWarning[],
     indentSize: number,
   ): void {

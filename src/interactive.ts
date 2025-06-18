@@ -1,5 +1,5 @@
 import { $ } from "dax";
-import { bold, cyan, dim, gray, green } from "@std/fmt/colors";
+import { bold } from "@std/fmt/colors";
 import { LegacyTodoItem } from "./mod.ts";
 import { updateChecklistItem } from "./markdown-parser.ts";
 import { relative } from "@std/path";

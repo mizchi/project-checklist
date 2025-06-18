@@ -188,7 +188,7 @@ Deno.test("パーサー安全性テスト - 複雑な入れ子構造の処理", 
         task.content.includes("フロントエンド開発") ||
         task.content.includes("バックエンド開発"),
     );
-    
+
     assertEquals(
       capturedTasks.length,
       2,
@@ -213,7 +213,10 @@ Deno.test("パーサー安全性テスト - 異なるインデントスタイル
   const { sections } = parseMarkdown(content);
 
   // 異なるインデントスタイルセクションを確認
-  const indentSection = findSection(sections, "異なるインデントスタイル（タブとスペース混在）");
+  const indentSection = findSection(
+    sections,
+    "異なるインデントスタイル（タブとスペース混在）",
+  );
   assertEquals(
     indentSection !== null,
     true,

@@ -1,5 +1,5 @@
 import { bold, green } from "@std/fmt/colors";
-import { loadConfig } from "./config.ts";
+// import { loadConfig } from "./config.ts";
 
 // Valid priority values
 const VALID_PRIORITIES = ["HIGH", "MID", "LOW"];
@@ -55,11 +55,11 @@ export async function runAddCommand(
   sectionType: string,
   message: string,
   priority?: string,
-  indentSize?: number,
+  _indentSize?: number,
 ): Promise<void> {
   // Load config for default indent size
-  const config = await loadConfig();
-  const actualIndentSize = indentSize ?? config.indentSize ?? 2;
+  // const config = await loadConfig();
+  // const actualIndentSize = indentSize ?? config.indentSize ?? 2;
 
   // Normalize section type to uppercase
   const section = sectionType.toUpperCase();

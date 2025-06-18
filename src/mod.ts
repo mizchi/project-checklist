@@ -16,11 +16,7 @@ export interface LegacyTodoItem {
 }
 
 import type { SearchEngine } from "./search/interface.ts";
-import { loadConfig, type PcheckConfig } from "./config.ts";
-import {
-  checkAstGrepInstalled,
-  findTestsInFileWithAst,
-} from "./ast-test-detector.ts";
+import { type PcheckConfig } from "./config.ts";
 
 export interface FindTodosOptions {
   scanFiles?: boolean;

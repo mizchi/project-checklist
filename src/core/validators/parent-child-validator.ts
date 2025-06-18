@@ -14,7 +14,7 @@ interface TaskNode {
 export class ParentChildValidator {
   validate(
     tasks: ParsedTask[],
-    options: ValidatorOptions = {},
+    _options: ValidatorOptions = {},
   ): ParentChildValidationResult {
     const warnings: ValidationWarning[] = [];
 

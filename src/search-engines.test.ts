@@ -31,7 +31,7 @@ Deno.test("detectBestEngine should always return an engine", async () => {
 Deno.test("Search engines should find TODOs in test files", async () => {
   // Skip this test for now as there seems to be an issue with walk() in temp directories
   // This is likely a Deno bug or permission issue
-  
+
   const testDir = await Deno.makeTempDir();
 
   // Create a test file with TODO

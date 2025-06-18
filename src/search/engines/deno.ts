@@ -5,17 +5,17 @@ import type { LegacyTodoItem } from "../../mod.ts";
 export class DenoNativeEngine implements SearchEngine {
   name = "native";
 
-  async isAvailable(): Promise<boolean> {
+  isAvailable(): Promise<boolean> {
     // Always available
-    return true;
+    return Promise.resolve(true);
   }
 
-  async searchTodos(
+  searchTodos(
     _directory: string,
     _patterns: RegExp[],
   ): Promise<LegacyTodoItem[]> {
     // This is a fallback engine, actual implementation is in mod.ts
     // For now, return empty as the native implementation is handled elsewhere
-    return [];
+    return Promise.resolve([]);
   }
 }

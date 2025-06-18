@@ -217,7 +217,10 @@ Deno.test("findTodos should respect options", async () => {
   await Deno.writeTextFile(join(testDir, "TODO.md"), "- [ ] Task");
   await Deno.writeTextFile(join(testDir, "code.ts"), "// TODO: Fix");
 
-  const noFiles = await findTodos(testDir, { scanFiles: false, scanCode: true });
+  const noFiles = await findTodos(testDir, {
+    scanFiles: false,
+    scanCode: true,
+  });
   expect(noFiles.length).toBe(1);
   expect(noFiles[0].type).toBe("code");
 
