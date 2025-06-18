@@ -1,7 +1,8 @@
 # project-checklist
 
-A fast CLI tool to recursively find and display TODOs in your project, built
-with Deno.
+An AI-friendly TODO management tool that helps you track and manage project tasks through Markdown checklists.
+
+Designed for seamless integration with AI assistants like Claude, ChatGPT, and other LLMs to enhance project planning and task management workflows.
 
 ## Installation
 
@@ -11,9 +12,14 @@ deno install -Afg --name pcheck jsr:@mizchi/project-checklist/cli
 
 ## Features
 
-- 🔍 Recursively scans for `TODO.md` files (default)
-- 🎯 Configurable file and code scanning
-- ⚡ Supports ripgrep (default), git grep, grep, and native Deno search
+- 🤖 AI-friendly output format for easy parsing by LLMs
+- 📋 Markdown checklist format (`- [ ]` and `- [x]`) for clear task tracking
+- 🌳 Hierarchical tree display with section context
+- 🎯 Interactive selection mode for AI-assisted task management
+- 🔍 Recursively scans TODO.md, README.md, and other Markdown files
+- ⚡ Fast search with multiple engine support (ripgrep, git grep, grep, native)
+- 🏷️ Section titles display for better context understanding
+- 📊 Progress tracking with completed/uncompleted task filtering
 - 🩺 Built-in diagnostics with `pcheck doctor`
 - 🧪 TypeScript test case detection with `pcheck test` (requires ast-grep)
 
@@ -53,18 +59,55 @@ $ pcheck
     ├── [ ] Add feature of A
     └── [x] B
 
-└── tmp/test-check-command/TODO.md
-    ├── [ ] Task 1
-    └── [ ] Task 2
-
-└── tmp/test-check-command/README.md
-    ├── [ ] README task 1
-    └── [ ] README task 2
 ```
 
-## Roadmap
+### AI Integration Examples
 
-See [TODO.md](./TODO.md) for planned features and improvements.
+#### With Claude or ChatGPT
+
+1. **Get project overview**:
+   ```
+   User: Show me the current TODO status of my project
+   Assistant: Let me check your project's TODO items...
+   $ pcheck
+   [Shows hierarchical TODO list]
+   ```
+
+2. **Interactive task selection**:
+   ```bash
+   # Let AI select and work on specific tasks
+   $ pcheck --select
+   # or select multiple tasks
+   $ pcheck --select-multiple
+   ```
+
+3. **Toggle task completion**:
+   ```bash
+   # Mark task as complete
+   $ pcheck check abc123
+   # Mark task as incomplete
+   $ pcheck check abc123 --off
+   ```
+
+4. **Filter uncompleted tasks only**:
+   ```bash
+   $ pcheck --unchecked-only
+   ```
+
+## Why project-checklist?
+
+Traditional TODO management tools often create friction in the development workflow. `project-checklist` is designed to:
+
+1. **Keep TODOs close to code** - Using Markdown files in your repository
+2. **Enable AI collaboration** - Structured output that LLMs can easily parse and understand
+3. **Maintain simplicity** - Just Markdown checklists, no complex syntax or external services
+4. **Support modern workflows** - Interactive modes for AI-assisted development
+
+## Documentation
+
+- [CLAUDE Usage Guide (English)](./docs/prompt-example-en.md)
+- [CLAUDE Usage Guide (日本語)](./docs/prompt-example-ja.md)
+- [TODO.md](./TODO.md) - Project roadmap and planned features
 
 ## License
 
