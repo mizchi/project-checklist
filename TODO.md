@@ -9,13 +9,8 @@
 
 ## ICEBOX
 
-- [ ] VSCode extension
-- [ ] GitHub Actions integration
-- [ ] Web UI for project overview
-
 ## COMPLETED
 
-### 2025-01
 - [x] Display section titles (## headers) alongside TODO items
 - [x] Fix README.md to only show checklist items
 - [x] Implement file-expander with .gitignore support
@@ -23,8 +18,6 @@
 - [x] Add CLAUDE usage guides (Japanese and English)
 - [x] Fix all TypeScript type errors
 - [x] Remove package.json and migrate to pure Deno
-
-### 2024-12
 - [x] Implement `pcheck validate` command for Markdown checklist validation
 - [x] Add interactive mode with --interactive flag
 - [x] Add --select for single task selection (AI interaction)

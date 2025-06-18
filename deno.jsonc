@@ -1,7 +1,6 @@
 {
   "name": "@mizchi/project-checklist",
   "version": "0.1.0",
-  "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --watch --allow-read --allow-env --allow-run src/cli.ts",
     "test": "deno test --allow-read --allow-write --reporter=dot src/ test/",
@@ -10,17 +9,11 @@
     "compile": "deno compile --allow-read --allow-env --allow-run --output=pcheck src/cli.ts"
   },
   "imports": {
-    "@std/fs": "jsr:@std/fs@^1.0.0",
-    "@std/path": "jsr:@std/path@^1.0.0",
-    "@std/expect": "jsr:@std/expect@^1.0.0",
-    "@std/assert": "jsr:@std/assert@^1.0.0",
-    "@std/cli": "jsr:@std/cli@^1.0.0",
-    "@std/crypto": "jsr:@std/crypto@^1.0.0",
-    "@std/fmt": "jsr:@std/fmt@^1.0.0",
-    "remark": "npm:remark@^15.0.0",
-    "remark-gfm": "npm:remark-gfm@^4.0.0",
+    "@david/dax": "jsr:@david/dax@^0.43.2",
+    "remark": "npm:remark@^15.0.1",
+    "remark-gfm": "npm:remark-gfm@^4.0.1",
     "unist-util-visit": "npm:unist-util-visit@^5.0.0",
-    "mdast": "npm:@types/mdast@^4.0.0",
+    "mdast": "npm:mdast@^3.0.0",
     "dax": "jsr:@david/dax@^0.42.0"
   },
   "exports": {
