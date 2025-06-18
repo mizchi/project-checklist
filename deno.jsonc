@@ -1,6 +1,6 @@
 {
   "name": "@mizchi/project-checklist",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "tasks": {
     "dev": "deno run --watch --allow-read --allow-env --allow-run src/cli.ts",
     "test": "deno test --allow-read --allow-write --allow-env --allow-run --reporter=dot src/ test/",
