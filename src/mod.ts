@@ -342,24 +342,15 @@ async function parseTodoFile(filePath: string): Promise<LegacyTodoItem[]> {
 
   for (const line of lines) {
     const trimmed = line.trim();
-    if (
-      trimmed.startsWith("- ") || trimmed.startsWith("* ") ||
-      trimmed.startsWith("+ ")
-    ) {
+    // Only match checklist items with [ ] or [x]
+    const checklistMatch = trimmed.match(/^[-*+]\s*\[([ x])\]\s*(.+)/);
+    if (checklistMatch) {
       todos.push({
         type: "markdown" as const,
         path: filePath,
-        content: trimmed.substring(2).trim(),
+        content: checklistMatch[2].trim(),
+        checked: checklistMatch[1] === "x",
       });
-    } else if (trimmed.match(/^\d+\.\s+/)) {
-      const match = trimmed.match(/^\d+\.\s+(.+)/);
-      if (match) {
-        todos.push({
-          type: "markdown" as const,
-          path: filePath,
-          content: match[1].trim(),
-        });
-      }
     }
   }
 

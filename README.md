@@ -50,11 +50,6 @@ $ pcheck
     └── [ ] Implement caching for better performance
 
 └── README.md
-    ├── 🔍 Recursively scans for `TODO.md` files (default)
-    ├── 🎯 Configurable file and code scanning
-    ├── ⚡ Supports ripgrep (default), git grep, grep, and native Deno search
-    ├── 🩺 Built-in diagnostics with `pcheck doctor`
-    ├── 🧪 TypeScript test case detection with `pcheck test` (requires ast-grep)
     ├── [ ] Add feature of A
     └── [x] B
 
