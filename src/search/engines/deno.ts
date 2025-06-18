@@ -10,7 +10,10 @@ export class DenoNativeEngine implements SearchEngine {
     return true;
   }
 
-  async searchTodos(_directory: string, _patterns: RegExp[]): Promise<LegacyTodoItem[]> {
+  async searchTodos(
+    _directory: string,
+    _patterns: RegExp[],
+  ): Promise<LegacyTodoItem[]> {
     // This is a fallback engine, actual implementation is in mod.ts
     // For now, return empty as the native implementation is handled elsewhere
     return [];

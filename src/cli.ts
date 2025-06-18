@@ -1,10 +1,10 @@
 #!/usr/bin/env -S deno run --allow-read --allow-env --allow-run
 import { parseArgs } from "@std/cli/parse-args";
-import { findTodos, findTodosInFile, TodoItem } from "./mod.ts";
+import { findTodos, findTodosInFile, LegacyTodoItem } from "./mod.ts";
 import { detectBestEngine, getEngineByName } from "./search/mod.ts";
 import {
-  displayTree,
   convertTodoToTreeNode,
+  displayTree,
   type TreeDisplayOptions,
 } from "./cli/tree-display.ts";
 
@@ -224,7 +224,7 @@ if (import.meta.main) {
       filePath,
       sectionType,
       args.message as string,
-      args.priority as string
+      args.priority as string,
     );
     Deno.exit(0);
   }
@@ -297,7 +297,7 @@ if (import.meta.main) {
 
   if (args.gitroot && args.private) {
     console.error(
-      "Error: Cannot use both --gitroot and --private options together"
+      "Error: Cannot use both --gitroot and --private options together",
     );
     Deno.exit(1);
   }
@@ -368,7 +368,7 @@ if (import.meta.main) {
     searchEngine = await getEngineByName(args.engine);
     if (!searchEngine) {
       console.error(
-        `Error: Search engine '${args.engine}' is not available or not found.`
+        `Error: Search engine '${args.engine}' is not available or not found.`,
       );
       console.error("Run 'pcheck --list-engines' to see available engines.");
       Deno.exit(1);
@@ -389,10 +389,10 @@ if (import.meta.main) {
     const { checkAstGrepInstalled } = await import("./ast-test-detector.ts");
     if (!(await checkAstGrepInstalled())) {
       console.error(
-        "Error: ast-grep is not installed but is required for --scan-tests"
+        "Error: ast-grep is not installed but is required for --scan-tests",
       );
       console.error(
-        "Install it from: https://ast-grep.github.io/guide/quick-start.html"
+        "Install it from: https://ast-grep.github.io/guide/quick-start.html",
       );
       console.error("Or run 'pcheck doctor' for more information");
       Deno.exit(1);
@@ -488,7 +488,7 @@ if (import.meta.main) {
     }
   } catch (error) {
     console.error(
-      `Error: ${error instanceof Error ? error.message : String(error)}`
+      `Error: ${error instanceof Error ? error.message : String(error)}`,
     );
     Deno.exit(1);
   }
@@ -499,7 +499,10 @@ interface JsonOutputOptions {
   unchecked?: boolean;
 }
 
-function formatTodosAsJson(todos: TodoItem[], options: JsonOutputOptions): any {
+function formatTodosAsJson(
+  todos: LegacyTodoItem[],
+  options: JsonOutputOptions,
+): any {
   const allowedFields = options.fields?.split(",").map((f) => f.trim()) || null;
 
   function filterFields(obj: any): any {
@@ -514,7 +517,7 @@ function formatTodosAsJson(todos: TodoItem[], options: JsonOutputOptions): any {
     return filtered;
   }
 
-  function processTodo(todo: TodoItem): any {
+  function processTodo(todo: LegacyTodoItem): any {
     // Special handling for file type - always include if it has todos
     if (todo.type === "file") {
       if (todo.todos) {
@@ -578,7 +581,7 @@ function formatTodosAsJson(todos: TodoItem[], options: JsonOutputOptions): any {
   };
 }
 
-function countTotalItems(todos: TodoItem[]): number {
+function countTotalItems(todos: LegacyTodoItem[]): number {
   let count = 0;
   for (const todo of todos) {
     if (todo.type !== "file") {

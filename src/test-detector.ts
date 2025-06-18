@@ -30,49 +30,49 @@ const TEST_PATTERNS = [
 export async function detectTestCases(
   filePath: string,
   content: string,
-  includeSkipped: boolean = true
+  includeSkipped: boolean = true,
 ): Promise<TestCase[]> {
   const testCases: TestCase[] = [];
   const lines = content.split("\n");
-  
+
   for (let lineNum = 0; lineNum < lines.length; lineNum++) {
     const line = lines[lineNum];
-    
+
     // Check each pattern
     for (const pattern of TEST_PATTERNS) {
       pattern.lastIndex = 0; // Reset regex state
       let match;
-      
+
       while ((match = pattern.exec(line)) !== null) {
         const patternStr = pattern.source;
         const isSkipped = patternStr.includes("\\.skip");
-        
+
         // Skip non-skipped tests if includeSkipped is false
         if (!isSkipped && !includeSkipped) {
           continue;
         }
-        
+
         // Skip regular tests if we only want skipped ones
         if (!isSkipped && includeSkipped) {
           continue;
         }
-        
+
         const testName = match[1] || match[2]; // Handle both string and object syntax
         if (!testName) continue;
-        
+
         let type: TestCase["type"] = "test";
         if (patternStr.includes("describe")) {
           type = "describe";
         } else if (patternStr.includes("it")) {
           type = "it";
         }
-        
+
         const id = await generateId(
           `test-${testName}`,
           lineNum + 1,
-          filePath
+          filePath,
         );
-        
+
         testCases.push({
           name: testName,
           line: lineNum + 1,
@@ -85,15 +85,15 @@ export async function detectTestCases(
       }
     }
   }
-  
+
   return testCases;
 }
 
 export function convertTestCasesToTodos(testCases: TestCase[]): TodoItem[] {
-  return testCases.map(testCase => {
+  return testCases.map((testCase) => {
     const prefix = testCase.skipped ? "SKIP" : "TEST";
     const typeEmoji = testCase.type === "describe" ? "📁" : "🧪";
-    
+
     return {
       type: prefix as TodoItem["type"],
       text: `${typeEmoji} ${testCase.name}`,
@@ -108,19 +108,19 @@ export function convertTestCasesToTodos(testCases: TestCase[]): TodoItem[] {
 // Integrate with existing file search
 export async function findTestsInFile(
   filePath: string,
-  includeSkipped: boolean = true
+  includeSkipped: boolean = true,
 ): Promise<TodoItem[]> {
   // Only process TypeScript files
   if (!filePath.endsWith(".ts") && !filePath.endsWith(".tsx")) {
     return [];
   }
-  
+
   // Skip test files themselves by default
   if (filePath.includes(".test.") || filePath.includes(".spec.")) {
     const content = await Deno.readTextFile(filePath);
     const testCases = await detectTestCases(filePath, content, includeSkipped);
     return convertTestCasesToTodos(testCases);
   }
-  
+
   return [];
 }

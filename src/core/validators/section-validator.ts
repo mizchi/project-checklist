@@ -14,7 +14,7 @@ export class SectionValidator {
   validate(
     sections: ParsedSection[],
     lines: string[],
-    options: ValidatorOptions = {}
+    options: ValidatorOptions = {},
   ): SectionValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -34,7 +34,7 @@ export class SectionValidator {
   private validateSectionHierarchy(
     sections: ParsedSection[],
     errors: ValidationError[],
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
@@ -43,7 +43,8 @@ export class SectionValidator {
       if (i === 0 && section.level > 1) {
         warnings.push({
           type: "INDENT_WARNING", // Using existing type
-          message: `First section starts at level ${section.level}, consider starting from level 1`,
+          message:
+            `First section starts at level ${section.level}, consider starting from level 1`,
           line: section.startLine,
           severity: "warning",
           details: {
@@ -62,7 +63,8 @@ export class SectionValidator {
         if (levelJump > 1) {
           warnings.push({
             type: "INDENT_WARNING",
-            message: `Section level jumps from ${prevSection.level} to ${section.level}, consider gradual progression`,
+            message:
+              `Section level jumps from ${prevSection.level} to ${section.level}, consider gradual progression`,
             line: section.startLine,
             severity: "warning",
             details: {
@@ -80,7 +82,8 @@ export class SectionValidator {
       if (section.level > 6) {
         warnings.push({
           type: "INDENT_WARNING",
-          message: `Section is deeply nested (level ${section.level}), consider restructuring`,
+          message:
+            `Section is deeply nested (level ${section.level}), consider restructuring`,
           line: section.startLine,
           severity: "warning",
           details: {
@@ -97,7 +100,7 @@ export class SectionValidator {
     sections: ParsedSection[],
     lines: string[],
     errors: ValidationError[],
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     for (const section of sections) {
       // Check for empty sections
@@ -135,7 +138,8 @@ export class SectionValidator {
         if (allCompleted && section.name.toUpperCase() !== "DONE") {
           warnings.push({
             type: "PARENT_CHILD_INCONSISTENCY",
-            message: `Section "${section.name}" has all tasks completed, consider moving to DONE section`,
+            message:
+              `Section "${section.name}" has all tasks completed, consider moving to DONE section`,
             line: section.startLine,
             severity: "warning",
             details: {
@@ -151,7 +155,7 @@ export class SectionValidator {
 
   private validateSectionNaming(
     sections: ParsedSection[],
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     const sectionNames = new Set<string>();
     const commonSectionNames = [
@@ -182,11 +186,11 @@ export class SectionValidator {
 
       // Check for empty section names
       if (!section.name || section.name.trim().length === 0) {
-        errors.push({
-          type: "SECTION_ERROR",
+        warnings.push({
+          type: "INDENT_WARNING",
           message: `Section has empty name`,
           line: section.startLine,
-          severity: "error",
+          severity: "warning",
           details: {
             sectionLevel: section.level,
           },
@@ -197,7 +201,8 @@ export class SectionValidator {
       if (section.name && section.name.length > 100) {
         warnings.push({
           type: "INDENT_WARNING",
-          message: `Section name is very long (${section.name.length} characters)`,
+          message:
+            `Section name is very long (${section.name.length} characters)`,
           line: section.startLine,
           severity: "warning",
           details: {
@@ -224,8 +229,9 @@ export class SectionValidator {
     sectionsWithTasks: number;
   } {
     const sectionsCount = sections.length;
-    const maxLevel =
-      sections.length > 0 ? Math.max(...sections.map((s) => s.level)) : 0;
+    const maxLevel = sections.length > 0
+      ? Math.max(...sections.map((s) => s.level))
+      : 0;
     const emptySections = sections.filter((s) => s.tasks.length === 0).length;
     const sectionsWithTasks = sections.filter((s) => s.tasks.length > 0).length;
 

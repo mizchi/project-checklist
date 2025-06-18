@@ -4,7 +4,8 @@
 
 ### 1. コードブロック内チェックリスト風記述の誤認識 🚨 **重大**
 
-**問題**: コードブロック（```で囲まれた部分）内の `- [ ]` パターンが実際のチェックリストタスクとして認識される
+**問題**: コードブロック（```で囲まれた部分）内の `- [ ]`
+パターンが実際のチェックリストタスクとして認識される
 
 **影響**:
 
@@ -23,7 +24,6 @@
 ````
 
 ````
-
 **期待される動作**: コードブロック内の内容は完全に無視されるべき
 
 ### 2. HTMLコメント内の処理（要確認）
@@ -65,7 +65,7 @@ export function isInsideCodeBlock(lines: string[], lineIndex: number): boolean {
 export function parseTask(
   line: string,
   lineNumber: number,
-  allLines?: string[]
+  allLines?: string[],
 ): ParsedTask | null {
   // コードブロック内かチェック
   if (allLines && isInsideCodeBlock(allLines, lineNumber)) {
@@ -114,7 +114,7 @@ export function parseMarkdown(content: string): ParsedMarkdown {
 ```typescript
 export function isInsideHTMLComment(
   lines: string[],
-  lineIndex: number
+  lineIndex: number,
 ): boolean {
   let inComment = false;
   let commentStart = -1;

@@ -32,13 +32,15 @@ export function parseGrepLine(
 }
 
 // Extract TODO content from a line
-export function extractTodoContent(line: string): { type: string; content: string } | null {
+export function extractTodoContent(
+  line: string,
+): { type: string; content: string } | null {
   const patterns = [
     /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
     /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
     /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)\*\//i,
   ];
-  
+
   for (const pattern of patterns) {
     const match = line.match(pattern);
     if (match) {
@@ -48,7 +50,7 @@ export function extractTodoContent(line: string): { type: string; content: strin
       };
     }
   }
-  
+
   return null;
 }
 

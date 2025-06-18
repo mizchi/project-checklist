@@ -15,7 +15,7 @@ export class IndentValidator {
 
   validate(
     tasks: ParsedTask[],
-    options: ValidatorOptions = {}
+    options: ValidatorOptions = {},
   ): IndentValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -29,7 +29,8 @@ export class IndentValidator {
       if (task.indent % indentSize !== 0) {
         warnings.push({
           type: "INDENT_WARNING",
-          message: `Inconsistent indentation detected (expected multiple of ${indentSize} spaces, found ${task.indent})`,
+          message:
+            `Inconsistent indentation detected (expected multiple of ${indentSize} spaces, found ${task.indent})`,
           line: task.lineNumber,
           severity: "warning",
           details: {
@@ -57,7 +58,8 @@ export class IndentValidator {
         if (problematicTask) {
           warnings.push({
             type: "INDENT_WARNING",
-            message: `Large indent jump detected (from ${prevLevel} to ${currentLevel} spaces)`,
+            message:
+              `Large indent jump detected (from ${prevLevel} to ${currentLevel} spaces)`,
             line: problematicTask.lineNumber,
             severity: "warning",
             details: {
@@ -81,7 +83,7 @@ export class IndentValidator {
     tasks: ParsedTask[],
     errors: ValidationError[],
     warnings: ValidationWarning[],
-    indentSize: number
+    indentSize: number,
   ): void {
     for (let i = 0; i < tasks.length; i++) {
       const task = tasks[i];
@@ -110,7 +112,8 @@ export class IndentValidator {
         if (!hasParent) {
           warnings.push({
             type: "INDENT_WARNING",
-            message: `Task appears to be orphaned (no parent found at indent level ${expectedParentIndent})`,
+            message:
+              `Task appears to be orphaned (no parent found at indent level ${expectedParentIndent})`,
             line: task.lineNumber,
             severity: "warning",
             details: {

@@ -1,7 +1,12 @@
 // Standard grep search engine implementation
 import type { SearchEngine } from "../interface.ts";
 import type { LegacyTodoItem } from "../../mod.ts";
-import { commandExists, parseGrepLine, extractTodoContent, createTodoItem } from "../base.ts";
+import {
+  commandExists,
+  createTodoItem,
+  extractTodoContent,
+  parseGrepLine,
+} from "../base.ts";
 
 export class GrepEngine implements SearchEngine {
   name = "grep";
@@ -10,13 +15,16 @@ export class GrepEngine implements SearchEngine {
     return await commandExists("grep");
   }
 
-  async searchTodos(directory: string, patterns: RegExp[]): Promise<LegacyTodoItem[]> {
+  async searchTodos(
+    directory: string,
+    patterns: RegExp[],
+  ): Promise<LegacyTodoItem[]> {
     const todos: LegacyTodoItem[] = [];
 
     for (const pattern of patterns) {
       try {
         const patternStr = pattern.source;
-        
+
         const command = new Deno.Command("grep", {
           args: [
             "-r",

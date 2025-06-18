@@ -1,10 +1,10 @@
 import { assertEquals } from "@std/assert";
 import { join } from "@std/path";
 import {
-  parseMarkdown,
-  parseTask,
   type ParsedMarkdown,
   type ParsedTask,
+  parseMarkdown,
+  parseTask,
 } from "../src/core/markdown-parser.ts";
 
 // デバッグ用：パーサーの動作を詳細に確認
@@ -33,7 +33,7 @@ Deno.test("デバッグ - コードブロック内チェックリスト風記述
     console.log(`  タスク数: ${section.tasks.length}`);
     section.tasks.forEach((task, j) => {
       console.log(
-        `    タスク ${j}: "${task.content}" (行: ${task.lineNumber}, チェック: ${task.checked})`
+        `    タスク ${j}: "${task.content}" (行: ${task.lineNumber}, チェック: ${task.checked})`,
       );
     });
   });
@@ -55,7 +55,7 @@ Deno.test("デバッグ - コードブロック内チェックリスト風記述
   );
 
   console.log(
-    `\nコードブロック内として認識されたタスク数: ${codeBlockTasks.length}`
+    `\nコードブロック内として認識されたタスク数: ${codeBlockTasks.length}`,
   );
   codeBlockTasks.forEach((task) => {
     console.log(`  - "${task.content}" (行: ${task.lineNumber})`);
@@ -81,7 +81,7 @@ Deno.test("デバッグ - parseTask関数の動作確認", () => {
     console.log(
       `  結果: ${
         result ? `タスクとして認識 - "${result.content}"` : "タスクではない"
-      }`
+      }`,
     );
   });
 });
@@ -103,9 +103,11 @@ Deno.test("デバッグ - セクション名の大文字小文字問題", () => 
     console.log(`セクション ${i}: "${section.name}"`);
     console.log(`  文字数: ${section.name.length}`);
     console.log(
-      `  文字コード: ${Array.from(section.name)
-        .map((c) => c.charCodeAt(0))
-        .join(", ")}`
+      `  文字コード: ${
+        Array.from(section.name)
+          .map((c) => c.charCodeAt(0))
+          .join(", ")
+      }`,
     );
   });
 
@@ -119,7 +121,7 @@ Deno.test("デバッグ - セクション名の大文字小文字問題", () => 
   searchNames.forEach((name) => {
     const found = sections.find((s) => s.name === name);
     console.log(
-      `"${name}" の検索結果: ${found ? "見つかった" : "見つからない"}`
+      `"${name}" の検索結果: ${found ? "見つかった" : "見つからない"}`,
     );
   });
 });

@@ -1,4 +1,4 @@
-import { bold, green, yellow, red } from "@std/fmt/colors";
+import { bold, green, red, yellow } from "@std/fmt/colors";
 import { runSortCommand } from "./sort-command.ts";
 import { loadConfig } from "./config.ts";
 import { $ } from "dax";
@@ -78,7 +78,7 @@ function parseMarkdownFile(content: string): {
 
 export async function runUpdateCommand(
   filePath: string,
-  options: UpdateOptions
+  options: UpdateOptions,
 ): Promise<void> {
   // Load config for default indent size
   const config = await loadConfig();
@@ -115,8 +115,9 @@ export async function runUpdateCommand(
     for (const section of sections) {
       // Skip DONE and COMPLETED sections
       const sectionNameUpper = section.name.toUpperCase();
-      if (sectionNameUpper === "DONE" || sectionNameUpper === "COMPLETED")
+      if (sectionNameUpper === "DONE" || sectionNameUpper === "COMPLETED") {
         continue;
+      }
 
       for (const task of section.tasks) {
         // Check if task has priority (e.g., [HIGH], [MID], [LOW], or numeric)
@@ -141,7 +142,7 @@ export async function runUpdateCommand(
     // Only ask about moving completed tasks if there are any
     if (hasCompletedTasks) {
       const doneChoice = await $.confirm(
-        "Move completed tasks to DONE section?"
+        "Move completed tasks to DONE section?",
       );
       if (doneChoice) {
         options.done = true;
@@ -178,8 +179,7 @@ export async function runUpdateCommand(
     const completedTasks: string[] = [];
 
     // Find or create completed section (COMPLETED preferred over DONE)
-    doneSection =
-      sections.find((s) => s.name.toUpperCase() === "COMPLETED") ||
+    doneSection = sections.find((s) => s.name.toUpperCase() === "COMPLETED") ||
       sections.find((s) => s.name.toUpperCase() === "DONE") ||
       null;
 
@@ -306,7 +306,7 @@ export async function runUpdateCommand(
     } else if (completedTasks.length > 0) {
       const sectionName = doneSection?.name || "COMPLETED";
       operations.push(
-        `moved ${completedTasks.length} completed tasks to ${sectionName}`
+        `moved ${completedTasks.length} completed tasks to ${sectionName}`,
       );
     }
   } else if (options["force-clear"]) {
@@ -314,8 +314,9 @@ export async function runUpdateCommand(
     const { sections, lines } = parseMarkdownFile(content);
     const newLines: string[] = [];
     let inCompletedSection = false;
-    let completedSection =
-      sections.find((s) => s.name.toUpperCase() === "COMPLETED") ||
+    let completedSection = sections.find((s) =>
+      s.name.toUpperCase() === "COMPLETED"
+    ) ||
       sections.find((s) => s.name.toUpperCase() === "DONE");
 
     for (let i = 0; i < lines.length; i++) {

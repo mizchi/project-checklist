@@ -33,20 +33,22 @@ export function displayTree(
   let displayCount = 0;
   const maxItems = options.maxItems;
   const maxDepth = options.maxDepth;
-  
+
   // Check if we've reached max depth
   if (maxDepth !== undefined && currentDepth >= maxDepth) {
     if (nodes.length > 0) {
       const totalChildren = countAllChildren(nodes);
-      lines.push(`${prefix}└── ... (${totalChildren} items hidden by depth limit)`);
+      lines.push(
+        `${prefix}└── ... (${totalChildren} items hidden by depth limit)`,
+      );
     }
     return lines;
   }
-  
+
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const isLastNode = i === nodes.length - 1;
-    
+
     // Check if we've reached the max items limit
     if (maxItems !== undefined && displayCount >= maxItems) {
       const remaining = nodes.length - i;
@@ -56,7 +58,7 @@ export function displayTree(
       }
       break;
     }
-    
+
     // Skip checked items in unchecked mode
     if (options.uncheckedOnly && node.isChecked) {
       // Check if it has unchecked children
@@ -65,43 +67,59 @@ export function displayTree(
         const branch = isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH;
         const checkbox = "[x]";
         const idSuffix = options.showIds && node.id ? ` [${node.id}]` : "";
-        lines.push(`${prefix}${branch}${checkbox} ${node.content} (has unchecked items)${idSuffix}`);
-        
+        lines.push(
+          `${prefix}${branch}${checkbox} ${node.content} (has unchecked items)${idSuffix}`,
+        );
+
         // Process children
-        const childPrefix = prefix + (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
-        const childLines = displayTree(node.children, options, childPrefix, false, currentDepth + 1);
+        const childPrefix = prefix +
+          (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
+        const childLines = displayTree(
+          node.children,
+          options,
+          childPrefix,
+          false,
+          currentDepth + 1,
+        );
         lines.push(...childLines);
         displayCount++;
       }
       continue;
     }
-    
+
     // Build the display line
     const branch = isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH;
     let display = "";
-    
+
     if (node.isChecked !== undefined) {
       const checkbox = node.isChecked ? "[x]" : "[ ]";
       display = `${checkbox} ${node.content}`;
     } else {
       display = node.content;
     }
-    
+
     if (options.showIds && node.id) {
       display += ` [${node.id}]`;
     }
-    
+
     lines.push(`${prefix}${branch}${display}`);
     displayCount++;
-    
+
     // Process children
     if (node.children && node.children.length > 0) {
-      const childPrefix = prefix + (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
-      const childLines = displayTree(node.children, options, childPrefix, false, currentDepth + 1);
+      const childPrefix = prefix +
+        (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
+      const childLines = displayTree(
+        node.children,
+        options,
+        childPrefix,
+        false,
+        currentDepth + 1,
+      );
       lines.push(...childLines);
     }
   }
-  
+
   return lines;
 }
 
@@ -134,7 +152,7 @@ export function convertTodoToTreeNode(todo: any): TreeNode {
     content: "",
     type: todo.type,
   };
-  
+
   if (todo.type === "file") {
     node.content = todo.path;
   } else if (todo.type === "code") {
@@ -147,16 +165,18 @@ export function convertTodoToTreeNode(todo: any): TreeNode {
       "WARNING": "⚠️",
     } as Record<string, string>;
     const emoji = typeEmoji[todo.commentType || "TODO"] || "📝";
-    node.content = `${emoji} ${todo.path}:${todo.line} [${todo.commentType || "TODO"}] - ${todo.content}`;
+    node.content = `${emoji} ${todo.path}:${todo.line} [${
+      todo.commentType || "TODO"
+    }] - ${todo.content}`;
   } else if (todo.type === "markdown") {
     node.content = todo.content;
     node.isChecked = todo.checked;
     node.id = todo.id;
   }
-  
+
   if (todo.todos && todo.todos.length > 0) {
     node.children = todo.todos.map(convertTodoToTreeNode);
   }
-  
+
   return node;
 }

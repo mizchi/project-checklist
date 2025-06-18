@@ -2,18 +2,20 @@
 
 ## Overview
 
-Dax provides several interactive methods for user input through the `$` object. These methods are useful for creating interactive CLI applications.
+Dax provides several interactive methods for user input through the `$` object.
+These methods are useful for creating interactive CLI applications.
 
 ## $.select()
 
-The `$.select()` method presents a list of options to the user and returns the selected option.
+The `$.select()` method presents a list of options to the user and returns the
+selected option.
 
 ### Basic Usage
 
 ```typescript
 const result = await $.select({
   message: "Select an option:",
-  options: ["Option 1", "Option 2", "Option 3"]
+  options: ["Option 1", "Option 2", "Option 3"],
 });
 ```
 
@@ -32,7 +34,7 @@ const result = await $.select({
 ```typescript
 const color = await $.select({
   message: "Choose your favorite color:",
-  options: ["Red", "Green", "Blue", "Yellow"]
+  options: ["Red", "Green", "Blue", "Yellow"],
 });
 
 console.log(`You selected: ${color}`);
@@ -40,14 +42,15 @@ console.log(`You selected: ${color}`);
 
 ## $.maybeSelect()
 
-Similar to `$.select()` but returns `undefined` if the user cancels instead of throwing an error.
+Similar to `$.select()` but returns `undefined` if the user cancels instead of
+throwing an error.
 
 ### Example
 
 ```typescript
 const result = await $.maybeSelect({
   message: "Select an option (or cancel):",
-  options: ["Continue", "Skip", "Abort"]
+  options: ["Continue", "Skip", "Abort"],
 });
 
 if (result === undefined) {
@@ -66,7 +69,7 @@ Allows selecting multiple options from a list.
 ```typescript
 const selected = await $.multiSelect({
   message: "Select multiple options:",
-  options: ["Option 1", "Option 2", "Option 3", "Option 4"]
+  options: ["Option 1", "Option 2", "Option 3", "Option 4"],
 });
 ```
 
@@ -80,7 +83,7 @@ const selected = await $.multiSelect({
 ```typescript
 const features = await $.multiSelect({
   message: "Select features to install:",
-  options: ["TypeScript", "ESLint", "Prettier", "Testing", "CI/CD"]
+  options: ["TypeScript", "ESLint", "Prettier", "Testing", "CI/CD"],
 });
 
 console.log(`Selected features: ${features.join(", ")}`);
@@ -95,7 +98,7 @@ Like `$.multiSelect()` but returns `undefined` on cancellation.
 ```typescript
 const selected = await $.maybeMultiSelect({
   message: "Select options (or cancel):",
-  options: ["A", "B", "C"]
+  options: ["A", "B", "C"],
 });
 
 if (selected === undefined) {
@@ -154,10 +157,12 @@ if (await $.confirm("Delete file?")) {
 
 ## Best Practices
 
-1. **Error Handling**: Always handle cancellation cases, especially with `$.select()`
+1. **Error Handling**: Always handle cancellation cases, especially with
+   `$.select()`
 2. **Clear Messages**: Provide clear, concise prompt messages
 3. **Default Values**: Use default values for `$.prompt()` when appropriate
-4. **User Experience**: Consider using `$.maybeSelect()` when cancellation is a valid option
+4. **User Experience**: Consider using `$.maybeSelect()` when cancellation is a
+   valid option
 
 ## Common Patterns
 
@@ -167,12 +172,12 @@ if (await $.confirm("Delete file?")) {
 const actions = {
   "Create new file": () => createFile(),
   "Delete file": () => deleteFile(),
-  "Exit": () => process.exit(0)
+  "Exit": () => process.exit(0),
 };
 
 const choice = await $.select({
   message: "What would you like to do?",
-  options: Object.keys(actions)
+  options: Object.keys(actions),
 });
 
 await actions[choice]();
@@ -186,7 +191,7 @@ const config = {};
 config.name = await $.prompt("Project name:");
 config.type = await $.select({
   message: "Project type:",
-  options: ["Web", "CLI", "Library"]
+  options: ["Web", "CLI", "Library"],
 });
 config.typescript = await $.confirm("Use TypeScript?");
 

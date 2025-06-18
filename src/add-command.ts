@@ -37,14 +37,16 @@ function validatePriority(priority: string): {
     return {
       valid: false,
       normalized: priority,
-      warning: `Invalid priority format: "${priority}". Use either HIGH/MID/LOW or a number (0-999).`,
+      warning:
+        `Invalid priority format: "${priority}". Use either HIGH/MID/LOW or a number (0-999).`,
     };
   }
 
   return {
     valid: false,
     normalized: priority,
-    warning: `Invalid priority: "${priority}". Use HIGH/MID/LOW or a number (0-999).`,
+    warning:
+      `Invalid priority: "${priority}". Use HIGH/MID/LOW or a number (0-999).`,
   };
 }
 
@@ -53,7 +55,7 @@ export async function runAddCommand(
   sectionType: string,
   message: string,
   priority?: string,
-  indentSize?: number
+  indentSize?: number,
 ): Promise<void> {
   // Load config for default indent size
   const config = await loadConfig();

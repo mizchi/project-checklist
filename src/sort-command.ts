@@ -65,7 +65,7 @@ function parseTask(line: string): TaskItem | null {
 
 export async function runSortCommand(
   filePath: string,
-  indentSize?: number
+  indentSize?: number,
 ): Promise<void> {
   // Load config for default indent size
   const config = await loadConfig();
@@ -122,7 +122,7 @@ export async function runSortCommand(
       // Rebuild the task list maintaining hierarchy
       const sortedTasks: TaskItem[] = [];
       const indentLevels = Array.from(tasksByIndent.keys()).sort(
-        (a, b) => a - b
+        (a, b) => a - b,
       );
 
       // Process tasks level by level
@@ -275,7 +275,7 @@ export async function runSortCommand(
   console.log(`  File: ${filePath}`);
   console.log(
     yellow(
-      "  Priority order: HIGH (1) > MID (5) > LOW (10) > numeric > no priority (100)"
-    )
+      "  Priority order: HIGH (1) > MID (5) > LOW (10) > numeric > no priority (100)",
+    ),
   );
 }

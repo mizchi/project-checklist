@@ -1,5 +1,8 @@
 import { expect } from "@std/expect";
-import { parseTodoFileWithChecklist, updateChecklistItem } from "./markdown-parser.ts";
+import {
+  parseTodoFileWithChecklist,
+  updateChecklistItem,
+} from "./markdown-parser.ts";
 import { join } from "@std/path";
 
 Deno.test("parseTodoFileWithChecklist should parse simple checklist", async () => {
@@ -21,10 +24,10 @@ Deno.test("parseTodoFileWithChecklist should parse simple checklist", async () =
   expect(items[0].content).toBe("First task");
   expect(items[0].checked).toBe(false);
   expect(items[0].id).toBeTruthy();
-  
+
   expect(items[1].content).toBe("Second task (completed)");
   expect(items[1].checked).toBe(true);
-  
+
   expect(items[2].content).toBe("Third task");
   expect(items[2].checked).toBe(false);
 
@@ -51,13 +54,13 @@ Deno.test("parseTodoFileWithChecklist should parse nested checklist", async () =
   const { items } = await parseTodoFileWithChecklist(todoFile);
 
   expect(items.length).toBe(2);
-  
+
   // First parent
   expect(items[0].content).toBe("Parent task");
   expect(items[0].checked).toBe(false);
   expect(items[0].children).toBeTruthy();
   expect(items[0].children!.length).toBe(3);
-  
+
   // Children of first parent
   const children = items[0].children!;
   expect(children[0].content).toBe("Child task 1");
@@ -66,7 +69,7 @@ Deno.test("parseTodoFileWithChecklist should parse nested checklist", async () =
   expect(children[1].children).toBeTruthy();
   expect(children[1].children!.length).toBe(1);
   expect(children[1].children![0].content).toBe("Grandchild task");
-  
+
   // Second parent
   expect(items[1].content).toBe("Another parent");
   expect(items[1].checked).toBe(true);
@@ -88,19 +91,19 @@ Deno.test("updateChecklistItem should toggle checkbox status", async () => {
   // Parse initial state
   const { items: initialItems } = await parseTodoFileWithChecklist(todoFile);
   const taskId = initialItems[0].id;
-  
+
   expect(initialItems[0].checked).toBe(false);
-  
+
   // Toggle to checked
   await updateChecklistItem(todoFile, taskId, true);
-  
+
   // Parse updated state
   const { items: updatedItems } = await parseTodoFileWithChecklist(todoFile);
   expect(updatedItems[0].checked).toBe(true);
-  
+
   // Toggle back to unchecked
   await updateChecklistItem(todoFile, taskId, false);
-  
+
   // Parse final state
   const { items: finalItems } = await parseTodoFileWithChecklist(todoFile);
   expect(finalItems[0].checked).toBe(false);

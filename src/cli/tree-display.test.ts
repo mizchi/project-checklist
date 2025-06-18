@@ -1,5 +1,9 @@
 import { assertEquals } from "@std/assert";
-import { displayTree, convertTodoToTreeNode, type TreeNode } from "./tree-display.ts";
+import {
+  convertTodoToTreeNode,
+  displayTree,
+  type TreeNode,
+} from "./tree-display.ts";
 
 Deno.test("displayTree - basic tree structure", () => {
   const nodes: TreeNode[] = [
@@ -19,7 +23,7 @@ Deno.test("displayTree - basic tree structure", () => {
   ];
 
   const lines = displayTree(nodes);
-  
+
   assertEquals(lines.length, 5);
   assertEquals(lines[0], "└── Parent 1");
   assertEquals(lines[1], "    ├── Child 1.1");
@@ -42,7 +46,7 @@ Deno.test("displayTree - with max items", () => {
   ];
 
   const lines = displayTree(nodes, { maxItems: 2 });
-  
+
   assertEquals(lines[0], "└── Parent");
   assertEquals(lines[1], "    ├── Child 1");
   assertEquals(lines[2], "    ├── Child 2");
@@ -70,7 +74,7 @@ Deno.test("displayTree - with max depth", () => {
   ];
 
   const lines = displayTree(nodes, { maxDepth: 2 });
-  
+
   assertEquals(lines[0], "└── Level 0");
   assertEquals(lines[1], "    └── Level 1");
   assertEquals(lines[2], "        └── ... (1 items hidden by depth limit)");
@@ -89,7 +93,7 @@ Deno.test("displayTree - with checked items", () => {
   ];
 
   const lines = displayTree(nodes);
-  
+
   assertEquals(lines[0], "└── [ ] Task 1");
   assertEquals(lines[1], "└── [x] Task 2");
 });
@@ -117,7 +121,7 @@ Deno.test("displayTree - unchecked only mode", () => {
   ];
 
   const lines = displayTree(nodes, { uncheckedOnly: true });
-  
+
   assertEquals(lines.length, 3);
   assertEquals(lines[0], "└── [ ] Unchecked task");
   assertEquals(lines[1], "└── [x] Checked parent (has unchecked items)");
@@ -134,7 +138,7 @@ Deno.test("displayTree - with IDs", () => {
   ];
 
   const lines = displayTree(nodes, { showIds: true });
-  
+
   assertEquals(lines[0], "└── [ ] Task with ID [abc123]");
 });
 
@@ -146,7 +150,7 @@ Deno.test("convertTodoToTreeNode - file type", () => {
   };
 
   const node = convertTodoToTreeNode(todo);
-  
+
   assertEquals(node.content, "TODO.md");
   assertEquals(node.type, "file");
 });
@@ -161,7 +165,7 @@ Deno.test("convertTodoToTreeNode - code type", () => {
   };
 
   const node = convertTodoToTreeNode(todo);
-  
+
   assertEquals(node.content, "📝 src/main.ts:42 [TODO] - Fix this later");
   assertEquals(node.type, "code");
 });
@@ -175,7 +179,7 @@ Deno.test("convertTodoToTreeNode - markdown type", () => {
   };
 
   const node = convertTodoToTreeNode(todo);
-  
+
   assertEquals(node.content, "Complete this task");
   assertEquals(node.isChecked, false);
   assertEquals(node.id, "xyz789");

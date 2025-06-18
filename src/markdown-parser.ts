@@ -1,7 +1,7 @@
 import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
-import type { Root, ListItem } from "mdast";
+import type { ListItem, Root } from "mdast";
 import { crypto } from "@std/crypto";
 
 export interface ChecklistItem {
@@ -19,13 +19,19 @@ export interface ParsedTodoFile {
 }
 
 // Generate a stable ID based on content and position
-export async function generateId(content: string, line: number, parentId?: string): Promise<string> {
+export async function generateId(
+  content: string,
+  line: number,
+  parentId?: string,
+): Promise<string> {
   const input = `${parentId || "root"}-${line}-${content}`;
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join(
+    "",
+  );
   return hashHex.substring(0, 8);
 }
 
@@ -54,7 +60,7 @@ export async function parseTodoFileWithChecklist(
       listItemNodes.push({ node, parent });
     }
   });
-  
+
   // If no checkboxes found, return empty items
   if (!hasCheckboxes) {
     return {
@@ -67,10 +73,10 @@ export async function parseTodoFileWithChecklist(
   for (const { node, parent } of listItemNodes) {
     const content = extractTextContent(node).trim();
     const line = node.position?.start.line || 0;
-    
+
     // Generate ID based on content and position
     const id = await generateId(content, line, currentParentId);
-    
+
     const item: ChecklistItem = {
       id,
       content,
@@ -83,17 +89,17 @@ export async function parseTodoFileWithChecklist(
     if (parent && parent.type === "list" && parent.position) {
       const indent = parent.position.start.column - 1;
       const level = Math.floor(indent / 2);
-      
+
       // Pop items from stack that are at the same or deeper level
       while (itemStack.length > level) {
         itemStack.pop();
       }
-      
+
       // Set parent based on stack
       if (itemStack.length > 0) {
         const parentItem = itemStack[itemStack.length - 1];
         item.parent = parentItem.id;
-        
+
         // Add to parent's children
         if (!parentItem.children) {
           parentItem.children = [];
@@ -102,7 +108,7 @@ export async function parseTodoFileWithChecklist(
       } else {
         items.push(item);
       }
-      
+
       // Push current item to stack
       itemStack.push(item);
       currentParentId = item.id;
@@ -126,15 +132,15 @@ function extractTextContent(node: any): string {
   if (node.type === "text") {
     return node.value;
   }
-  
+
   if (node.type === "inlineCode") {
     return node.value;
   }
-  
+
   if (node.type === "paragraph" && node.children) {
     return node.children.map(extractTextContent).join("");
   }
-  
+
   // For list items, only get the direct text content, not nested lists
   if (node.type === "listItem" && node.children) {
     for (const child of node.children) {
@@ -143,7 +149,7 @@ function extractTextContent(node: any): string {
       }
     }
   }
-  
+
   return "";
 }
 
@@ -154,7 +160,7 @@ export async function updateChecklistItem(
   checked: boolean,
 ): Promise<void> {
   const { items, rawContent } = await parseTodoFileWithChecklist(filePath);
-  
+
   // Find the item to update
   const findItem = (items: ChecklistItem[]): ChecklistItem | null => {
     for (const item of items) {
@@ -168,23 +174,23 @@ export async function updateChecklistItem(
     }
     return null;
   };
-  
+
   const targetItem = findItem(items);
   if (!targetItem || targetItem.line === undefined) {
     throw new Error(`Item with ID ${itemId} not found`);
   }
-  
+
   // Update the raw content
   const lines = rawContent.split("\n");
   const lineIndex = targetItem.line - 1;
-  
+
   if (lineIndex >= 0 && lineIndex < lines.length) {
     const line = lines[lineIndex];
     const newCheckbox = checked ? "[x]" : "[ ]";
     const updatedLine = line.replace(/\[([ x])\]/, newCheckbox);
     lines[lineIndex] = updatedLine;
   }
-  
+
   const updatedContent = lines.join("\n");
   await Deno.writeTextFile(filePath, updatedContent);
 }

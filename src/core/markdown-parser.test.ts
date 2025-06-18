@@ -1,16 +1,16 @@
 import { assertEquals } from "@std/assert";
 import {
-  parseMarkdown,
-  parseTask,
-  parsePriority,
-  findSection,
+  addTaskToSection,
+  clearDoneSection,
   findCompletedSection,
-  sortTasksByPriority,
+  findSection,
   formatTask,
   insertSection,
-  addTaskToSection,
   moveCompletedTasksToDone,
-  clearDoneSection,
+  parseMarkdown,
+  parsePriority,
+  parseTask,
+  sortTasksByPriority,
 } from "./markdown-parser.ts";
 
 Deno.test("parseTask - basic task", () => {
@@ -343,7 +343,7 @@ Deno.test("moveCompletedTasksToDone - uses existing COMPLETED section", () => {
 function assertStringIncludes(actual: string, expected: string) {
   if (!actual.includes(expected)) {
     throw new Error(
-      `Expected string to include "${expected}", but got: ${actual}`
+      `Expected string to include "${expected}", but got: ${actual}`,
     );
   }
 }

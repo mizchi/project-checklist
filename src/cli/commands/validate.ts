@@ -61,8 +61,9 @@ export async function runValidateCommand(args: string[]): Promise<void> {
       console.error(`Error: File not found: ${filePath}`);
       Deno.exit(1);
     } else {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       console.error(`Error: Cannot access file ${filePath}: ${errorMessage}`);
       Deno.exit(1);
     }

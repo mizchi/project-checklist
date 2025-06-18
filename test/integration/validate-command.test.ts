@@ -16,10 +16,12 @@ try {
 await Deno.mkdir(testDir, { recursive: true });
 
 async function pcheck(...args: string[]) {
-  const result = await $`deno run --allow-read --allow-write ${join(
-    Deno.cwd(),
-    "src/cli.ts"
-  )} ${args}`
+  const result = await $`deno run --allow-read --allow-write ${
+    join(
+      Deno.cwd(),
+      "src/cli.ts",
+    )
+  } ${args}`
     .cwd(testDir)
     .stdout("piped")
     .stderr("piped")

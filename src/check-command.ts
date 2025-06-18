@@ -12,12 +12,14 @@ interface CheckArgs {
 export async function runCheckCommand(itemId: string, args: CheckArgs) {
   // Determine target path based on options
   let targetPath = ".";
-  
+
   if (args.gitroot && args.private) {
-    console.error("Error: Cannot use both --gitroot and --private options together");
+    console.error(
+      "Error: Cannot use both --gitroot and --private options together",
+    );
     Deno.exit(1);
   }
-  
+
   if (args.gitroot) {
     // Find git root
     try {
@@ -46,53 +48,59 @@ export async function runCheckCommand(itemId: string, args: CheckArgs) {
     }
     targetPath = `${homeDir}/.todo`;
   }
-  
+
   // Find all TODOs
   const todos = await findTodos(targetPath, { scanCode: false });
-  
+
   // Find the item with matching ID
   interface FoundItem {
     todo: any;
     filePath: string;
   }
-  
-  let foundItem: FoundItem | null = null;
-  
-  function findItemById(todoList: any[], filePath: string): void {
+
+  function findItemById(todoList: any[], filePath: string): FoundItem | null {
     for (const todo of todoList) {
       if (todo.type === "file" && todo.todos) {
-        const absolutePath = todo.path.startsWith("/") ? todo.path : `${targetPath}/${todo.path}`;
-        findItemById(todo.todos, absolutePath);
+        const absolutePath = todo.path.startsWith("/")
+          ? todo.path
+          : `${targetPath}/${todo.path}`;
+        const found = findItemById(todo.todos, absolutePath);
+        if (found) return found;
       } else if (todo.type === "markdown" && todo.id === itemId) {
-        foundItem = { todo, filePath };
-        return;
+        return { todo, filePath };
       } else if (todo.todos) {
-        findItemById(todo.todos, filePath);
+        const found = findItemById(todo.todos, filePath);
+        if (found) return found;
       }
     }
+    return null;
   }
-  
-  findItemById(todos, targetPath);
-  
+
+  const foundItem = findItemById(todos, targetPath);
+
   if (!foundItem) {
     console.error(`Error: No item found with ID: ${itemId}`);
     Deno.exit(1);
   }
-  
+
   // Determine new state
   const currentState = foundItem.todo.checked || false;
   const newState = args.off ? false : !currentState;
-  
+
   // Update the item
   await updateChecklistItem(foundItem.filePath, itemId, newState);
-  
+
   // Show result
   const stateSymbol = newState ? "✓" : "☐";
   const stateColor = newState ? green : red;
-  
+
   console.log(bold("\n✨ Updated checklist item:"));
   console.log(`  ${stateColor(stateSymbol)} ${foundItem.todo.content}`);
   console.log(`  ID: ${itemId}`);
   console.log(`  File: ${foundItem.filePath}`);
-  console.log(`  State: ${currentState ? "checked" : "unchecked"} → ${newState ? "checked" : "unchecked"}`);
+  console.log(
+    `  State: ${currentState ? "checked" : "unchecked"} → ${
+      newState ? "checked" : "unchecked"
+    }`,
+  );
 }

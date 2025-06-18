@@ -1,7 +1,12 @@
 // Ripgrep search engine implementation
 import type { SearchEngine } from "../interface.ts";
 import type { LegacyTodoItem } from "../../mod.ts";
-import { commandExists, parseGrepLine, extractTodoContent, createTodoItem } from "../base.ts";
+import {
+  commandExists,
+  createTodoItem,
+  extractTodoContent,
+  parseGrepLine,
+} from "../base.ts";
 
 export class RipgrepEngine implements SearchEngine {
   name = "ripgrep";
@@ -10,14 +15,17 @@ export class RipgrepEngine implements SearchEngine {
     return await commandExists("rg");
   }
 
-  async searchTodos(directory: string, patterns: RegExp[]): Promise<LegacyTodoItem[]> {
+  async searchTodos(
+    directory: string,
+    patterns: RegExp[],
+  ): Promise<LegacyTodoItem[]> {
     const todos: LegacyTodoItem[] = [];
 
     for (const pattern of patterns) {
       try {
         // Build regex pattern for ripgrep
         const patternStr = pattern.source;
-        
+
         const command = new Deno.Command("rg", {
           args: [
             "--line-number",

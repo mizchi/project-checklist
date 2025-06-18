@@ -14,7 +14,7 @@ interface TaskNode {
 export class ParentChildValidator {
   validate(
     tasks: ParsedTask[],
-    options: ValidatorOptions = {}
+    options: ValidatorOptions = {},
   ): ParentChildValidationResult {
     const warnings: ValidationWarning[] = [];
 
@@ -63,7 +63,7 @@ export class ParentChildValidator {
 
   private validateTaskTree(
     nodes: TaskNode[],
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     for (const node of nodes) {
       this.validateNode(node, warnings);
@@ -78,7 +78,8 @@ export class ParentChildValidator {
     if (node.parent && !node.parent.task.checked && task.checked) {
       warnings.push({
         type: "PARENT_CHILD_INCONSISTENCY",
-        message: `Parent task "${node.parent.task.content}" is incomplete but child task "${task.content}" is completed`,
+        message:
+          `Parent task "${node.parent.task.content}" is incomplete but child task "${task.content}" is completed`,
         line: task.lineNumber,
         severity: "warning",
         parentTask: node.parent.task.content,
@@ -95,16 +96,17 @@ export class ParentChildValidator {
     // Additional validation: Check if all children are complete but parent is not
     if (node.children.length > 0) {
       const allChildrenComplete = node.children.every(
-        (child) => child.task.checked
+        (child) => child.task.checked,
       );
       const someChildrenComplete = node.children.some(
-        (child) => child.task.checked
+        (child) => child.task.checked,
       );
 
       if (allChildrenComplete && !task.checked) {
         warnings.push({
           type: "PARENT_CHILD_INCONSISTENCY",
-          message: `All child tasks are completed but parent task "${task.content}" is not marked as complete`,
+          message:
+            `All child tasks are completed but parent task "${task.content}" is not marked as complete`,
           line: task.lineNumber,
           severity: "warning",
           parentTask: task.content,
@@ -132,8 +134,9 @@ export class ParentChildValidator {
     const totalTasks = tasks.length;
     const completedTasks = tasks.filter((t) => t.checked).length;
     const pendingTasks = totalTasks - completedTasks;
-    const maxDepth =
-      tasks.length > 0 ? Math.max(...tasks.map((t) => t.indent)) / 2 + 1 : 0;
+    const maxDepth = tasks.length > 0
+      ? Math.max(...tasks.map((t) => t.indent)) / 2 + 1
+      : 0;
 
     return {
       totalTasks,

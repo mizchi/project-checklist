@@ -17,8 +17,10 @@ export interface LegacyTodoItem {
 
 import type { SearchEngine } from "./search/interface.ts";
 import { loadConfig, type PcheckConfig } from "./config.ts";
-import { findTestsInFileWithAst, checkAstGrepInstalled } from "./ast-test-detector.ts";
-import type { TodoItem } from "./types.ts";
+import {
+  checkAstGrepInstalled,
+  findTestsInFileWithAst,
+} from "./ast-test-detector.ts";
 
 export interface FindTodosOptions {
   scanFiles?: boolean;
@@ -55,8 +57,8 @@ const CODE_EXTENSIONS = [
 // Support multiple comment formats: TODO, FIXME, HACK, NOTE, XXX, WARNING
 const TODO_PATTERNS = [
   /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
-  /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,  // Python, Ruby, Shell
-  /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)\*\//i,  // C-style block comments
+  /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i, // Python, Ruby, Shell
+  /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)\*\//i, // C-style block comments
 ];
 const IGNORE_DIRS = [
   "node_modules",
@@ -73,17 +75,17 @@ const IGNORE_DIRS = [
  */
 function matchesIgnorePattern(path: string, ignorePattern: string): boolean {
   // Split multiple patterns by comma
-  const patterns = ignorePattern.split(',').map(p => p.trim());
-  
+  const patterns = ignorePattern.split(",").map((p) => p.trim());
+
   for (const pattern of patterns) {
     // Simple glob pattern matching
-    if (pattern.includes('*')) {
+    if (pattern.includes("*")) {
       // Convert glob to regex
       const regex = pattern
-        .replace(/[.+^${}()|[\]\\]/g, '\\$&') // Escape special chars
-        .replace(/\*/g, '.*') // Replace * with .*
-        .replace(/\?/g, '.'); // Replace ? with .
-      
+        .replace(/[.+^${}()|[\]\\]/g, "\\$&") // Escape special chars
+        .replace(/\*/g, ".*") // Replace * with .*
+        .replace(/\?/g, "."); // Replace ? with .
+
       if (new RegExp(regex).test(path)) {
         return true;
       }
@@ -94,7 +96,7 @@ function matchesIgnorePattern(path: string, ignorePattern: string): boolean {
       }
     }
   }
-  
+
   return false;
 }
 
@@ -104,10 +106,10 @@ function matchesIgnorePattern(path: string, ignorePattern: string): boolean {
 export async function findTodosInFile(
   filePath: string,
   options: FindTodosOptions = DEFAULT_OPTIONS,
-): Promise<TodoItem[]> {
-  const todos: TodoItem[] = [];
+): Promise<LegacyTodoItem[]> {
+  const todos: LegacyTodoItem[] = [];
   const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
-  
+
   try {
     const stat = await Deno.stat(filePath);
     if (!stat.isFile) {
@@ -119,27 +121,32 @@ export async function findTodosInFile(
     }
     throw error;
   }
-  
-  const fileName = filePath.split('/').pop() || '';
-  
+
+  const fileName = filePath.split("/").pop() || "";
+
   // Check if file should be ignored
-  if (mergedOptions.ignore && matchesIgnorePattern(filePath, mergedOptions.ignore)) {
+  if (
+    mergedOptions.ignore && matchesIgnorePattern(filePath, mergedOptions.ignore)
+  ) {
     return todos;
   }
-  
+
   // Check if it's a TODO.md or README.md file
   const lowerFileName = fileName.toLowerCase();
-  if (mergedOptions.scanFiles && (lowerFileName === 'todo.md' || lowerFileName === 'readme.md')) {
+  if (
+    mergedOptions.scanFiles &&
+    (lowerFileName === "todo.md" || lowerFileName === "readme.md")
+  ) {
     const fileTodos = await parseTodoFile(filePath);
     if (fileTodos.length > 0) {
       todos.push({
-        type: "file",
+        type: "file" as const,
         path: fileName,
         todos: fileTodos,
       });
     }
   }
-  
+
   // Check if it's a code file
   if (mergedOptions.scanCode && isCodeFile(filePath)) {
     // For single files, always use native search
@@ -152,23 +159,27 @@ export async function findTodosInFile(
       });
     }
   }
-  
+
   return todos;
 }
 
 export async function findTodos(
   directory: string,
   options: FindTodosOptions = DEFAULT_OPTIONS,
-): Promise<TodoItem[]> {
-  const todos: TodoItem[] = [];
+): Promise<LegacyTodoItem[]> {
+  const todos: LegacyTodoItem[] = [];
   const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
 
   // Parse filter options
-  const filterExtensions = mergedOptions.filterType?.split(",").map(ext => 
+  const filterExtensions = mergedOptions.filterType?.split(",").map((ext) =>
     ext.trim().startsWith(".") ? ext.trim() : `.${ext.trim()}`
   );
-  const filterDirs = mergedOptions.filterDir?.split(",").map(dir => dir.trim());
-  const excludeDirs = mergedOptions.excludeDir?.split(",").map(dir => dir.trim());
+  const filterDirs = mergedOptions.filterDir?.split(",").map((dir) =>
+    dir.trim()
+  );
+  const excludeDirs = mergedOptions.excludeDir?.split(",").map((dir) =>
+    dir.trim()
+  );
 
   // Use search engine for code if provided
   if (mergedOptions.scanCode && mergedOptions.searchEngine) {
@@ -176,40 +187,45 @@ export async function findTodos(
       directory,
       TODO_PATTERNS,
     );
-    
+
     // Apply filters to search engine results
-    const filteredTodos = codeTodos.filter(todo => {
+    const filteredTodos = codeTodos.filter((todo) => {
       // Filter by extension
-      if (filterExtensions && !filterExtensions.some(ext => todo.path.endsWith(ext))) {
+      if (
+        filterExtensions &&
+        !filterExtensions.some((ext) => todo.path.endsWith(ext))
+      ) {
         return false;
       }
-      
+
       // Filter by directory
       if (filterDirs) {
-        const inFilterDir = filterDirs.some(dir => 
+        const inFilterDir = filterDirs.some((dir) =>
           todo.path.startsWith(dir + "/") || todo.path.includes("/" + dir + "/")
         );
         if (!inFilterDir) return false;
       }
-      
+
       // Exclude directories
       if (excludeDirs) {
-        const inExcludeDir = excludeDirs.some(dir => 
+        const inExcludeDir = excludeDirs.some((dir) =>
           todo.path.startsWith(dir + "/") || todo.path.includes("/" + dir + "/")
         );
         if (inExcludeDir) return false;
       }
-      
+
       return true;
     });
-    
+
     todos.push(...filteredTodos);
   }
 
   // Build skip patterns including exclude directories
-  const skipPatterns = IGNORE_DIRS.map((dir) => new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`));
+  const skipPatterns = IGNORE_DIRS.map((dir) =>
+    new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`)
+  );
   if (excludeDirs) {
-    excludeDirs.forEach(dir => {
+    excludeDirs.forEach((dir) => {
       skipPatterns.push(new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`));
       skipPatterns.push(new RegExp(`^${dir}[\\/\\\\]`));
     });
@@ -224,24 +240,31 @@ export async function findTodos(
     const relativePath = relative(directory, entry.path);
 
     // Check if file should be ignored
-    if (mergedOptions.ignore && matchesIgnorePattern(relativePath, mergedOptions.ignore)) {
+    if (
+      mergedOptions.ignore &&
+      matchesIgnorePattern(relativePath, mergedOptions.ignore)
+    ) {
       continue;
     }
 
     // Apply directory filters
     if (filterDirs) {
-      const inFilterDir = filterDirs.some(dir => 
-        relativePath.startsWith(dir + "/") || relativePath.includes("/" + dir + "/") || relativePath.startsWith(dir)
+      const inFilterDir = filterDirs.some((dir) =>
+        relativePath.startsWith(dir + "/") ||
+        relativePath.includes("/" + dir + "/") || relativePath.startsWith(dir)
       );
       if (!inFilterDir) continue;
     }
 
     const lowerEntryName = entry.name.toLowerCase();
-    if (mergedOptions.scanFiles && (lowerEntryName === "todo.md" || lowerEntryName === "readme.md")) {
+    if (
+      mergedOptions.scanFiles &&
+      (lowerEntryName === "todo.md" || lowerEntryName === "readme.md")
+    ) {
       const fileTodos = await parseTodoFile(entry.path);
       if (fileTodos.length > 0) {
         todos.push({
-          type: "file",
+          type: "file" as const,
           path: relativePath,
           todos: fileTodos,
         });
@@ -254,10 +277,13 @@ export async function findTodos(
       isCodeFile(entry.path)
     ) {
       // Apply extension filter
-      if (filterExtensions && !filterExtensions.some(ext => entry.path.endsWith(ext))) {
+      if (
+        filterExtensions &&
+        !filterExtensions.some((ext) => entry.path.endsWith(ext))
+      ) {
         continue;
       }
-      
+
       const codeTodos = await findTodosInCode(entry.path);
       for (const todo of codeTodos) {
         todos.push({
@@ -277,16 +303,16 @@ function isCodeFile(path: string): boolean {
 
 import { parseTodoFileWithChecklist } from "./markdown-parser.ts";
 
-async function parseTodoFile(filePath: string): Promise<TodoItem[]> {
+async function parseTodoFile(filePath: string): Promise<LegacyTodoItem[]> {
   try {
     // Try to parse as markdown with checklist
     const { items } = await parseTodoFileWithChecklist(filePath);
-    
+
     // If we got checklist items, convert them
     if (items.length > 0) {
-      // Convert ChecklistItem to TodoItem
-      const convertItems = (checklistItems: typeof items): TodoItem[] => {
-        return checklistItems.map(item => ({
+      // Convert ChecklistItem to LegacyTodoItem
+      const convertItems = (checklistItems: typeof items): LegacyTodoItem[] => {
+        return checklistItems.map((item) => ({
           type: "markdown" as const,
           path: filePath,
           content: item.content,
@@ -296,15 +322,15 @@ async function parseTodoFile(filePath: string): Promise<TodoItem[]> {
           todos: item.children ? convertItems(item.children) : undefined,
         }));
       };
-      
+
       return convertItems(items);
     }
   } catch {
     // Parsing with remark failed, continue with simple parsing
   }
-  
+
   // Fallback to simple parsing
-  const todos: TodoItem[] = [];
+  const todos: LegacyTodoItem[] = [];
   const content = await Deno.readTextFile(filePath);
   const lines = content.split("\n");
 
@@ -315,7 +341,7 @@ async function parseTodoFile(filePath: string): Promise<TodoItem[]> {
       trimmed.startsWith("+ ")
     ) {
       todos.push({
-        type: "markdown",
+        type: "markdown" as const,
         path: filePath,
         content: trimmed.substring(2).trim(),
       });
@@ -323,7 +349,7 @@ async function parseTodoFile(filePath: string): Promise<TodoItem[]> {
       const match = trimmed.match(/^\d+\.\s+(.+)/);
       if (match) {
         todos.push({
-          type: "markdown",
+          type: "markdown" as const,
           path: filePath,
           content: match[1].trim(),
         });
@@ -334,8 +360,8 @@ async function parseTodoFile(filePath: string): Promise<TodoItem[]> {
   return todos;
 }
 
-async function findTodosInCode(filePath: string): Promise<TodoItem[]> {
-  const todos: TodoItem[] = [];
+async function findTodosInCode(filePath: string): Promise<LegacyTodoItem[]> {
+  const todos: LegacyTodoItem[] = [];
   const content = await Deno.readTextFile(filePath);
   const lines = content.split("\n");
 
@@ -343,10 +369,11 @@ async function findTodosInCode(filePath: string): Promise<TodoItem[]> {
     for (const pattern of TODO_PATTERNS) {
       const match = line.match(pattern);
       if (match) {
-        const commentType = match[1].toUpperCase() as TodoItem["commentType"];
+        const commentType = match[1]
+          .toUpperCase() as LegacyTodoItem["commentType"];
         const content = match[2].trim();
         todos.push({
-          type: "code",
+          type: "code" as const,
           path: filePath,
           line: index + 1,
           content,

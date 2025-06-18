@@ -77,15 +77,13 @@ export function isInsideCodeBlock(lines: string[], lineIndex: number): boolean {
         inCodeBlock = false;
         codeBlockType = null;
       }
-    }
-    // インデントコードブロック（4スペース以上）の検出
+    } // インデントコードブロック（4スペース以上）の検出
     else if (line.match(/^    /) || line.match(/^\t/)) {
       if (!inCodeBlock && line.trim() !== "") {
         inCodeBlock = true;
         codeBlockType = "indented";
       }
-    }
-    // インデントコードブロックの終了判定
+    } // インデントコードブロックの終了判定
     else if (
       codeBlockType === "indented" &&
       line.trim() !== "" &&
@@ -105,7 +103,7 @@ export function isInsideCodeBlock(lines: string[], lineIndex: number): boolean {
  */
 export function isInsideHTMLComment(
   lines: string[],
-  lineIndex: number
+  lineIndex: number,
 ): boolean {
   let inComment = false;
 
@@ -129,7 +127,7 @@ export function isInsideHTMLComment(
 export function parseTask(
   line: string,
   lineNumber: number,
-  lines?: string[]
+  lines?: string[],
 ): ParsedTask | null {
   // Match checklist items with various formats
   const checklistMatch = line.match(/^(\s*)-\s*\[([ x])\]\s*(.*)$/);
@@ -205,7 +203,7 @@ export function parseMarkdown(content: string): ParsedMarkdown {
 
 export function findSection(
   sections: ParsedSection[],
-  name: string
+  name: string,
 ): ParsedSection | null {
   const upperName = name.toUpperCase();
   return sections.find((s) => s.name.toUpperCase() === upperName) || null;
@@ -215,7 +213,7 @@ export function findSection(
  * 完了セクションを検索する（COMPLETED > DONE の優先順位で）
  */
 export function findCompletedSection(
-  sections: ParsedSection[]
+  sections: ParsedSection[],
 ): ParsedSection | null {
   // 優先順位: COMPLETED > DONE
   const completedSection = findSection(sections, "COMPLETED");
@@ -266,7 +264,7 @@ export function sortTasksByPriority(tasks: ParsedTask[]): ParsedTask[] {
 
 export function formatTask(
   task: ParsedTask,
-  removeCheckbox: boolean = false
+  removeCheckbox: boolean = false,
 ): string {
   if (removeCheckbox) {
     // Remove [x] checkbox and priority if present
@@ -279,7 +277,7 @@ export function formatTask(
 export function insertSection(
   lines: string[],
   sectionName: string,
-  level: number = 2
+  level: number = 2,
 ): string[] {
   const newLines = [...lines];
 
@@ -328,7 +326,7 @@ export function addTaskToSection(
   lines: string[],
   section: ParsedSection,
   taskText: string,
-  nextSectionStart?: number
+  nextSectionStart?: number,
 ): string[] {
   const newLines = [...lines];
   let insertIndex = section.startLine + 1;
@@ -406,7 +404,7 @@ export function moveCompletedTasksToDone(content: string): {
       // Find insertion point in completed section
       const sectionPattern = new RegExp(
         `^##\\s+(${completedSection.name})$`,
-        "i"
+        "i",
       );
       const sectionIndex = resultLines.findIndex((line) =>
         sectionPattern.test(line)

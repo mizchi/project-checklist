@@ -1,17 +1,17 @@
 import { assertEquals, assertNotEquals } from "@std/assert";
 import { join } from "@std/path";
 import {
-  parseMarkdown,
-  parseTask,
-  parsePriority,
-  findSection,
-  moveCompletedTasksToDone,
-  clearDoneSection,
-  insertSection,
   addTaskToSection,
+  clearDoneSection,
+  findSection,
+  insertSection,
+  moveCompletedTasksToDone,
   type ParsedMarkdown,
-  type ParsedTask,
   type ParsedSection,
+  type ParsedTask,
+  parseMarkdown,
+  parsePriority,
+  parseTask,
 } from "../src/core/markdown-parser.ts";
 
 // テストファイルのパスを取得するヘルパー関数
@@ -38,7 +38,7 @@ function assertExactMatch(actual: string, expected: string, message?: string) {
         throw new Error(
           `${message || "Content mismatch"} at line ${i + 1}:\n` +
             `Expected: "${expectedLine}"\n` +
-            `Actual:   "${actualLine}"`
+            `Actual:   "${actualLine}"`,
         );
       }
     }
@@ -67,7 +67,7 @@ Deno.test(
         task.content.includes("日本語タスク") ||
         task.content.includes("絵文字付き") ||
         task.content.includes("特殊文字") ||
-        task.content.includes("URL")
+        task.content.includes("URL"),
     );
 
     // コードブロック内やHTMLコメント内の項目は含まれないことを確認
@@ -77,20 +77,20 @@ Deno.test(
         task.content.includes("JavaScriptコメント") ||
         task.content.includes("文字列内の") ||
         task.content.includes("HTMLコメント内") ||
-        task.content.includes("インラインコード内")
+        task.content.includes("インラインコード内"),
     );
 
     assertEquals(
       invalidTasks.length,
       0,
-      "コードブロックやコメント内のチェックリスト風記述が誤認識されています"
+      "コードブロックやコメント内のチェックリスト風記述が誤認識されています",
     );
     assertEquals(
       actualChecklistTasks.length >= 8,
       true,
-      "実際のチェックリスト項目が正しく認識されていません"
+      "実際のチェックリスト項目が正しく認識されていません",
     );
-  }
+  },
 );
 
 Deno.test(
@@ -112,9 +112,9 @@ Deno.test(
     assertEquals(
       normalListItems.length,
       0,
-      "通常のリスト項目がチェックリストとして誤認識されています"
+      "通常のリスト項目がチェックリストとして誤認識されています",
     );
-  }
+  },
 );
 
 Deno.test(
@@ -135,7 +135,7 @@ Deno.test(
     assertEquals(
       japaneseTasks.length,
       1,
-      "日本語を含むタスクが正しく処理されていません"
+      "日本語を含むタスクが正しく処理されていません",
     );
 
     // 絵文字タスクの確認
@@ -143,7 +143,7 @@ Deno.test(
     assertEquals(
       emojiTasks.length,
       1,
-      "絵文字を含むタスクが正しく処理されていません"
+      "絵文字を含むタスクが正しく処理されていません",
     );
 
     // 特殊文字タスクの確認
@@ -153,7 +153,7 @@ Deno.test(
     assertEquals(
       specialCharTasks.length,
       1,
-      "特殊文字を含むタスクが正しく処理されていません"
+      "特殊文字を含むタスクが正しく処理されていません",
     );
 
     // URLタスクの確認
@@ -163,9 +163,9 @@ Deno.test(
     assertEquals(
       urlTasks.length,
       1,
-      "URLを含むタスクが正しく処理されていません"
+      "URLを含むタスクが正しく処理されていません",
     );
-  }
+  },
 );
 
 Deno.test("パーサー安全性テスト - 複雑な入れ子構造の処理", async () => {
@@ -177,7 +177,7 @@ Deno.test("パーサー安全性テスト - 複雑な入れ子構造の処理", 
   assertEquals(
     projectSection !== null,
     true,
-    "プロジェクト管理セクションが見つかりません"
+    "プロジェクト管理セクションが見つかりません",
   );
 
   if (projectSection) {
@@ -185,7 +185,7 @@ Deno.test("パーサー安全性テスト - 複雑な入れ子構造の処理", 
     const deepNestedTasks = projectSection.tasks.filter(
       (task) =>
         task.content.includes("カテゴリ関連") ||
-        task.content.includes("在庫管理")
+        task.content.includes("在庫管理"),
     );
 
     // ネスト構造が保持されることを確認（インデントレベルで判定）
@@ -194,7 +194,7 @@ Deno.test("パーサー安全性テスト - 複雑な入れ子構造の処理", 
     assertEquals(
       maxIndent >= 8,
       true,
-      "深いネスト構造が正しく処理されていません"
+      "深いネスト構造が正しく処理されていません",
     );
   }
 });
@@ -208,7 +208,7 @@ Deno.test("パーサー安全性テスト - 異なるインデントスタイル
   assertEquals(
     indentSection !== null,
     true,
-    "異なるインデントスタイルセクションが見つかりません"
+    "異なるインデントスタイルセクションが見つかりません",
   );
 
   if (indentSection) {
@@ -219,7 +219,7 @@ Deno.test("パーサー安全性テスト - 異なるインデントスタイル
     assertEquals(
       tabIndentedTasks.length >= 1,
       true,
-      "タブインデントのタスクが正しく処理されていません"
+      "タブインデントのタスクが正しく処理されていません",
     );
   }
 });
@@ -233,43 +233,43 @@ Deno.test("パーサー安全性テスト - 優先度の処理精度", async () 
   assertEquals(
     prioritySection !== null,
     true,
-    "優先度付きネスト構造セクションが見つかりません"
+    "優先度付きネスト構造セクションが見つかりません",
   );
 
   if (prioritySection) {
     // 各優先度が正しく解析されることを確認
     const highPriorityTasks = prioritySection.tasks.filter(
-      (task) => task.priority === "HIGH"
+      (task) => task.priority === "HIGH",
     );
     const midPriorityTasks = prioritySection.tasks.filter(
-      (task) => task.priority === "MID"
+      (task) => task.priority === "MID",
     );
     const lowPriorityTasks = prioritySection.tasks.filter(
-      (task) => task.priority === "LOW"
+      (task) => task.priority === "LOW",
     );
     const numericPriorityTasks = prioritySection.tasks.filter(
-      (task) => task.priority === "1" || task.priority === "99"
+      (task) => task.priority === "1" || task.priority === "99",
     );
 
     assertEquals(
       highPriorityTasks.length >= 1,
       true,
-      "HIGH優先度が正しく処理されていません"
+      "HIGH優先度が正しく処理されていません",
     );
     assertEquals(
       midPriorityTasks.length >= 1,
       true,
-      "MID優先度が正しく処理されていません"
+      "MID優先度が正しく処理されていません",
     );
     assertEquals(
       lowPriorityTasks.length >= 1,
       true,
-      "LOW優先度が正しく処理されていません"
+      "LOW優先度が正しく処理されていません",
     );
     assertEquals(
       numericPriorityTasks.length >= 2,
       true,
-      "数値優先度が正しく処理されていません"
+      "数値優先度が正しく処理されていません",
     );
   }
 });
@@ -285,12 +285,12 @@ Deno.test("フォーマット保持テスト - 元のインデントスタイル
   assertEquals(
     reconstructedContent.includes("# 改行コードテスト"),
     true,
-    "ヘッダーが保持されていません"
+    "ヘッダーが保持されていません",
   );
   assertEquals(
     reconstructedContent.includes("## LF改行のセクション"),
     true,
-    "セクションヘッダーが保持されていません"
+    "セクションヘッダーが保持されていません",
   );
 
   // 空行パターンが保持されることを確認
@@ -299,7 +299,7 @@ Deno.test("フォーマット保持テスト - 元のインデントスタイル
   assertEquals(
     emptyLineCount,
     originalEmptyLineCount,
-    "空行パターンが保持されていません"
+    "空行パターンが保持されていません",
   );
 });
 
@@ -316,33 +316,33 @@ Deno.test(
     assertEquals(
       reconstructedContent.includes("```markdown"),
       true,
-      "Markdownコードブロックが保持されていません"
+      "Markdownコードブロックが保持されていません",
     );
     assertEquals(
       reconstructedContent.includes("```javascript"),
       true,
-      "JavaScriptコードブロックが保持されていません"
+      "JavaScriptコードブロックが保持されていません",
     );
 
     // HTMLコメントが保持されることを確認
     assertEquals(
       reconstructedContent.includes("<!--"),
       true,
-      "HTMLコメントが保持されていません"
+      "HTMLコメントが保持されていません",
     );
     assertEquals(
       reconstructedContent.includes("-->"),
       true,
-      "HTMLコメント終了が保持されていません"
+      "HTMLコメント終了が保持されていません",
     );
 
     // インラインコードが保持されることを確認
     assertEquals(
       reconstructedContent.includes("`- [ ] インラインコード内のタスク`"),
       true,
-      "インラインコードが保持されていません"
+      "インラインコードが保持されていません",
     );
-  }
+  },
 );
 
 Deno.test(
@@ -371,7 +371,7 @@ Deno.test(
       assertEquals(
         todoSection.tasks.length,
         3,
-        "チェックリスト項目数が正しくありません"
+        "チェックリスト項目数が正しくありません",
       );
 
       // 各タスクの内容を確認
@@ -379,28 +379,28 @@ Deno.test(
       assertEquals(
         taskContents.includes("タスク1"),
         true,
-        "タスク1が認識されていません"
+        "タスク1が認識されていません",
       );
       assertEquals(
         taskContents.includes("タスク2"),
         true,
-        "タスク2が認識されていません"
+        "タスク2が認識されていません",
       );
       assertEquals(
         taskContents.includes("[HIGH] タスク3"),
         true,
-        "タスク3が認識されていません"
+        "タスク3が認識されていません",
       );
 
       // コードブロックやコメント内の項目は含まれないことを確認
       const invalidContents = todoSection.tasks.filter(
         (task) =>
           task.content.includes("コードブロック内") ||
-          task.content.includes("コメント内")
+          task.content.includes("コメント内"),
       );
       assertEquals(invalidContents.length, 0, "無効な項目が含まれています");
     }
-  }
+  },
 );
 
 Deno.test("更新処理の精度テスト - 行番号の管理精度", async () => {
@@ -452,25 +452,25 @@ Deno.test("更新処理の精度テスト - moveCompletedTasksToDone の安全�
   assertEquals(
     result.content.includes("コードブロック内の完了風タスク"),
     true,
-    "コードブロック内容が誤って変更されました"
+    "コードブロック内容が誤って変更されました",
   );
 
   // DONEセクションが作成されることを確認
   assertEquals(
     result.content.includes("## DONE"),
     true,
-    "DONEセクションが作成されていません"
+    "DONEセクションが作成されていません",
   );
 
   // 優先度が除去されることを確認
   assertEquals(
     result.content.includes("- 完了タスク2"),
     true,
-    "優先度が正しく除去されていません"
+    "優先度が正しく除去されていません",
   );
   assertEquals(
     result.content.includes("[HIGH]"),
     false,
-    "優先度が除去されていません"
+    "優先度が除去されていません",
   );
 });

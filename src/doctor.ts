@@ -151,11 +151,11 @@ async function diagnoseDenoNative(): Promise<DiagnosticResult> {
 async function diagnoseAstGrep(): Promise<DiagnosticResult> {
   const version = await getCommandVersion("ast-grep", ["--version"]);
   const available = version !== null;
-  
+
   return {
     name: "ast-grep",
     available,
-    version,
+    version: version || undefined,
     notes: available
       ? "✅ Available for TypeScript test detection"
       : "❌ Not installed. Install from: https://ast-grep.github.io/guide/quick-start.html",
@@ -182,17 +182,18 @@ export async function runDiagnostics(): Promise<void> {
   }
 
   console.log("\nOptional (for test cases):");
-  console.log(`  ${astGrepResult.available ? "✅" : "❌"} ${astGrepResult.name}`);
+  console.log(
+    `  ${astGrepResult.available ? "✅" : "❌"} ${astGrepResult.name}`,
+  );
 
   // Git repository status
   const isGitRepo = await checkGitRepository();
   const gitRoot = await getGitRoot();
-  
+
   console.log("\nGit:");
   if (gitRoot) {
     console.log(`  ✅ root: ${gitRoot}`);
   } else {
     console.log("  ❌ not initialized");
   }
-
 }

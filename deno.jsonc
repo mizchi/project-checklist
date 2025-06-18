@@ -1,12 +1,12 @@
 {
-  "name": "@mizchi/pcheck",
+  "name": "@mizchi/project-checklist",
   "version": "0.1.0",
   "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --watch --allow-read --allow-env --allow-run src/cli.ts",
-    "test": "deno test --allow-read --allow-write --reporter=dot",
-    "test:cov": "deno test --coverage=coverage && deno coverage coverage",
-    "check": "deno check **/*.ts && deno lint && deno fmt --check && deno test --allow-read --allow-write --reporter=dot",
+    "test": "deno test --allow-read --allow-write --reporter=dot src/ test/",
+    "test:cov": "deno test --coverage=coverage src/ test/ && deno coverage coverage",
+    "check": "deno check **/*.ts && deno lint && deno fmt --check && deno test --allow-read --allow-write --reporter=dot src/ test/",
     "compile": "deno compile --allow-read --allow-env --allow-run --output=pcheck src/cli.ts"
   },
   "imports": {

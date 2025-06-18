@@ -31,7 +31,9 @@ export async function detectBestEngine(): Promise<SearchEngine> {
 }
 
 // Get engine by name
-export async function getEngineByName(name: string): Promise<SearchEngine | null> {
+export async function getEngineByName(
+  name: string,
+): Promise<SearchEngine | null> {
   const engines: Record<string, SearchEngine> = {
     "rg": new RipgrepEngine(),
     "ripgrep": new RipgrepEngine(),

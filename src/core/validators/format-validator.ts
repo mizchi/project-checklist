@@ -27,7 +27,7 @@ export class FormatValidator {
   validate(
     tasks: ParsedTask[],
     lines: string[],
-    options: ValidatorOptions = {}
+    options: ValidatorOptions = {},
   ): FormatValidationResult {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
@@ -43,7 +43,7 @@ export class FormatValidator {
     task: ParsedTask,
     originalLine: string,
     errors: ValidationError[],
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     // Validate checkbox format
     this.validateCheckboxFormat(task, originalLine, errors);
@@ -61,7 +61,7 @@ export class FormatValidator {
   private validateCheckboxFormat(
     task: ParsedTask,
     originalLine: string,
-    errors: ValidationError[]
+    errors: ValidationError[],
   ): void {
     const isValidFormat = this.validCheckboxPatterns.some((pattern) =>
       pattern.test(originalLine)
@@ -84,7 +84,7 @@ export class FormatValidator {
   private validatePriorityFormat(
     task: ParsedTask,
     originalLine: string,
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     // Check if line contains priority-like patterns
     const priorityMatch = originalLine.match(/\[([^\]]+)\]/g);
@@ -104,7 +104,8 @@ export class FormatValidator {
         if (!isValidPriority) {
           warnings.push({
             type: "INDENT_WARNING", // Using existing type, could add FORMAT_WARNING
-            message: `Potentially invalid priority format: ${match}. Expected [HIGH], [MID], [LOW], or [number]`,
+            message:
+              `Potentially invalid priority format: ${match}. Expected [HIGH], [MID], [LOW], or [number]`,
             line: task.lineNumber,
             severity: "warning",
             details: {
@@ -120,7 +121,7 @@ export class FormatValidator {
   private validateContent(
     task: ParsedTask,
     errors: ValidationError[],
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     // Check for empty content
     if (!task.content || task.content.trim().length === 0) {
@@ -139,7 +140,8 @@ export class FormatValidator {
     if (task.content && task.content.length > 200) {
       warnings.push({
         type: "INDENT_WARNING", // Using existing type
-        message: `Task content is very long (${task.content.length} characters). Consider breaking it down`,
+        message:
+          `Task content is very long (${task.content.length} characters). Consider breaking it down`,
         line: task.lineNumber,
         severity: "warning",
         details: {
@@ -153,7 +155,8 @@ export class FormatValidator {
     if (task.content && /[\t\r\n]/.test(task.content)) {
       errors.push({
         type: "FORMAT_ERROR",
-        message: `Task content contains invalid characters (tabs, carriage returns, or newlines)`,
+        message:
+          `Task content contains invalid characters (tabs, carriage returns, or newlines)`,
         line: task.lineNumber,
         severity: "error",
         details: {
@@ -167,7 +170,7 @@ export class FormatValidator {
   private validateSpacing(
     task: ParsedTask,
     originalLine: string,
-    warnings: ValidationWarning[]
+    warnings: ValidationWarning[],
   ): void {
     // Check for inconsistent spacing after checkbox
     const checkboxMatch = originalLine.match(/^(\s*)-\s*\[[x ]\](\s*)(.*)/i);
@@ -179,7 +182,8 @@ export class FormatValidator {
       if (spaceAfterCheckbox.length !== 1) {
         warnings.push({
           type: "INDENT_WARNING",
-          message: `Inconsistent spacing after checkbox (found ${spaceAfterCheckbox.length} spaces, recommended 1)`,
+          message:
+            `Inconsistent spacing after checkbox (found ${spaceAfterCheckbox.length} spaces, recommended 1)`,
           line: task.lineNumber,
           severity: "warning",
           details: {

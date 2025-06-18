@@ -51,7 +51,7 @@ export async function runAddCommandCLI(args: string[]): Promise<void> {
     section,
     message,
     parsedArgs.priority,
-    indentSize
+    indentSize,
   );
 }
 

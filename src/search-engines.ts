@@ -1,9 +1,9 @@
-import { TodoItem } from "./mod.ts";
+import { LegacyTodoItem } from "./mod.ts";
 
 export interface SearchEngine {
   name: string;
   isAvailable(): Promise<boolean>;
-  searchTodos(directory: string, patterns: RegExp[]): Promise<TodoItem[]>;
+  searchTodos(directory: string, patterns: RegExp[]): Promise<LegacyTodoItem[]>;
 }
 
 // Check if a command exists
@@ -37,13 +37,15 @@ function parseGrepLine(
 }
 
 // Extract TODO content from a line
-function extractTodoContent(line: string): { type: string; content: string } | null {
+function extractTodoContent(
+  line: string,
+): { type: string; content: string } | null {
   const patterns = [
     /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
     /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
     /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)\*\//i,
   ];
-  
+
   for (const pattern of patterns) {
     const match = line.match(pattern);
     if (match) {
@@ -63,8 +65,11 @@ export class RipgrepEngine implements SearchEngine {
     return await commandExists("rg");
   }
 
-  async searchTodos(directory: string, _patterns: RegExp[]): Promise<TodoItem[]> {
-    const todos: TodoItem[] = [];
+  async searchTodos(
+    directory: string,
+    _patterns: RegExp[],
+  ): Promise<LegacyTodoItem[]> {
+    const todos: LegacyTodoItem[] = [];
 
     const command = new Deno.Command("rg", {
       args: [
@@ -73,12 +78,18 @@ export class RipgrepEngine implements SearchEngine {
         "--color=never",
         "--type-add=code:*.{ts,tsx,js,jsx,py,go,rs,java,c,cpp,h,hpp}",
         "--type=code",
-        "-e", "TODO:",
-        "-e", "FIXME:",
-        "-e", "HACK:",
-        "-e", "NOTE:",
-        "-e", "XXX:",
-        "-e", "WARNING:",
+        "-e",
+        "TODO:",
+        "-e",
+        "FIXME:",
+        "-e",
+        "HACK:",
+        "-e",
+        "NOTE:",
+        "-e",
+        "XXX:",
+        "-e",
+        "WARNING:",
         directory,
       ],
       stdout: "piped",
@@ -96,7 +107,7 @@ export class RipgrepEngine implements SearchEngine {
 
     for (const line of lines) {
       if (!line) continue;
-      
+
       // Handle single file output (no filename prefix)
       const singleFileMatch = line.match(/^(\d+):(.*)$/);
       if (singleFileMatch) {
@@ -109,12 +120,12 @@ export class RipgrepEngine implements SearchEngine {
             path: directory, // Use the directory/file path passed in
             line: lineNum,
             content: extracted.content,
-            commentType: extracted.type as TodoItem["commentType"],
+            commentType: extracted.type as LegacyTodoItem["commentType"],
           });
         }
         continue;
       }
-      
+
       // Handle multi-file output (with filename prefix)
       const parsed = parseGrepLine(line);
       if (parsed) {
@@ -125,7 +136,7 @@ export class RipgrepEngine implements SearchEngine {
             path: parsed.file,
             line: parsed.lineNum,
             content: extracted.content,
-            commentType: extracted.type as TodoItem["commentType"],
+            commentType: extracted.type as LegacyTodoItem["commentType"],
           });
         }
       }
@@ -156,8 +167,11 @@ export class GitGrepEngine implements SearchEngine {
     }
   }
 
-  async searchTodos(directory: string, _patterns: RegExp[]): Promise<TodoItem[]> {
-    const todos: TodoItem[] = [];
+  async searchTodos(
+    directory: string,
+    _patterns: RegExp[],
+  ): Promise<LegacyTodoItem[]> {
+    const todos: LegacyTodoItem[] = [];
 
     const command = new Deno.Command("git", {
       args: [
@@ -201,7 +215,7 @@ export class GitGrepEngine implements SearchEngine {
             path: parsed.file,
             line: parsed.lineNum,
             content: extracted.content,
-            commentType: extracted.type as TodoItem["commentType"],
+            commentType: extracted.type as LegacyTodoItem["commentType"],
           });
         }
       }
@@ -218,8 +232,11 @@ export class GrepEngine implements SearchEngine {
     return await commandExists("grep");
   }
 
-  async searchTodos(directory: string, _patterns: RegExp[]): Promise<TodoItem[]> {
-    const todos: TodoItem[] = [];
+  async searchTodos(
+    directory: string,
+    _patterns: RegExp[],
+  ): Promise<LegacyTodoItem[]> {
+    const todos: LegacyTodoItem[] = [];
 
     // Use find + grep for recursive search
     const command = new Deno.Command("sh", {
@@ -248,7 +265,7 @@ export class GrepEngine implements SearchEngine {
             path: parsed.file.replace(directory + "/", ""),
             line: parsed.lineNum,
             content: extracted.content,
-            commentType: extracted.type as TodoItem["commentType"],
+            commentType: extracted.type as LegacyTodoItem["commentType"],
           });
         }
       }
@@ -270,8 +287,11 @@ export class DenoNativeEngine implements SearchEngine {
     return Promise.resolve(true); // Always available
   }
 
-  async searchTodos(directory: string, _patterns: RegExp[]): Promise<TodoItem[]> {
-    const todos: TodoItem[] = [];
+  async searchTodos(
+    directory: string,
+    _patterns: RegExp[],
+  ): Promise<LegacyTodoItem[]> {
+    const todos: LegacyTodoItem[] = [];
     const CODE_EXTENSIONS = [
       ".ts",
       ".tsx",
@@ -320,7 +340,7 @@ export class DenoNativeEngine implements SearchEngine {
             path: relativePath,
             line: index + 1,
             content: extracted.content,
-            commentType: extracted.type as TodoItem["commentType"],
+            commentType: extracted.type as LegacyTodoItem["commentType"],
           });
         }
       });

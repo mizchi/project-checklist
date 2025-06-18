@@ -1,5 +1,5 @@
 import { ValidationResult } from "../types/validation.ts";
-import { bold, green, red, yellow, blue, dim } from "@std/fmt/colors";
+import { blue, bold, dim, green, red, yellow } from "@std/fmt/colors";
 
 export interface OutputOptions {
   json?: boolean;
@@ -11,7 +11,7 @@ export class OutputFormatter {
   formatValidationResult(
     result: ValidationResult,
     filePath: string,
-    options: OutputOptions = {}
+    options: OutputOptions = {},
   ): string {
     if (options.json) {
       return this.formatAsJson(result, filePath, options.pretty);
@@ -23,7 +23,7 @@ export class OutputFormatter {
   private formatAsJson(
     result: ValidationResult,
     filePath: string,
-    pretty: boolean = false
+    pretty: boolean = false,
   ): string {
     const output = {
       file: filePath,
@@ -40,7 +40,7 @@ export class OutputFormatter {
   private formatAsConsole(
     result: ValidationResult,
     filePath: string,
-    options: OutputOptions = {}
+    options: OutputOptions = {},
   ): string {
     const lines: string[] = [];
 
@@ -52,9 +52,9 @@ export class OutputFormatter {
     // Summary
     lines.push(bold("📊 Summary:"));
     lines.push(
-      `  ${result.valid ? green("✅") : red("❌")} ${
-        result.summary.totalTasks
-      } tasks validated`
+      `  ${
+        result.valid ? green("✅") : red("❌")
+      } ${result.summary.totalTasks} tasks validated`,
     );
 
     if (result.warnings.length > 0) {
@@ -101,14 +101,14 @@ export class OutputFormatter {
       lines.push(`  📁 ${result.summary.sectionsCount} sections found`);
       lines.push(`  📝 ${result.summary.totalTasks} total tasks`);
       lines.push(
-        `  ${green("✅")} ${result.summary.completedTasks} completed tasks`
+        `  ${green("✅")} ${result.summary.completedTasks} completed tasks`,
       );
       lines.push(`  ${blue("☐")} ${result.summary.pendingTasks} pending tasks`);
       lines.push(`  🔢 Max nesting depth: ${result.summary.maxDepth} levels`);
 
       if (result.summary.totalTasks > 0) {
         const completionRate = Math.round(
-          (result.summary.completedTasks / result.summary.totalTasks) * 100
+          (result.summary.completedTasks / result.summary.totalTasks) * 100,
         );
         lines.push(`  📊 Completion rate: ${completionRate}%`);
       }
@@ -172,15 +172,15 @@ export class OutputFormatter {
     const totalErrors = results.reduce((sum, r) => sum + r.errors.length, 0);
     const totalWarnings = results.reduce(
       (sum, r) => sum + r.warnings.length,
-      0
+      0,
     );
     const totalTasks = results.reduce(
       (sum, r) => sum + r.summary.totalTasks,
-      0
+      0,
     );
     const totalCompleted = results.reduce(
       (sum, r) => sum + r.summary.completedTasks,
-      0
+      0,
     );
 
     lines.push(bold("📊 Overall Statistics:"));

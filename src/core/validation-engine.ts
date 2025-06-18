@@ -1,13 +1,13 @@
-import { parseMarkdown, ParsedMarkdown } from "./markdown-parser.ts";
+import { ParsedMarkdown, parseMarkdown } from "./markdown-parser.ts";
 import { IndentValidator } from "./validators/indent-validator.ts";
 import { ParentChildValidator } from "./validators/parent-child-validator.ts";
 import { FormatValidator } from "./validators/format-validator.ts";
 import { SectionValidator } from "./validators/section-validator.ts";
 import {
-  ValidationResult,
   ValidationError,
-  ValidationWarning,
   ValidationInfo,
+  ValidationResult,
+  ValidationWarning,
   ValidatorOptions,
 } from "../types/validation.ts";
 
@@ -19,14 +19,15 @@ export class ValidationEngine {
 
   async validateFile(
     filePath: string,
-    options: ValidatorOptions = {}
+    options: ValidatorOptions = {},
   ): Promise<ValidationResult> {
     try {
       const content = await Deno.readTextFile(filePath);
       return this.validateContent(content, options);
     } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error
+        ? error.message
+        : String(error);
       return {
         valid: false,
         errors: [
@@ -53,7 +54,7 @@ export class ValidationEngine {
 
   validateContent(
     content: string,
-    options: ValidatorOptions = {}
+    options: ValidatorOptions = {},
   ): ValidationResult {
     const parsed = parseMarkdown(content);
     return this.validateParsedMarkdown(parsed, options);
@@ -61,7 +62,7 @@ export class ValidationEngine {
 
   validateParsedMarkdown(
     parsed: ParsedMarkdown,
-    options: ValidatorOptions = {}
+    options: ValidatorOptions = {},
   ): ValidationResult {
     const allErrors: ValidationError[] = [];
     const allWarnings: ValidationWarning[] = [];
@@ -78,7 +79,7 @@ export class ValidationEngine {
     // Run parent-child validation
     const parentChildResult = this.parentChildValidator.validate(
       allTasks,
-      options
+      options,
     );
     allWarnings.push(...parentChildResult.warnings);
 
@@ -86,7 +87,7 @@ export class ValidationEngine {
     const formatResult = this.formatValidator.validate(
       allTasks,
       parsed.lines,
-      options
+      options,
     );
     allErrors.push(...formatResult.errors);
     allWarnings.push(...formatResult.warnings);
@@ -95,7 +96,7 @@ export class ValidationEngine {
     const sectionResult = this.sectionValidator.validate(
       parsed.sections,
       parsed.lines,
-      options
+      options,
     );
     allErrors.push(...sectionResult.errors);
     allWarnings.push(...sectionResult.warnings);
@@ -103,7 +104,7 @@ export class ValidationEngine {
     // Generate summary statistics
     const taskStats = this.parentChildValidator.getTaskStatistics(allTasks);
     const sectionStats = this.sectionValidator.getSectionStatistics(
-      parsed.sections
+      parsed.sections,
     );
 
     const summary = {
@@ -126,11 +127,12 @@ export class ValidationEngine {
 
     if (summary.totalTasks > 0) {
       const completionRate = Math.round(
-        (summary.completedTasks / summary.totalTasks) * 100
+        (summary.completedTasks / summary.totalTasks) * 100,
       );
       allInfo.push({
         type: "STRUCTURE_INFO",
-        message: `Task completion: ${summary.completedTasks}/${summary.totalTasks} (${completionRate}%)`,
+        message:
+          `Task completion: ${summary.completedTasks}/${summary.totalTasks} (${completionRate}%)`,
         severity: "info",
         details: { completionRate, ...summary },
       });

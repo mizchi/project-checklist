@@ -95,7 +95,7 @@ Deno.test("findTodosInFile should process single code file", async () => {
 
 Deno.test("findTodosInFile should throw error for non-existent file", async () => {
   await expect(
-    findTodosInFile("/non/existent/file.txt")
+    findTodosInFile("/non/existent/file.txt"),
   ).rejects.toThrow("File not found");
 });
 
@@ -103,7 +103,7 @@ Deno.test("findTodosInFile should throw error for directory", async () => {
   const testDir = await Deno.makeTempDir();
 
   await expect(
-    findTodosInFile(testDir)
+    findTodosInFile(testDir),
   ).rejects.toThrow("Path is not a file");
 
   await Deno.remove(testDir, { recursive: true });
@@ -215,7 +215,7 @@ Deno.test("findTodosInFile should process single code file", async () => {
 
 Deno.test("findTodosInFile should throw error for non-existent file", async () => {
   await expect(
-    findTodosInFile("/non/existent/file.txt")
+    findTodosInFile("/non/existent/file.txt"),
   ).rejects.toThrow("File not found");
 });
 
@@ -223,7 +223,7 @@ Deno.test("findTodosInFile should throw error for directory", async () => {
   const testDir = await Deno.makeTempDir();
 
   await expect(
-    findTodosInFile(testDir)
+    findTodosInFile(testDir),
   ).rejects.toThrow("Path is not a file");
 
   await Deno.remove(testDir, { recursive: true });
@@ -282,7 +282,7 @@ Deno.test("findTodos should find different comment types", async () => {
   const todos = await findTodos(testDir, { scanFiles: false });
 
   // Filter and check TypeScript comments
-  const tsTodos = todos.filter(t => t.path.endsWith("test.ts"));
+  const tsTodos = todos.filter((t) => t.path.endsWith("test.ts"));
   expect(tsTodos.length).toBe(6);
   expect(tsTodos[0].commentType).toBe("TODO");
   expect(tsTodos[1].commentType).toBe("FIXME");
@@ -292,13 +292,13 @@ Deno.test("findTodos should find different comment types", async () => {
   expect(tsTodos[5].commentType).toBe("WARNING");
 
   // Check Python comments
-  const pyTodos = todos.filter(t => t.path.endsWith("test.py"));
+  const pyTodos = todos.filter((t) => t.path.endsWith("test.py"));
   expect(pyTodos.length).toBe(2);
   expect(pyTodos[0].commentType).toBe("TODO");
   expect(pyTodos[1].commentType).toBe("FIXME");
 
   // Check C comments
-  const cTodos = todos.filter(t => t.path.endsWith("test.c"));
+  const cTodos = todos.filter((t) => t.path.endsWith("test.c"));
   expect(cTodos.length).toBe(2);
   expect(cTodos[0].commentType).toBe("TODO");
   expect(cTodos[1].commentType).toBe("HACK");
@@ -368,7 +368,7 @@ Deno.test("findTodosInFile should process single code file", async () => {
 
 Deno.test("findTodosInFile should throw error for non-existent file", async () => {
   await expect(
-    findTodosInFile("/non/existent/file.txt")
+    findTodosInFile("/non/existent/file.txt"),
   ).rejects.toThrow("File not found");
 });
 
@@ -376,7 +376,7 @@ Deno.test("findTodosInFile should throw error for directory", async () => {
   const testDir = await Deno.makeTempDir();
 
   await expect(
-    findTodosInFile(testDir)
+    findTodosInFile(testDir),
   ).rejects.toThrow("Path is not a file");
 
   await Deno.remove(testDir, { recursive: true });
@@ -480,7 +480,7 @@ Deno.test("findTodosInFile should process single code file", async () => {
 
 Deno.test("findTodosInFile should throw error for non-existent file", async () => {
   await expect(
-    findTodosInFile("/non/existent/file.txt")
+    findTodosInFile("/non/existent/file.txt"),
   ).rejects.toThrow("File not found");
 });
 
@@ -488,7 +488,7 @@ Deno.test("findTodosInFile should throw error for directory", async () => {
   const testDir = await Deno.makeTempDir();
 
   await expect(
-    findTodosInFile(testDir)
+    findTodosInFile(testDir),
   ).rejects.toThrow("Path is not a file");
 
   await Deno.remove(testDir, { recursive: true });
@@ -593,7 +593,7 @@ Deno.test("findTodosInFile should process single code file", async () => {
 
 Deno.test("findTodosInFile should throw error for non-existent file", async () => {
   await expect(
-    findTodosInFile("/non/existent/file.txt")
+    findTodosInFile("/non/existent/file.txt"),
   ).rejects.toThrow("File not found");
 });
 
@@ -601,7 +601,7 @@ Deno.test("findTodosInFile should throw error for directory", async () => {
   const testDir = await Deno.makeTempDir();
 
   await expect(
-    findTodosInFile(testDir)
+    findTodosInFile(testDir),
   ).rejects.toThrow("Path is not a file");
 
   await Deno.remove(testDir, { recursive: true });
@@ -711,7 +711,7 @@ Deno.test("findTodosInFile should process single code file", async () => {
 
 Deno.test("findTodosInFile should throw error for non-existent file", async () => {
   await expect(
-    findTodosInFile("/non/existent/file.txt")
+    findTodosInFile("/non/existent/file.txt"),
   ).rejects.toThrow("File not found");
 });
 
@@ -719,7 +719,7 @@ Deno.test("findTodosInFile should throw error for directory", async () => {
   const testDir = await Deno.makeTempDir();
 
   await expect(
-    findTodosInFile(testDir)
+    findTodosInFile(testDir),
   ).rejects.toThrow("Path is not a file");
 
   await Deno.remove(testDir, { recursive: true });
