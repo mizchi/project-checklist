@@ -83,16 +83,16 @@ Deno.test("update command - move completed tasks to DONE", async () => {
   const result = await pcheck("update", "--done");
 
   assertEquals(result.code, 0);
-  assertStringIncludes(result.stdout, "moved 2 completed tasks to DONE");
+  assertStringIncludes(result.stdout, "moved 2 completed tasks to COMPLETED");
 
   // Check the file was updated correctly
   const updated = await Deno.readTextFile(testTodoPath);
-  assertStringIncludes(updated, "## DONE");
+  assertStringIncludes(updated, "## COMPLETED");
   assertStringIncludes(updated, "- Completed task 1");
   assertStringIncludes(updated, "- Completed task 2");
 
   // Check completed tasks were removed from TODO section
-  const todoSection = updated.split("## DONE")[0];
+  const todoSection = updated.split("## COMPLETED")[0];
   assertEquals(todoSection.includes("[x]"), false);
 });
 
@@ -115,20 +115,20 @@ Deno.test("update command - sort and move combined", async () => {
 
   assertEquals(result.code, 0);
   assertStringIncludes(result.stdout, "sorted by priority");
-  assertStringIncludes(result.stdout, "moved 2 completed tasks to DONE");
+  assertStringIncludes(result.stdout, "moved 2 completed tasks to COMPLETED");
 
   // Check the result
   const updated = await Deno.readTextFile(testTodoPath);
 
   // TODO section should only have uncompleted, sorted by priority
-  const todoSection = updated.split("## DONE")[0];
+  const todoSection = updated.split("## COMPLETED")[0];
   const todoTasks = todoSection.split("\n").filter((l) =>
     l.startsWith("- [ ]")
   );
   assertEquals(todoTasks[0], "- [ ] [HIGH] Uncompleted high priority");
   assertEquals(todoTasks[1], "- [ ] [LOW] Low priority");
 
-  // DONE section should have completed tasks
+  // COMPLETED section should have completed tasks
   assertStringIncludes(updated, "- Completed high priority");
   assertStringIncludes(updated, "- No priority completed");
 });
@@ -153,6 +153,7 @@ Deno.test("update command - force clear DONE section", async () => {
   const result = await pcheck("update", "--force-clear");
 
   assertEquals(result.code, 0);
+  // The implementation will say "cleared DONE section" because it found a DONE section
   assertStringIncludes(result.stdout, "cleared DONE section");
 
   // Check DONE section was removed
