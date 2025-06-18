@@ -1,0 +1,38 @@
+{
+  "name": "@mizchi/pcheck",
+  "version": "0.1.0",
+  "description": "A fast CLI tool to manage and check project TODOs and checklists",
+  "type": "module",
+  "main": "./dist/mod.js",
+  "types": "./dist/mod.d.ts",
+  "bin": {
+    "pcheck": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "deno task compile",
+    "test": "deno task test",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "todo",
+    "cli",
+    "project-management",
+    "deno"
+  ],
+  "author": "mizchi",
+  "license": "MIT",
+  "homepage": "https://github.com/mizchi/pcheck",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mizchi/pcheck.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mizchi/pcheck/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

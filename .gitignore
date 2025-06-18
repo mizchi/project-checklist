@@ -1,0 +1,5 @@
+coverage/
+ptodo
+*.log
+node_modules/
+tmp/

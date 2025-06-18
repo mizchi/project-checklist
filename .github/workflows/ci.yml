@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: Cache Deno dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.deno
+            ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('**/deno.lock') }}
+
+      # Run all checks using the task from deno.jsonc
+      - name: Run checks
+        run: deno task check
+
+      # Generate coverage report
+      - name: Generate coverage
+        run: deno task test:cov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          directory: ./coverage
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  compile:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+
+      - name: Compile binary
+        run: deno task compile
+
+      - name: Test compiled binary
+        run: |
+          ./ptodo --version
+          ./ptodo --help
+          ./ptodo .
