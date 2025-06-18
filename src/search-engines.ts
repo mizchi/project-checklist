@@ -1,4 +1,6 @@
 import { LegacyTodoItem } from "./mod.ts";
+import { walk } from "@std/fs/walk";
+import { relative } from "@std/path";
 
 export interface SearchEngine {
   name: string;
@@ -276,8 +278,6 @@ export class GrepEngine implements SearchEngine {
 }
 
 // Import native implementation
-import { walk } from "@std/fs/walk";
-import { relative } from "@std/path";
 
 // Native Deno implementation (fallback)
 export class DenoNativeEngine implements SearchEngine {
@@ -316,34 +316,38 @@ export class DenoNativeEngine implements SearchEngine {
       ".nuxt",
     ];
 
-    for await (
-      const entry of walk(directory, {
-        includeDirs: false,
-        skip: IGNORE_DIRS.map((dir) => new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`)),
-      })
-    ) {
-      // Check if it's a code file
-      const isCodeFile = CODE_EXTENSIONS.some((ext) =>
-        entry.path.endsWith(ext)
-      );
-      if (!isCodeFile) continue;
+    try {
+      for await (
+        const entry of walk(directory, {
+          includeDirs: false,
+          skip: IGNORE_DIRS.map((dir) => new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`)),
+        })
+      ) {
+        // Check if it's a code file
+        const isCodeFile = CODE_EXTENSIONS.some((ext) =>
+          entry.path.endsWith(ext)
+        );
+        if (!isCodeFile) continue;
 
-      const content = await Deno.readTextFile(entry.path);
-      const lines = content.split("\n");
-      const relativePath = relative(directory, entry.path);
+        const content = await Deno.readTextFile(entry.path);
+        const lines = content.split("\n");
+        const relativePath = relative(directory, entry.path);
 
-      lines.forEach((line, index) => {
-        const extracted = extractTodoContent(line);
-        if (extracted) {
-          todos.push({
-            type: "code",
-            path: relativePath,
-            line: index + 1,
-            content: extracted.content,
-            commentType: extracted.type as LegacyTodoItem["commentType"],
-          });
-        }
-      });
+        lines.forEach((line, index) => {
+          const extracted = extractTodoContent(line);
+          if (extracted) {
+            todos.push({
+              type: "code",
+              path: relativePath,
+              line: index + 1,
+              content: extracted.content,
+              commentType: extracted.type as LegacyTodoItem["commentType"],
+            });
+          }
+        });
+      }
+    } catch (error) {
+      throw error;
     }
 
     return todos;
@@ -387,6 +391,7 @@ export async function getEngineByName(
     "grep": new GrepEngine(),
     "native": new DenoNativeEngine(),
     "deno": new DenoNativeEngine(),
+    "deno-native": new DenoNativeEngine(),
   };
 
   const engine = engineMap[name.toLowerCase()];

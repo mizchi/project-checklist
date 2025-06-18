@@ -140,7 +140,7 @@ Deno.test("findTodos should find TODO comments in code", async () => {
 }`,
   );
 
-  const todos = await findTodos(testDir, { scanFiles: false });
+  const todos = await findTodos(testDir, { scanFiles: false, scanCode: true });
 
   expect(todos.length).toBe(2);
   expect(todos[0].type).toBe("code");
@@ -279,7 +279,7 @@ Deno.test("findTodos should find different comment types", async () => {
 }`,
   );
 
-  const todos = await findTodos(testDir, { scanFiles: false });
+  const todos = await findTodos(testDir, { scanFiles: false, scanCode: true });
 
   // Filter and check TypeScript comments
   const tsTodos = todos.filter((t) => t.path.endsWith("test.ts"));
@@ -407,7 +407,7 @@ Deno.test("findTodos should respect options", async () => {
   await Deno.writeTextFile(join(testDir, "TODO.md"), "- Task");
   await Deno.writeTextFile(join(testDir, "code.ts"), "// TODO: Fix");
 
-  const noFiles = await findTodos(testDir, { scanFiles: false });
+  const noFiles = await findTodos(testDir, { scanFiles: false, scanCode: true });
   expect(noFiles.length).toBe(1);
   expect(noFiles[0].type).toBe("code");
 
@@ -523,7 +523,7 @@ Deno.test("findTodos should handle nested directories", async () => {
     "// TODO: Refactor this code",
   );
 
-  const todos = await findTodos(testDir);
+  const todos = await findTodos(testDir, { scanCode: true });
 
   expect(todos.length).toBe(1);
   expect(todos[0].path).toBe("src/app.js");
@@ -641,7 +641,7 @@ Deno.test("findTodos should ignore node_modules", async () => {
     "// TODO: Should be found",
   );
 
-  const todos = await findTodos(testDir);
+  const todos = await findTodos(testDir, { scanCode: true });
 
   expect(todos.length).toBe(1);
   expect(todos[0].content).toBe("Should be found");

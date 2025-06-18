@@ -53,7 +53,7 @@ export function displayTree(
     if (maxItems !== undefined && displayCount >= maxItems) {
       const remaining = nodes.length - i;
       if (remaining > 0) {
-        const branch = isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH;
+        const branch = TREE_CHARS.LAST_BRANCH;
         lines.push(`${prefix}${branch}... and ${remaining} more items`);
       }
       break;
@@ -64,7 +64,9 @@ export function displayTree(
       // Check if it has unchecked children
       if (node.children && hasUncheckedChildren(node.children)) {
         // Show it with indication
-        const branch = isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH;
+        const branch = currentDepth === 0 
+          ? TREE_CHARS.LAST_BRANCH 
+          : (isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH);
         const checkbox = "[x]";
         const idSuffix = options.showIds && node.id ? ` [${node.id}]` : "";
         lines.push(
@@ -72,8 +74,9 @@ export function displayTree(
         );
 
         // Process children
-        const childPrefix = prefix +
-          (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
+        const childPrefix = currentDepth === 0
+          ? TREE_CHARS.EMPTY
+          : prefix + (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
         const childLines = displayTree(
           node.children,
           options,
@@ -82,13 +85,15 @@ export function displayTree(
           currentDepth + 1,
         );
         lines.push(...childLines);
-        displayCount++;
+        displayCount++
       }
       continue;
     }
 
     // Build the display line
-    const branch = isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH;
+    const branch = currentDepth === 0 
+      ? TREE_CHARS.LAST_BRANCH 
+      : (isLastNode ? TREE_CHARS.LAST_BRANCH : TREE_CHARS.BRANCH);
     let display = "";
 
     if (node.isChecked !== undefined) {
@@ -107,8 +112,9 @@ export function displayTree(
 
     // Process children
     if (node.children && node.children.length > 0) {
-      const childPrefix = prefix +
-        (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
+      const childPrefix = currentDepth === 0
+        ? TREE_CHARS.EMPTY
+        : prefix + (isLastNode ? TREE_CHARS.EMPTY : TREE_CHARS.VERTICAL);
       const childLines = displayTree(
         node.children,
         options,

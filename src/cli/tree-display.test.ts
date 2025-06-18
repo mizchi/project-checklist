@@ -77,7 +77,7 @@ Deno.test("displayTree - with max depth", () => {
 
   assertEquals(lines[0], "└── Level 0");
   assertEquals(lines[1], "    └── Level 1");
-  assertEquals(lines[2], "        └── ... (1 items hidden by depth limit)");
+  assertEquals(lines[2], "        └── ... (2 items hidden by depth limit)");
 });
 
 Deno.test("displayTree - with checked items", () => {

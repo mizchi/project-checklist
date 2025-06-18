@@ -40,6 +40,12 @@ const DEFAULT_OPTIONS: FindTodosOptions = {
   scanTests: false,
 };
 
+const DEFAULT_FILE_OPTIONS: FindTodosOptions = {
+  scanFiles: true,
+  scanCode: true,
+  scanTests: false,
+};
+
 const CODE_EXTENSIONS = [
   ".ts",
   ".tsx",
@@ -105,10 +111,10 @@ function matchesIgnorePattern(path: string, ignorePattern: string): boolean {
  */
 export async function findTodosInFile(
   filePath: string,
-  options: FindTodosOptions = DEFAULT_OPTIONS,
+  options: FindTodosOptions = DEFAULT_FILE_OPTIONS,
 ): Promise<LegacyTodoItem[]> {
   const todos: LegacyTodoItem[] = [];
-  const mergedOptions = { ...DEFAULT_OPTIONS, ...options };
+  const mergedOptions = { ...DEFAULT_FILE_OPTIONS, ...options };
 
   try {
     const stat = await Deno.stat(filePath);
