@@ -1,0 +1,217 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PCheck Configuration",
+  "description": "Configuration file for pcheck - AI-friendly TODO management tool",
+  "type": "object",
+  "properties": {
+    "include": {
+      "type": "array",
+      "description": "Glob patterns for files to include in scanning",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["**/*.md", "src/**/*", "docs/**/*.md"]]
+    },
+    "exclude": {
+      "type": "array",
+      "description": "Glob patterns for files to exclude from scanning",
+      "items": {
+        "type": "string"
+      },
+      "examples": [["node_modules/**", "dist/**", "*.min.js"]]
+    },
+    "code": {
+      "type": "object",
+      "description": "Settings for scanning code files for TODO comments",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable scanning code files for TODO comments",
+          "default": false
+        },
+        "patterns": {
+          "type": "array",
+          "description": "Patterns to search for in code comments",
+          "items": {
+            "type": "string"
+          },
+          "default": ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE", "REFACTOR"]
+        },
+        "includeTests": {
+          "type": "boolean",
+          "description": "Include test files when scanning code",
+          "default": false
+        },
+        "fileExtensions": {
+          "type": "array",
+          "description": "File extensions to scan for code TODOs",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "display": {
+      "type": "object",
+      "description": "Display settings for output",
+      "properties": {
+        "showLineNumbers": {
+          "type": "boolean",
+          "description": "Show line numbers in output",
+          "default": true
+        },
+        "showEmptyTodos": {
+          "type": "boolean",
+          "description": "Show TODO items without description",
+          "default": false
+        },
+        "groupByFile": {
+          "type": "boolean",
+          "description": "Group results by file",
+          "default": true
+        },
+        "showSectionTitles": {
+          "type": "boolean",
+          "description": "Display section titles (## headers) alongside TODO items",
+          "default": true
+        },
+        "maxDepth": {
+          "type": "number",
+          "description": "Maximum nesting depth to display",
+          "default": 10,
+          "minimum": 1
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "description": "Output format settings",
+      "properties": {
+        "format": {
+          "type": "string",
+          "description": "Output format",
+          "enum": ["tree", "flat", "json"],
+          "default": "tree"
+        },
+        "colors": {
+          "type": "boolean",
+          "description": "Use colors in output",
+          "default": true
+        },
+        "quiet": {
+          "type": "boolean",
+          "description": "Suppress non-essential output",
+          "default": false
+        }
+      }
+    },
+    "search": {
+      "type": "object",
+      "description": "Search engine configuration",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "description": "Search engine to use",
+          "enum": ["auto", "rg", "ripgrep", "git-grep", "grep", "native"],
+          "default": "auto"
+        },
+        "parallel": {
+          "type": "boolean",
+          "description": "Enable parallel search",
+          "default": true
+        },
+        "ignoreCase": {
+          "type": "boolean",
+          "description": "Case-insensitive search",
+          "default": false
+        }
+      }
+    },
+    "markdown": {
+      "type": "object",
+      "description": "Markdown-specific settings",
+      "properties": {
+        "extensions": {
+          "type": "array",
+          "description": "File extensions to treat as Markdown",
+          "items": {
+            "type": "string"
+          },
+          "default": ["md", "mdx", "markdown"]
+        },
+        "checklistOnly": {
+          "type": "boolean",
+          "description": "Only show checklist items (- [ ] and - [x])",
+          "default": true
+        }
+      }
+    },
+    "languages": {
+      "type": "object",
+      "description": "Language-specific features",
+      "properties": {
+        "typescript": {
+          "type": "object",
+          "description": "TypeScript-specific settings",
+          "properties": {
+            "detectTests": {
+              "type": "boolean",
+              "description": "Detect test cases in TypeScript files",
+              "default": false
+            },
+            "testPatterns": {
+              "type": "array",
+              "description": "Patterns to identify test cases",
+              "items": {
+                "type": "string"
+              },
+              "default": ["Deno.test", "it(", "test(", "describe("]
+            },
+            "includeSkipped": {
+              "type": "boolean",
+              "description": "Include skipped tests as TODOs",
+              "default": true
+            }
+          }
+        }
+      }
+    },
+    "ignorePatterns": {
+      "type": "array",
+      "description": "Additional patterns to ignore (in addition to .gitignore)",
+      "items": {
+        "type": "string"
+      }
+    },
+    "indentSize": {
+      "type": "number",
+      "description": "Default indent size for validation and formatting",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 8
+    },
+    "ignore": {
+      "type": "array",
+      "description": "Legacy: Use 'exclude' instead",
+      "deprecated": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "todoPatterns": {
+      "type": "array",
+      "description": "Legacy: Use 'code.patterns' instead",
+      "deprecated": true,
+      "items": {
+        "type": "string"
+      }
+    },
+    "searchEngine": {
+      "type": "string",
+      "description": "Legacy: Use 'search.engine' instead",
+      "deprecated": true,
+      "enum": ["rg", "git-grep", "grep", "native"]
+    }
+  },
+  "additionalProperties": false
+}

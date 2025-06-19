@@ -1,12 +1,12 @@
 import { assertEquals } from "@std/assert";
 import {
   addTaskToSection,
-  clearDoneSection,
+  clearCompletedSection,
   findCompletedSection,
   findSection,
   formatTask,
   insertSection,
-  moveCompletedTasksToDone,
+  moveCompletedTasksToCompleted,
   parseMarkdown,
   parsePriority,
   parseTask,
@@ -91,12 +91,12 @@ Deno.test("parseMarkdown - basic structure", () => {
 });
 
 Deno.test("findSection - case insensitive", () => {
-  const content = `## TODO\n\n## IceBox\n\n## done`;
+  const content = `## TODO\n\n## IceBox\n\n## completed`;
   const { sections } = parseMarkdown(content);
 
   assertEquals(findSection(sections, "todo")?.name, "TODO");
   assertEquals(findSection(sections, "ICEBOX")?.name, "IceBox");
-  assertEquals(findSection(sections, "Done")?.name, "done");
+  assertEquals(findSection(sections, "Completed")?.name, "completed");
   assertEquals(findSection(sections, "missing"), null);
 });
 
@@ -188,7 +188,7 @@ Deno.test("addTaskToSection", () => {
   assertEquals(result.length, 6); // Original 5 lines + 1 new task
 });
 
-Deno.test("moveCompletedTasksToDone", () => {
+Deno.test("moveCompletedTasksToCompleted", () => {
   const content = `# TODO
 
 - [ ] Unchecked
@@ -199,7 +199,7 @@ Deno.test("moveCompletedTasksToDone", () => {
 
 - [x] Checked 3`;
 
-  const result = moveCompletedTasksToDone(content);
+  const result = moveCompletedTasksToCompleted(content);
 
   assertEquals(result.movedCount, 3);
   assertStringIncludes(result.content, "## COMPLETED");
@@ -210,36 +210,10 @@ Deno.test("moveCompletedTasksToDone", () => {
   assertEquals(result.content.includes("[HIGH]"), false);
 });
 
-Deno.test("clearDoneSection - clears DONE section", () => {
+Deno.test("clearCompletedSection - clears COMPLETED section", () => {
   const content = `# TODO
 
 - [ ] Task
-
-## DONE
-
-- Completed 1
-- Completed 2
-
-## OTHER
-
-- [ ] Other task`;
-
-  const result = clearDoneSection(content);
-
-  assertEquals(result.includes("## DONE"), false);
-  assertEquals(result.includes("Completed 1"), false);
-  assertEquals(result.includes("Completed 2"), false);
-  assertStringIncludes(result, "## OTHER");
-});
-
-Deno.test("clearDoneSection - prefers COMPLETED over DONE", () => {
-  const content = `# TODO
-
-- [ ] Task
-
-## DONE
-
-- Done task
 
 ## COMPLETED
 
@@ -250,23 +224,41 @@ Deno.test("clearDoneSection - prefers COMPLETED over DONE", () => {
 
 - [ ] Other task`;
 
-  const result = clearDoneSection(content);
+  const result = clearCompletedSection(content);
 
   assertEquals(result.includes("## COMPLETED"), false);
   assertEquals(result.includes("Completed 1"), false);
   assertEquals(result.includes("Completed 2"), false);
-  assertStringIncludes(result, "## DONE");
   assertStringIncludes(result, "## OTHER");
 });
 
-Deno.test("findCompletedSection - prefers COMPLETED over DONE", () => {
+Deno.test("clearCompletedSection - clears COMPLETED section when both exist", () => {
+  const content = `# TODO
+
+- [ ] Task
+
+## COMPLETED
+
+- Completed 1
+- Completed 2
+
+## OTHER
+
+- [ ] Other task`;
+
+  const result = clearCompletedSection(content);
+
+  assertEquals(result.includes("## COMPLETED"), false);
+  assertEquals(result.includes("Completed 1"), false);
+  assertEquals(result.includes("Completed 2"), false);
+  assertStringIncludes(result, "## OTHER");
+});
+
+Deno.test("findCompletedSection - finds COMPLETED section", () => {
   const content = `# TODO
 
 ## TODO
 - [ ] Task 1
-
-## DONE
-- Done task 1
 
 ## COMPLETED
 - Completed task 1`;
@@ -275,21 +267,6 @@ Deno.test("findCompletedSection - prefers COMPLETED over DONE", () => {
   const completedSection = findCompletedSection(sections);
 
   assertEquals(completedSection?.name, "COMPLETED");
-});
-
-Deno.test("findCompletedSection - falls back to DONE", () => {
-  const content = `# TODO
-
-## TODO
-- [ ] Task 1
-
-## DONE
-- Done task 1`;
-
-  const { sections } = parseMarkdown(content);
-  const completedSection = findCompletedSection(sections);
-
-  assertEquals(completedSection?.name, "DONE");
 });
 
 Deno.test("findCompletedSection - returns null when neither exists", () => {
@@ -307,14 +284,14 @@ Deno.test("findCompletedSection - returns null when neither exists", () => {
   assertEquals(completedSection, null);
 });
 
-Deno.test("moveCompletedTasksToDone - creates COMPLETED section", () => {
+Deno.test("moveCompletedTasksToCompleted - creates COMPLETED section", () => {
   const content = `# TODO
 
 ## TODO
 - [x] Completed task
 - [ ] Pending task`;
 
-  const result = moveCompletedTasksToDone(content);
+  const result = moveCompletedTasksToCompleted(content);
 
   assertEquals(result.movedCount, 1);
   assertStringIncludes(result.content, "## COMPLETED");
@@ -322,7 +299,7 @@ Deno.test("moveCompletedTasksToDone - creates COMPLETED section", () => {
   assertEquals(result.content.includes("## DONE"), false);
 });
 
-Deno.test("moveCompletedTasksToDone - uses existing COMPLETED section", () => {
+Deno.test("moveCompletedTasksToCompleted - uses existing COMPLETED section", () => {
   const content = `# TODO
 
 ## TODO
@@ -332,7 +309,7 @@ Deno.test("moveCompletedTasksToDone - uses existing COMPLETED section", () => {
 ## COMPLETED
 - Old completed task`;
 
-  const result = moveCompletedTasksToDone(content);
+  const result = moveCompletedTasksToCompleted(content);
 
   assertEquals(result.movedCount, 1);
   assertStringIncludes(result.content, "## COMPLETED");

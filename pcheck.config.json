@@ -1,0 +1,34 @@
+{
+  "include": [
+    "**/*.md"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "dist/**",
+    "coverage/**",
+    "examples/**",
+    "test/**",
+    "*.min.js",
+    "*.test.ts",
+    "*.test.js",
+    "deno.lock"
+  ],
+  "code": {
+    "enabled": true,
+    "patterns": ["TODO", "FIXME", "HACK", "NOTE", "XXX", "WARNING"],
+    "includeTests": false
+  },
+  "display": {
+    "showLineNumbers": true,
+    "showEmptyTodos": false,
+    "groupByFile": true
+  },
+  "output": {
+    "format": "tree",
+    "colors": true
+  },
+  "indentSize": 2,
+  "search": {
+    "engine": "auto"
+  }
+}

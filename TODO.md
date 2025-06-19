@@ -6,6 +6,18 @@
 - [ ] Publish to npm using @deno/dnt
 - [ ] Create MCP server integration
 - [ ] Add configuration file support (.pcheck.json)
+- [ ] content
+- [x] content
+- [ ] content
+- [x] Import the necessary modules
+- [x] Create example with basic search
+- [ ] Add example with filtering options
+- [ ] Add example with statistics
+- [ ] Add example with custom file patterns
+- [x] Create comprehensive examples
+- [ ] Add error handling examples
+- [ ] Add performance benchmarking
+- [x] Document usage patterns
 
 ## ICEBOX
 

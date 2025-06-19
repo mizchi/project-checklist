@@ -135,11 +135,11 @@ export class SectionValidator {
         const allCompleted = section.tasks.every((task) => task.checked);
         // const noneCompleted = section.tasks.every((task) => !task.checked);
 
-        if (allCompleted && section.name.toUpperCase() !== "DONE") {
+        if (allCompleted && section.name.toUpperCase() !== "COMPLETED") {
           warnings.push({
             type: "PARENT_CHILD_INCONSISTENCY",
             message:
-              `Section "${section.name}" has all tasks completed, consider moving to DONE section`,
+              `Section "${section.name}" has all tasks completed, consider moving to COMPLETED section`,
             line: section.startLine,
             severity: "warning",
             details: {
@@ -160,7 +160,7 @@ export class SectionValidator {
     const sectionNames = new Set<string>();
     const commonSectionNames = [
       "TODO",
-      "DONE",
+      "COMPLETED",
       "IN PROGRESS",
       "ICEBOX",
       "BUGS",

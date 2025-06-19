@@ -5,6 +5,7 @@ import { join } from "@std/path";
 interface InitOptions {
   force?: boolean;
   template?: string;
+  skipConfig?: boolean;
 }
 
 const DEFAULT_TEMPLATE = `# TODO
@@ -27,6 +28,114 @@ const GTD_TEMPLATE = `# TODO
 ## COMPLETED
 <!-- Finished tasks for reference -->
 `;
+
+const CONFIG_TEMPLATE = {
+  minimal: {
+    code: {
+      enabled: true,
+      patterns: ["TODO", "FIXME"]
+    },
+    exclude: [
+      "node_modules/**",
+      "dist/**",
+      "build/**"
+    ]
+  },
+  standard: {
+    "$schema": "./pcheck.schema.json",
+    include: [
+      "**/*.md",
+      "src/**/*",
+      "tests/**/*"
+    ],
+    exclude: [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "*.min.js",
+      ".git/**"
+    ],
+    code: {
+      enabled: true,
+      patterns: ["TODO", "FIXME", "HACK", "NOTE"],
+      includeTests: false
+    },
+    display: {
+      showLineNumbers: true,
+      groupByFile: true
+    },
+    output: {
+      format: "tree",
+      colors: true
+    }
+  },
+  full: {
+    "$schema": "./pcheck.schema.json",
+    include: [
+      "**/*.md",
+      "src/**/*",
+      "tests/**/*",
+      "docs/**/*.md"
+    ],
+    exclude: [
+      "node_modules/**",
+      "vendor/**",
+      "target/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "*.min.js",
+      "*.bundle.js",
+      ".git/**",
+      ".next/**",
+      ".nuxt/**",
+      ".cache/**"
+    ],
+    code: {
+      enabled: true,
+      patterns: ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE", "REFACTOR"],
+      includeTests: false,
+      fileExtensions: [
+        "js", "jsx", "ts", "tsx", "mjs", "cjs",
+        "py", "pyw",
+        "rs",
+        "go",
+        "java",
+        "c", "cpp", "cc", "cxx", "h", "hpp"
+      ]
+    },
+    display: {
+      showLineNumbers: true,
+      showEmptyTodos: false,
+      groupByFile: true,
+      showSectionTitles: true,
+      maxDepth: 10
+    },
+    output: {
+      format: "tree",
+      colors: true,
+      quiet: false
+    },
+    search: {
+      engine: "auto",
+      parallel: true,
+      ignoreCase: false
+    },
+    markdown: {
+      extensions: ["md", "mdx", "markdown"],
+      checklistOnly: true
+    },
+    languages: {
+      typescript: {
+        detectTests: true,
+        testPatterns: ["Deno.test", "it(", "test(", "describe("],
+        includeSkipped: true
+      }
+    },
+    indentSize: 2
+  }
+};
 
 export async function runInitCommand(
   directory: string = ".",
@@ -141,10 +250,85 @@ export async function runInitCommand(
     );
   }
 
+  // Ask about creating config file
+  if (!options.skipConfig) {
+    const configPath = join(directory, "pcheck.config.json");
+    const configExists = await exists(configPath);
+
+    if (!configExists) {
+      console.log("\n" + yellow("Would you like to create a pcheck configuration file?"));
+      console.log("This allows you to customize file scanning, output formats, and more.");
+      console.log("\nOptions:");
+      console.log("  1) No configuration (use defaults)");
+      console.log("  2) Minimal configuration (basic exclude patterns)");
+      console.log("  3) Standard configuration (recommended)");
+      console.log("  4) Full configuration (all options)");
+      
+      const configChoice = prompt("\nSelect an option (1-4, default: 1):");
+      
+      if (configChoice && configChoice !== "1") {
+        let selectedConfig;
+        let configType = "minimal";
+        
+        switch (configChoice) {
+          case "2":
+            selectedConfig = CONFIG_TEMPLATE.minimal;
+            configType = "minimal";
+            break;
+          case "3":
+            selectedConfig = CONFIG_TEMPLATE.standard;
+            configType = "standard";
+            break;
+          case "4":
+            selectedConfig = CONFIG_TEMPLATE.full;
+            configType = "full";
+            break;
+          default:
+            selectedConfig = null;
+        }
+        
+        if (selectedConfig) {
+          // Ask about enabling code scanning
+          if (configChoice !== "4") {
+            console.log("\nEnable scanning for TODO comments in code files? (y/n, default: y)");
+            const enableCode = prompt(">");
+            if (enableCode?.toLowerCase() === "n") {
+              selectedConfig.code.enabled = false;
+            }
+          }
+          
+          // Write config file
+          const configContent = JSON.stringify(selectedConfig, null, 2);
+          await Deno.writeTextFile(configPath, configContent);
+          console.log(green(`✓ Created ${configPath} (${configType} configuration)`));
+          
+          // Also create schema file if it doesn't exist and config uses it
+          if ('$schema' in selectedConfig && selectedConfig.$schema) {
+            const schemaPath = join(directory, "pcheck.schema.json");
+            if (!await exists(schemaPath)) {
+              try {
+                // Copy schema from package
+                const schemaUrl = new URL("../pcheck.schema.json", import.meta.url);
+                const schemaContent = await Deno.readTextFile(schemaUrl);
+                await Deno.writeTextFile(schemaPath, schemaContent);
+                console.log(green(`✓ Created ${schemaPath}`));
+              } catch {
+                // Schema file not available in package, skip
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   console.log("\nNext steps:");
   console.log("  - Add your tasks to TODO.md");
   console.log("  - Use 'pcheck' to view your tasks");
   console.log("  - Use 'pcheck update' to organize completed tasks");
+  if (await exists(join(directory, "pcheck.config.json"))) {
+    console.log("  - Customize 'pcheck.config.json' for your project");
+  }
 }
 
 // Helper to extract checklists from any markdown content

@@ -219,15 +219,18 @@ export async function findTodos(
 
     // Apply filters to search engine results
     const filteredTodos = codeTodos.filter((todo) => {
+      // Normalize path (remove ./ prefix if present)
+      const normalizedPath = todo.path.startsWith("./") ? todo.path.slice(2) : todo.path;
+      
       // Skip test files unless includeTestCases is true
-      if (!mergedOptions.includeTestCases && isTestFile(todo.path)) {
+      if (!mergedOptions.includeTestCases && isTestFile(normalizedPath)) {
         return false;
       }
 
       // Filter by extension
       if (
         filterExtensions &&
-        !filterExtensions.some((ext) => todo.path.endsWith(ext))
+        !filterExtensions.some((ext) => normalizedPath.endsWith(ext))
       ) {
         return false;
       }
@@ -235,7 +238,7 @@ export async function findTodos(
       // Filter by directory
       if (filterDirs) {
         const inFilterDir = filterDirs.some((dir) =>
-          todo.path.startsWith(dir + "/") || todo.path.includes("/" + dir + "/")
+          normalizedPath.startsWith(dir + "/") || normalizedPath.includes("/" + dir + "/")
         );
         if (!inFilterDir) return false;
       }
@@ -243,9 +246,35 @@ export async function findTodos(
       // Exclude directories
       if (excludeDirs) {
         const inExcludeDir = excludeDirs.some((dir) =>
-          todo.path.startsWith(dir + "/") || todo.path.includes("/" + dir + "/")
+          normalizedPath.startsWith(dir + "/") || normalizedPath.includes("/" + dir + "/")
         );
         if (inExcludeDir) return false;
+      }
+
+      // Apply config exclude patterns
+      if (mergedOptions.config?.exclude) {
+        for (const pattern of mergedOptions.config.exclude) {
+          if (pattern.endsWith("/**")) {
+            const dir = pattern.slice(0, -3);
+            if (normalizedPath.startsWith(dir + "/") || normalizedPath === dir) {
+              return false;
+            }
+          } else if (pattern.includes("*")) {
+            // Convert glob to regex
+            const regex = pattern
+              .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+              .replace(/\*\*/g, ".*")
+              .replace(/\*/g, "[^/]*");
+            if (new RegExp(regex).test(normalizedPath)) {
+              return false;
+            }
+          } else {
+            // Exact match
+            if (normalizedPath === pattern || normalizedPath.startsWith(pattern + "/")) {
+              return false;
+            }
+          }
+        }
       }
 
       return true;
@@ -264,13 +293,41 @@ export async function findTodos(
       skipPatterns.push(new RegExp(`^${dir}[\\/\\\\]`));
     });
   }
+  
+  // Add patterns from config exclude
+  if (mergedOptions.config?.exclude) {
+    mergedOptions.config.exclude.forEach((pattern) => {
+      // Handle glob patterns
+      if (pattern.endsWith("/**")) {
+        const dir = pattern.slice(0, -3);
+        // Match both as subdirectory and as root directory
+        skipPatterns.push(new RegExp(`[\\/\\\\]${dir}[\\/\\\\]`));
+        skipPatterns.push(new RegExp(`^${dir}[\\/\\\\]`));
+        skipPatterns.push(new RegExp(`^${dir}$`));
+      } else if (pattern.includes("*")) {
+        // Convert glob to regex
+        const regex = pattern
+          .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+          .replace(/\*\*/g, ".*")
+          .replace(/\*/g, "[^/]*");
+        skipPatterns.push(new RegExp(regex));
+      } else {
+        // Match exact directory name
+        skipPatterns.push(new RegExp(`[\\/\\\\]${pattern}[\\/\\\\]`));
+        skipPatterns.push(new RegExp(`^${pattern}[\\/\\\\]`));
+        skipPatterns.push(new RegExp(`^${pattern}$`));
+      }
+    });
+  }
 
+  let fileCount = 0;
   for await (
     const entry of walk(directory, {
       includeDirs: false,
       skip: skipPatterns,
     })
   ) {
+    fileCount++;
     const relativePath = relative(directory, entry.path);
 
     // Check if file should be ignored
@@ -291,9 +348,39 @@ export async function findTodos(
     }
 
     const lowerEntryName = entry.name.toLowerCase();
+    
+    // Check if it's a markdown file we should scan
+    const isTodoOrReadme = lowerEntryName === "todo.md" || lowerEntryName === "readme.md";
+    const isMarkdownFile = entry.name.toLowerCase().endsWith(".md");
+    
+    // If we have include patterns, check if this file should be included
+    if (mergedOptions.config?.include && mergedOptions.config.include.length > 0 && !isTodoOrReadme) {
+      let matches = false;
+      for (const pattern of mergedOptions.config.include) {
+        if (pattern.includes("*")) {
+          // Convert glob to regex
+          const regex = pattern
+            .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+            .replace(/\*\*/g, ".*")
+            .replace(/\*/g, "[^/]*");
+          if (new RegExp(regex).test(relativePath)) {
+            matches = true;
+            break;
+          }
+        } else if (relativePath.endsWith(pattern) || relativePath === pattern) {
+          matches = true;
+          break;
+        }
+      }
+      if (!matches) {
+        // Skip files that don't match include patterns
+        continue;
+      }
+    }
+
     if (
       mergedOptions.scanFiles &&
-      (lowerEntryName === "todo.md" || lowerEntryName === "readme.md")
+      (isTodoOrReadme || (mergedOptions.config?.include && isMarkdownFile))
     ) {
       const fileTodos = await parseTodoFile(entry.path);
       if (fileTodos.length > 0) {

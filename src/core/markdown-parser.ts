@@ -210,18 +210,12 @@ export function findSection(
 }
 
 /**
- * 完了セクションを検索する（COMPLETED > DONE の優先順位で）
+ * 完了セクションを検索する
  */
 export function findCompletedSection(
   sections: ParsedSection[],
 ): ParsedSection | null {
-  // 優先順位: COMPLETED > DONE
-  const completedSection = findSection(sections, "COMPLETED");
-  if (completedSection) {
-    return completedSection;
-  }
-
-  return findSection(sections, "DONE");
+  return findSection(sections, "COMPLETED");
 }
 
 export function sortTasksByPriority(tasks: ParsedTask[]): ParsedTask[] {
@@ -357,7 +351,7 @@ export function addTaskToSection(
   return newLines;
 }
 
-export function moveCompletedTasksToDone(content: string): {
+export function moveCompletedTasksToCompleted(content: string): {
   content: string;
   movedCount: number;
 } {
@@ -367,11 +361,11 @@ export function moveCompletedTasksToDone(content: string): {
   const completedTasks: string[] = [];
   const skipLines = new Set<number>();
 
-  // Collect completed tasks from all sections except COMPLETED/DONE
+  // Collect completed tasks from all sections except COMPLETED
   // 修正されたparseMarkdownを使用しているため、コードブロック内のタスクは既に除外されている
   for (const section of sections) {
     const sectionNameUpper = section.name.toUpperCase();
-    if (sectionNameUpper !== "DONE" && sectionNameUpper !== "COMPLETED") {
+    if (sectionNameUpper !== "COMPLETED") {
       for (const task of section.tasks) {
         if (task.checked) {
           completedTasks.push(formatTask(task, true));
@@ -388,12 +382,12 @@ export function moveCompletedTasksToDone(content: string): {
     }
   }
 
-  // Add completed tasks to COMPLETED/DONE section
+  // Add completed tasks to COMPLETED section
   if (completedTasks.length > 0) {
     let resultLines = newLines;
 
     if (!completedSection) {
-      // Create COMPLETED section (preferred over DONE)
+      // Create COMPLETED section
       resultLines = insertSection(resultLines, "COMPLETED");
       // Re-parse to get the new section
       const reparsed = parseMarkdown(resultLines.join("\n"));
@@ -439,7 +433,7 @@ export function moveCompletedTasksToDone(content: string): {
   };
 }
 
-export function clearDoneSection(content: string): string {
+export function clearCompletedSection(content: string): string {
   const { sections, lines } = parseMarkdown(content);
   const completedSection = findCompletedSection(sections);
 

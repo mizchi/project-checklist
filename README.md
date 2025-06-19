@@ -107,11 +107,18 @@ $ pcheck
    $ pcheck --code --cases
    ```
 
-   Supports patterns like:
+   Supports extracting tasks from code comments:
    - `// TODO: Fix this issue`
    - `// TODO(username): Assigned task`
-   - `// - [ ] Implement feature`
+   - `/* FIXME: Memory leak here */`
+   - `# TODO: Refactor this function`
+   - `// - [ ] Implement feature` (checklist in comments)
    - `// - [x] Completed task`
+   
+   Supported comment styles:
+   - Single-line: `//`, `#`, `--`
+   - Multi-line: `/* */`, `""" """`, `<!-- -->`
+   - Language-specific: Python, JavaScript, TypeScript, Rust, Go, etc.
 
 6. **Manage TODO.md files**:
    ```bash
@@ -128,6 +135,63 @@ $ pcheck
    $ pcheck validate --fix
    $ pcheck update --fix  # Validate and fix before updating
    ```
+
+## Configuration
+
+`pcheck` can be configured using a `pcheck.config.json` file in your project root:
+
+```json
+{
+  "include": [
+    "**/*.md",
+    "src/**/*",
+    "tests/**/*"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "dist/**",
+    "*.min.js",
+    "coverage/**"
+  ],
+  "code": {
+    "enabled": true,
+    "patterns": ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE"],
+    "includeTests": false
+  },
+  "display": {
+    "showLineNumbers": true,
+    "showEmptyTodos": false,
+    "groupByFile": true
+  },
+  "output": {
+    "format": "tree",
+    "colors": true
+  }
+}
+```
+
+### Configuration Options
+
+- **`include`**: Array of glob patterns for files to scan
+- **`exclude`**: Array of glob patterns for files to ignore
+- **`code.enabled`**: Whether to scan code files for TODO comments
+- **`code.patterns`**: Custom patterns to search for in code
+- **`code.includeTests`**: Include test files when scanning code
+- **`display.*`**: Display preferences
+- **`output.format`**: Output format (`tree`, `flat`, `json`)
+
+### Using Configuration
+
+```bash
+# Use default config file (pcheck.config.json)
+$ pcheck
+
+# Use custom config file
+$ pcheck --config my-config.json
+
+# Override config with CLI options
+$ pcheck --code --no-config
+```
 
 ## Why project-checklist?
 
@@ -146,6 +210,43 @@ workflow. `project-checklist` is designed to:
 - [CLAUDE Usage Guide (English)](./docs/prompt-example-en.md)
 - [CLAUDE Usage Guide (日本語)](./docs/prompt-example-ja.md)
 - [TODO.md](./TODO.md) - Project roadmap and planned features
+
+## Document-Driven Testing
+
+This project includes a document-driven testing framework that allows AI assistants to understand and execute test cases written in natural language. The framework has been generalized and is available in the `doc-driven-test/` directory.
+
+### Quick Start
+
+```bash
+# Run example test
+./doc-driven-test/core/runner.sh doc-driven-test/examples/simple-web-server.md
+
+# Run project-specific tests
+./test/use-cases/run-test.sh
+```
+
+### Framework Features
+
+- 📝 Natural language test descriptions in Markdown
+- 🤖 AI-agent friendly execution protocol
+- 🌍 Language-agnostic (supports any programming language)
+- 🔄 Clean environment for each test run
+- 📊 Detailed reporting and metrics
+
+### Structure
+
+```
+doc-driven-test/
+├── core/                  # Core framework scripts
+├── templates/            # Language-specific templates
+├── protocols/            # AI execution protocols
+└── examples/             # Example test cases
+
+test/use-cases/           # Project-specific tests
+└── 01-create-initial-todo.md
+```
+
+See [doc-driven-test/README.md](./doc-driven-test/README.md) for detailed documentation.
 
 ## License
 

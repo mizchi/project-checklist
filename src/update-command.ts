@@ -7,13 +7,13 @@ import { findTodos } from "./mod.ts";
 
 interface UpdateOptions {
   sort?: boolean;
-  done?: boolean;
-  "force-clear"?: boolean;
+  completed?: boolean;
   priority?: boolean;
   indentSize?: number;
   code?: boolean;
   fix?: boolean;
   skipValidation?: boolean;
+  vacuum?: boolean;
 }
 
 interface ParsedSection {
@@ -421,8 +421,8 @@ ${checklists.join("\n")}
   if (
     !options.sort &&
     !options.priority &&
-    !options.done &&
-    !options["force-clear"]
+    !options.completed &&
+    !options.vacuum
   ) {
     console.log(bold("What would you like to do?"));
 
@@ -432,9 +432,9 @@ ${checklists.join("\n")}
     let hasCompletedTasks = false;
 
     for (const section of sections) {
-      // Skip DONE and COMPLETED sections
+      // Skip COMPLETED sections
       const sectionNameUpper = section.name.toUpperCase();
-      if (sectionNameUpper === "DONE" || sectionNameUpper === "COMPLETED") {
+      if (sectionNameUpper === "COMPLETED") {
         continue;
       }
 
@@ -461,10 +461,10 @@ ${checklists.join("\n")}
     // Only ask about moving completed tasks if there are any
     if (hasCompletedTasks) {
       const doneChoice = await $.confirm(
-        "Move completed tasks to DONE section?",
+        "Move completed tasks to COMPLETED section?",
       );
       if (doneChoice) {
-        options.done = true;
+        options.completed = true;
       }
     }
 
@@ -476,7 +476,7 @@ ${checklists.join("\n")}
     }
 
     // If nothing selected, exit
-    if (!options.priority && !options.done) {
+    if (!options.priority && !options.completed) {
       console.log(yellow("No operations selected. Exiting."));
       return;
     }
@@ -490,16 +490,145 @@ ${checklists.join("\n")}
     content = await Deno.readTextFile(filePath);
   }
 
-  // Handle --done option
-  if (options.done) {
+  // Handle --vacuum option (remove completed tasks and output them)
+  if (options.vacuum) {
     const { sections, lines } = parseMarkdownFile(content);
     const newLines: string[] = [];
-    let doneSection: ParsedSection | null = null;
+    const vacuumedTasks: { section: string; tasks: string[] }[] = [];
+    
+    // Process each section
+    for (const section of sections) {
+      const sectionNameUpper = section.name.toUpperCase();
+      const completedTasksInSection: string[] = [];
+      
+      // Collect completed tasks in this section
+      const collectCompletedTasks = (task: ParsedTask, depth: number = 0): void => {
+        if (task.checked) {
+          const indent = "  ".repeat(depth);
+          completedTasksInSection.push(`${indent}- [x] ${task.content}`);
+          
+          // Include all children of completed tasks
+          if (task.children) {
+            for (const child of task.children) {
+              const childIndent = "  ".repeat(depth + 1);
+              completedTasksInSection.push(`${childIndent}- [${child.checked ? 'x' : ' '}] ${child.content}`);
+              
+              // Recursively include grandchildren
+              if (child.children) {
+                const collectGrandchildren = (tasks: ParsedTask[], currentDepth: number) => {
+                  for (const grandchild of tasks) {
+                    const grandchildIndent = "  ".repeat(currentDepth);
+                    completedTasksInSection.push(`${grandchildIndent}- [${grandchild.checked ? 'x' : ' '}] ${grandchild.content}`);
+                    if (grandchild.children) {
+                      collectGrandchildren(grandchild.children, currentDepth + 1);
+                    }
+                  }
+                };
+                collectGrandchildren(child.children, depth + 2);
+              }
+            }
+          }
+        } else if (task.children) {
+          // Check children of uncompleted tasks
+          for (const child of task.children) {
+            collectCompletedTasks(child, depth + 1);
+          }
+        }
+      };
+      
+      // Process top-level tasks only
+      for (const task of section.tasks) {
+        if (!task.parentLineNumber) {
+          collectCompletedTasks(task);
+        }
+      }
+      
+      if (completedTasksInSection.length > 0) {
+        vacuumedTasks.push({
+          section: section.name,
+          tasks: completedTasksInSection
+        });
+      }
+    }
+    
+    // Output vacuumed tasks to stdout
+    if (vacuumedTasks.length > 0) {
+      console.log("# Vacuumed Tasks");
+      console.log(`Date: ${new Date().toISOString()}`);
+      console.log(`File: ${filePath}`);
+      console.log("");
+      
+      for (const { section, tasks } of vacuumedTasks) {
+        console.log(`## ${section}`);
+        console.log("");
+        for (const task of tasks) {
+          console.log(task);
+        }
+        console.log("");
+      }
+      
+      // Now remove completed tasks from the file
+      const skipLines = new Set<number>();
+      
+      // Mark all completed tasks and their children for removal
+      for (const section of sections) {
+        const markForRemoval = (task: ParsedTask): void => {
+          if (task.checked) {
+            skipLines.add(task.lineNumber);
+            // Mark all children for removal too
+            if (task.children) {
+              const markAllChildren = (children: ParsedTask[]) => {
+                for (const child of children) {
+                  skipLines.add(child.lineNumber);
+                  if (child.children) {
+                    markAllChildren(child.children);
+                  }
+                }
+              };
+              markAllChildren(task.children);
+            }
+          } else if (task.children) {
+            // Check children of uncompleted tasks
+            for (const child of task.children) {
+              markForRemoval(child);
+            }
+          }
+        };
+        
+        for (const task of section.tasks) {
+          if (!task.parentLineNumber) {
+            markForRemoval(task);
+          }
+        }
+      }
+      
+      // Build new content without completed tasks
+      for (let i = 0; i < lines.length; i++) {
+        if (!skipLines.has(i)) {
+          newLines.push(lines[i]);
+        }
+      }
+      
+      // Normalize and write back
+      const finalContent = normalizeMarkdownFormat(newLines.join("\n"));
+      await Deno.writeTextFile(filePath, finalContent);
+      
+      // Count total vacuumed tasks
+      const totalVacuumed = vacuumedTasks.reduce((sum, vt) => sum + vt.tasks.length, 0);
+      operations.push(`vacuumed ${totalVacuumed} completed tasks`);
+    } else {
+      console.log("No completed tasks to vacuum.");
+    }
+  }
+  // Handle --completed option
+  else if (options.completed) {
+    const { sections, lines } = parseMarkdownFile(content);
+    const newLines: string[] = [];
+    let completedSection: ParsedSection | null = null;
     const completedTasks: string[] = [];
 
-    // Find or create completed section (COMPLETED preferred over DONE)
-    doneSection = sections.find((s) => s.name.toUpperCase() === "COMPLETED") ||
-      sections.find((s) => s.name.toUpperCase() === "DONE") ||
+    // Find or create completed section
+    completedSection = sections.find((s) => s.name.toUpperCase() === "COMPLETED") ||
       null;
 
     // Process lines and collect completed tasks with hierarchy
@@ -617,7 +746,7 @@ ${checklists.join("\n")}
 
     for (const section of sections) {
       const sectionNameUpper = section.name.toUpperCase();
-      if (sectionNameUpper !== "DONE" && sectionNameUpper !== "COMPLETED") {
+      if (sectionNameUpper !== "COMPLETED") {
         // Process only top-level tasks (those without parents)
         for (const task of section.tasks) {
           if (!task.parentLineNumber) {
@@ -635,32 +764,26 @@ ${checklists.join("\n")}
       const line = lines[i];
 
       // Check if we're entering completed section
-      if (doneSection && i === doneSection.startLine) {
+      if (completedSection && i === completedSection.startLine) {
         inCompletedSection = true;
         completedHeaderLine = i;
-        if (!options["force-clear"]) {
-          newLines.push(line);
-        }
+        newLines.push(line);
         continue;
       }
 
       // Check if we're leaving completed section
-      if (inCompletedSection && doneSection) {
+      if (inCompletedSection && completedSection) {
         // Check for next section
         const headerMatch = line.match(/^(#+)\s+(.+)$/);
         if (
           headerMatch &&
-          headerMatch[1].length <= doneSection.level &&
+          headerMatch[1].length <= completedSection.level &&
           i !== completedHeaderLine
         ) {
           inCompletedSection = false;
         }
       }
 
-      // Skip lines in completed section if force-clear
-      if (inCompletedSection && options["force-clear"]) {
-        continue;
-      }
 
       // Skip completed tasks from other sections
       if (skipLines.has(i)) {
@@ -671,9 +794,9 @@ ${checklists.join("\n")}
     }
 
     // Add completed tasks to completed section
-    if (completedTasks.length > 0 && !options["force-clear"]) {
-      // If no completed section exists, create it (prefer COMPLETED)
-      if (!doneSection) {
+    if (completedTasks.length > 0) {
+      // If no completed section exists, create it
+      if (!completedSection) {
         // Add empty line before new section if needed
         if (
           newLines.length > 0 &&
@@ -685,7 +808,7 @@ ${checklists.join("\n")}
         newLines.push("");
       } else {
         // Find where to insert in existing completed section
-        const sectionPattern = new RegExp(`^##\\s+(${doneSection.name})$`, "i");
+        const sectionPattern = new RegExp(`^##\\s+(${completedSection.name})$`, "i");
         let insertIndex = newLines.findIndex((line) => {
           return sectionPattern.test(line);
         });
@@ -761,50 +884,12 @@ ${checklists.join("\n")}
     // Write back to file
     await Deno.writeTextFile(filePath, finalContent);
 
-    if (options["force-clear"]) {
-      operations.push(`cleared ${doneSection?.name || "completed"} section`);
-    } else if (completedTaskCount > 0) {
-      const sectionName = doneSection?.name || "COMPLETED";
+    if (completedTaskCount > 0) {
+      const sectionName = completedSection?.name || "COMPLETED";
       operations.push(
         `moved ${completedTaskCount} completed tasks to ${sectionName}`,
       );
     }
-  } else if (options["force-clear"]) {
-    // Just clear completed section without moving tasks
-    const { sections, lines } = parseMarkdownFile(content);
-    const newLines: string[] = [];
-    let inCompletedSection = false;
-    const completedSection = sections.find((s) =>
-      s.name.toUpperCase() === "COMPLETED"
-    ) ||
-      sections.find((s) => s.name.toUpperCase() === "DONE");
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-
-      if (completedSection && i === completedSection.startLine) {
-        inCompletedSection = true;
-        continue;
-      }
-
-      if (inCompletedSection && completedSection) {
-        const headerMatch = line.match(/^(#+)\s+(.+)$/);
-        if (headerMatch && headerMatch[1].length <= completedSection.level) {
-          inCompletedSection = false;
-        }
-      }
-
-      if (!inCompletedSection) {
-        newLines.push(line);
-      }
-    }
-
-    // Normalize format before writing (only if validation was not skipped)
-    const finalContent = options.skipValidation
-      ? newLines.join("\n")
-      : normalizeMarkdownFormat(newLines.join("\n"));
-    await Deno.writeTextFile(filePath, finalContent);
-    operations.push(`cleared ${completedSection?.name || "completed"} section`);
   }
 
   // Report operations

@@ -1,0 +1,78 @@
+{
+  "$schema": "./pcheck.schema.json",
+  "include": [
+    "**/*.md",
+    "src/**/*",
+    "tests/**/*",
+    "docs/**/*.md"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "*.min.js",
+    "*.bundle.js",
+    ".git/**",
+    ".next/**",
+    ".cache/**",
+    "vendor/**",
+    "target/**"
+  ],
+  "code": {
+    "enabled": true,
+    "patterns": ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE", "REFACTOR", "XXX"],
+    "includeTests": false,
+    "fileExtensions": [
+      "js", "jsx", "ts", "tsx", "mjs", "cjs",
+      "py", "pyw",
+      "rs",
+      "go",
+      "java",
+      "c", "cpp", "cc", "cxx", "h", "hpp",
+      "cs",
+      "rb",
+      "php",
+      "swift",
+      "kt", "kts",
+      "scala",
+      "lua",
+      "sh", "bash", "zsh"
+    ]
+  },
+  "display": {
+    "showLineNumbers": true,
+    "showEmptyTodos": false,
+    "groupByFile": true,
+    "showSectionTitles": true,
+    "maxDepth": 10
+  },
+  "output": {
+    "format": "tree",
+    "colors": true,
+    "quiet": false
+  },
+  "search": {
+    "engine": "auto",
+    "parallel": true,
+    "ignoreCase": false
+  },
+  "markdown": {
+    "extensions": ["md", "mdx", "markdown"],
+    "checklistOnly": true
+  },
+  "languages": {
+    "typescript": {
+      "detectTests": true,
+      "testPatterns": ["Deno.test", "it(", "test(", "describe(", "it.skip(", "test.skip("],
+      "includeSkipped": true
+    }
+  },
+  "ignorePatterns": [
+    "*.log",
+    "*.tmp",
+    ".DS_Store",
+    "Thumbs.db"
+  ],
+  "indentSize": 2
+}

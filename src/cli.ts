@@ -15,6 +15,7 @@ function printHelp() {
 
 Usage:
   pcheck [options] [path]
+  pcheck init [path]       # Initialize TODO.md and optionally pcheck.config.json
   pcheck doctor            # Run diagnostics
   pcheck validate [file]   # Validate Markdown checklist structure
   pcheck check <id>        # Toggle a checklist item by ID
@@ -53,7 +54,9 @@ Options:
   --filter-type <ext> Filter by file extensions (e.g., .ts,.js)
   --filter-dir <dirs> Only include specific directories (e.g., src,lib)
   --exclude-dir <dirs> Exclude specific directories (e.g., dist,build)
+  --exclude <patterns> Exclude glob patterns (e.g., "examples/**,test/**,*.test.ts")
   --config <path>     Path to pcheck.config.json (defaults to ./pcheck.config.json)
+  --no-config         Skip loading pcheck.config.json
   -n, --max-items <n> Maximum number of items to display per level
   -d, --max-depth <n> Maximum depth to display
   --ignore <patterns> Comma-separated patterns to ignore (e.g., "tmp/,*.bak,test-*")
@@ -65,7 +68,7 @@ Commands:
   check <id>        Toggle a checklist item by ID (use --off to uncheck)
   add [file] [type] Add a new task to TODO.md (use -m for message, -p for priority)
   sort [file]       Sort tasks by priority within each section
-  update/u [file]   Update TODO.md (--priority, --done, --force-clear, --code, --fix)
+  update/u [file]   Update TODO.md (--priority, --completed, --code, --fix, --vacuum)
   test [path]       Find test cases in TypeScript files (--include-all, --json)
   code-checklist    Find checklist items in code comments
 
@@ -89,10 +92,11 @@ Examples:
   pcheck add -m "Bug fix" -p high  # Add with priority
   pcheck check ff5d5f83     # Toggle task by ID
   pcheck sort              # Sort tasks by priority
-  pcheck update --done     # Move completed tasks to DONE
+  pcheck update --completed # Move completed tasks to COMPLETED
   pcheck update --fix      # Validate and fix issues before updating
-  pcheck u --priority --done  # Sort by priority and move completed tasks
+  pcheck u --priority --completed  # Sort by priority and move completed tasks
   pcheck update --code     # Extract checklists from code to TODO.md
+  pcheck update --vacuum   # Remove completed tasks and output them
   pcheck test              # Find skipped tests in current directory
   pcheck test src          # Find skipped tests in src directory
   pcheck test --json       # Output test cases as JSON
@@ -108,7 +112,7 @@ if (import.meta.main) {
   if (Deno.args[0] === "init") {
     const { runInitCommand } = await import("./init-command.ts");
     const args = parseArgs(Deno.args.slice(1), {
-      boolean: ["force"],
+      boolean: ["force", "skip-config"],
       string: ["template"],
       alias: {
         f: "force",
@@ -120,6 +124,7 @@ if (import.meta.main) {
     await runInitCommand(directory, {
       force: args.force,
       template: args.template,
+      skipConfig: args["skip-config"],
     });
     Deno.exit(0);
   }
@@ -188,12 +193,12 @@ if (import.meta.main) {
     const args = parseArgs(remainingArgs, {
       boolean: [
         "sort",
-        "done",
-        "force-clear",
+        "completed",
         "priority",
         "code",
         "fix",
         "skip-validation",
+        "vacuum",
       ],
     });
 
@@ -314,6 +319,8 @@ if (import.meta.main) {
       "show-ids",
       "json",
       "pretty",
+      "no-config",
+      "debug",
     ],
     string: [
       "engine",
@@ -322,6 +329,7 @@ if (import.meta.main) {
       "filter-type",
       "filter-dir",
       "exclude-dir",
+      "exclude",
       "config",
       "max-items",
       "max-depth",
@@ -446,11 +454,26 @@ if (import.meta.main) {
     searchEngine = await detectBestEngine();
   }
 
-  // Load config if specified
+  // Load config (from file or use defaults)
   let config;
-  if (args.config || args["scan-tests"]) {
-    const { loadConfig } = await import("./config.ts");
+  const { loadConfig, applyCliOptions, DEFAULT_CONFIG } = await import("./config.ts");
+  
+  // Skip config loading if --no-config is specified
+  if (!args["no-config"]) {
     config = await loadConfig(args.config);
+    // Apply CLI options to override config
+    config = applyCliOptions(config, args);
+    
+    if (args.debug) {
+      console.log("Loaded config:", JSON.stringify(config, null, 2));
+    }
+  } else {
+    // Use default config but apply CLI options
+    config = applyCliOptions(DEFAULT_CONFIG, args);
+    
+    if (args.debug) {
+      console.log("Using default config with CLI options:", JSON.stringify(config, null, 2));
+    }
   }
 
   // Check if ast-grep is available when scan-tests is requested
@@ -470,8 +493,8 @@ if (import.meta.main) {
 
   const options = {
     scanFiles: !args["no-files"],
-    scanCode: args["code"], // Default is false, only true if --code is specified
-    includeTestCases: args["cases"],
+    scanCode: args["code"] ?? config?.code?.enabled ?? false,
+    includeTestCases: args["cases"] ?? config?.code?.includeTests ?? false,
     scanTests: args["scan-tests"],
     searchEngine,
     filterType: args["filter-type"],
