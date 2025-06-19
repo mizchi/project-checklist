@@ -1,6 +1,9 @@
-# pcheck - Project TODO Scanner
+# project-checklist
 
 プロジェクト内のTODOを再帰的に探索して表示するDenoベースのCLIツールです。
+
+**正式名称**: project-checklist  
+**コマンド名**: pcheck
 
 ## 概要
 
@@ -15,7 +18,7 @@
 ## プロジェクト構造
 
 ```
-pcheck/
+project-checklist/
 ├── src/
 │   ├── cli.ts              # CLIエントリーポイント
 │   ├── mod.ts              # コア機能の実装
@@ -23,6 +26,11 @@ pcheck/
 │   ├── doctor.ts           # 環境診断機能
 │   ├── mod.test.ts         # テスト
 │   └── search-engines.test.ts # 検索エンジンテスト
+├── docs/                    # VitePress ドキュメント
+│   ├── .vitepress/         # VitePress 設定
+│   ├── guide/              # ガイドドキュメント
+│   ├── commands/           # コマンドリファレンス
+│   └── development/        # 開発者向けドキュメント
 ├── deno.jsonc       # Deno設定ファイル
 ├── TODO.md          # プロジェクトのTODOリスト
 └── .gitignore
@@ -67,6 +75,12 @@ deno task check
 
 # カバレッジ付きテスト
 deno task test:cov
+
+# ドキュメント開発サーバー
+deno task doc:dev
+
+# ドキュメントビルド
+deno task doc:build
 ```
 
 ## 技術スタック

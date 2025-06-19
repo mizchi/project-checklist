@@ -2,6 +2,7 @@
 
 ## TODO
 
+- [ ] [HIGH] Fix: --codeオプションでtest.jsのTODOが表示されない
 ### Core Features
 
 - [ ] Create MCP (Model Context Protocol) server integration

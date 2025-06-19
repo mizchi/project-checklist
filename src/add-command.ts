@@ -3,6 +3,7 @@ import { bold, green } from "@std/fmt/colors";
 
 // Valid priority values
 const VALID_PRIORITIES = ["HIGH", "MID", "LOW"];
+const BUG_PRIORITIES = ["P0", "P1", "P2", "P3"];
 const NUMERIC_PRIORITY_REGEX = /^\d+$/;
 
 function validatePriority(priority: string): {
@@ -14,6 +15,11 @@ function validatePriority(priority: string): {
 
   // Check for valid string priorities
   if (VALID_PRIORITIES.includes(upper)) {
+    return { valid: true, normalized: upper };
+  }
+
+  // Check for bug priorities (P0-P3)
+  if (BUG_PRIORITIES.includes(upper)) {
     return { valid: true, normalized: upper };
   }
 
@@ -38,7 +44,7 @@ function validatePriority(priority: string): {
       valid: false,
       normalized: priority,
       warning:
-        `Invalid priority format: "${priority}". Use either HIGH/MID/LOW or a number (0-999).`,
+        `Invalid priority format: "${priority}". Use either HIGH/MID/LOW, P0-P3, or a number (0-999).`,
     };
   }
 
@@ -46,7 +52,7 @@ function validatePriority(priority: string): {
     valid: false,
     normalized: priority,
     warning:
-      `Invalid priority: "${priority}". Use HIGH/MID/LOW or a number (0-999).`,
+      `Invalid priority: "${priority}". Use HIGH/MID/LOW, P0-P3, or a number (0-999).`,
   };
 }
 

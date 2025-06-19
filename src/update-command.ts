@@ -668,15 +668,13 @@ ${checklists.join("\n")}
       indentSize: number = actualIndentSize,
     ): void => {
       if (task.checked) {
-        // Remove the [x] checkbox and format for completed section
-        const taskContent = task.content.replace(/^\[.*?\]\s*/, ""); // Remove priority if present
-        // If validation is skipped, preserve original spacing
+        // Keep the checkbox in completed section
         const taskIndent = options.skipValidation
           ? task.indent
           : Math.round(task.indent / indentSize) * indentSize;
         const formatted = `${
           " ".repeat(baseIndent * indentSize + taskIndent)
-        }- ${taskContent}`;
+        }- [x] ${task.content}`;
         completedTasksWithHierarchy.push({ task, formatted });
         completedTasks.push(formatted);
         skipLines.add(task.lineNumber);
@@ -689,14 +687,14 @@ ${checklists.join("\n")}
           ) => {
             for (const child of children) {
               skipLines.add(child.lineNumber); // Skip child lines too
-              const childContent = child.content.replace(/^\[.*?\]\s*/, "");
               // Calculate relative indent from the original top-level task
               const actualChildIndent = options.skipValidation
                 ? child.indent
                 : Math.round(child.indent / indentSize) * indentSize;
+              const checkbox = child.checked ? "[x]" : "[ ]";
               const childFormatted = `${
                 " ".repeat(baseIndent * indentSize + actualChildIndent)
-              }- ${childContent}`;
+              }- ${checkbox} ${child.content}`;
               completedTasks.push(childFormatted);
 
               // Recursively collect grandchildren

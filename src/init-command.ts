@@ -12,6 +12,10 @@ const DEFAULT_TEMPLATE = `# TODO
 
 ## TODO
 
+- [ ] Initial project setup
+- [ ] Add documentation
+- [ ] Write tests
+
 ## ICEBOX
 
 ## COMPLETED
@@ -21,6 +25,10 @@ const GTD_TEMPLATE = `# TODO
 
 ## TODO
 <!-- Active tasks that need to be done -->
+
+- [ ] Define project goals
+- [ ] Set up development environment
+- [ ] Create initial structure
 
 ## ICEBOX
 <!-- Ideas and tasks for later consideration -->
