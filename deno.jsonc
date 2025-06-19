@@ -1,6 +1,6 @@
 {
   "name": "@mizchi/project-checklist",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --watch --allow-read --allow-env --allow-run src/cli.ts",

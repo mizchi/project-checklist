@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] - 2025-06-19
+
+### Fixed
+
+- Fix TypeScript type errors with node:util parseArgs API
+- Fix --force-clear option to properly clear COMPLETED section
+- Add explicit type assertions for all CLI option values
+
+### Changed
+
+- Update pcheck.config.json to exclude test-scenarios and docs directories
+- Apply consistent code formatting with deno fmt
+
 ## [0.1.1] - 2025-01-18
 
 ### Fixed
