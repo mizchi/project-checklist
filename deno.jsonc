@@ -21,6 +21,7 @@
     "@std/fmt": "jsr:@std/fmt@^1.0.8",
     "@std/fs": "jsr:@std/fs@^1.0.18",
     "@std/path": "jsr:@std/path@^1.1.0",
+    "@types/node": "npm:@types/node@^24.0.3",
     "remark": "npm:remark@^15.0.1",
     "remark-gfm": "npm:remark-gfm@^4.0.1",
     "unist-util-visit": "npm:unist-util-visit@^5.0.0",

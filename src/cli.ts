@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-env --allow-run
-import { parseArgs } from "@std/cli/parse-args";
+import { parseArgs } from "@std/cli";
 import { findTodos, findTodosInFile, LegacyTodoItem } from "./mod.ts";
 import { detectBestEngine, getEngineByName } from "./search/mod.ts";
 import {
@@ -182,11 +182,11 @@ if (import.meta.main) {
   // Check if it's validate command
   if (Deno.args[0] === "validate") {
     // Special case: validate config file
-    if (parsedArgs[1] === "--config" || parsedArgs[1]?.endsWith(".json")) {
+    if (Deno.args[1] === "--config" || Deno.args[1]?.endsWith(".json")) {
       const { validateConfigFile } = await import("./config-validator.ts");
-      const configPath = parsedArgs[1] === "--config"
-        ? (parsedArgs[2] || "./pcheck.config.json")
-        : parsedArgs[1];
+      const configPath = Deno.args[1] === "--config"
+        ? (Deno.args[2] || "./pcheck.config.json")
+        : Deno.args[1];
 
       const result = await validateConfigFile(configPath);
       if (result.valid) {
@@ -204,13 +204,13 @@ if (import.meta.main) {
     }
 
     const { runValidateCommand } = await import("./cli/commands/validate.ts");
-    await runValidateCommand(parsedArgs.slice(1));
+    await runValidateCommand(Deno.args.slice(1));
     Deno.exit(0);
   }
 
   // Check if it's check command
   if (Deno.args[0] === "check") {
-    const itemId = parsedArgs[1];
+    const itemId = Deno.args[1];
     if (!itemId) {
       console.error("Error: Item ID is required for check command");
       console.error("Usage: pcheck check <id>");
@@ -218,7 +218,7 @@ if (import.meta.main) {
     }
 
     const { runCheckCommand } = await import("./check-command.ts");
-    const parsedArgs = parseArgs(Deno.args.slice(2), {
+    const args = parseArgs(Deno.args.slice(2), {
       boolean: ["off", "gitroot", "private"],
       alias: {
         g: "gitroot",
@@ -235,8 +235,8 @@ if (import.meta.main) {
     let filePath = "TODO.md"; // Default to TODO.md
 
     // Check if file path is provided
-    if (parsedArgs.length > 1 && !parsedArgs[1].startsWith("-")) {
-      filePath = parsedArgs[1];
+    if (Deno.args.length > 1 && !Deno.args[1].startsWith("-")) {
+      filePath = Deno.args[1];
     }
 
     await runSortCommand(filePath);
@@ -244,10 +244,10 @@ if (import.meta.main) {
   }
 
   // Check if it's update command (or alias 'u')
-  if (Deno.args[0] === "update" || parsedArgs[0] === "u") {
+  if (Deno.args[0] === "update" || Deno.args[0] === "u") {
     const { runUpdateCommand } = await import("./update-command.ts");
     let filePath = "TODO.md"; // Default to TODO.md
-    const remainingArgs = parsedArgs.slice(1);
+    const remainingArgs = Deno.args.slice(1);
 
     // Check if file path is provided
     if (remainingArgs.length > 0 && !remainingArgs[0].startsWith("-")) {
@@ -255,7 +255,7 @@ if (import.meta.main) {
       remainingArgs.shift();
     }
 
-    const parsedArgs = parseArgs(remainingArgs, {
+    const args = parseArgs(remainingArgs, {
       boolean: [
         "sort",
         "completed",
@@ -277,7 +277,7 @@ if (import.meta.main) {
     // Map 'done' to 'completed' for backward compatibility
     const updateOptions = {
       ...args,
-      completed: parsedArgs.completed || parsedArgs.done,
+      completed: args.completed || args.done,
     };
     await runUpdateCommand(filePath, updateOptions);
     Deno.exit(0);
@@ -286,20 +286,20 @@ if (import.meta.main) {
   // Check if it's test command
   if (Deno.args[0] === "test") {
     const { runTestCommand } = await import("./test-command.ts");
-    const targetPath = parsedArgs[1] || ".";
+    const targetPath = Deno.args[1] || ".";
 
-    const parsedArgs = parseArgs(Deno.args.slice(2), {
+    const args = parseArgs(Deno.args.slice(2), {
       boolean: ["json", "pretty", "include-all"],
       string: ["filter-dir", "exclude-dir"],
     });
 
     await runTestCommand({
       path: targetPath,
-      includeSkipped: !parsedArgs["include-all"],
-      json: parsedArgs.json,
-      pretty: parsedArgs.pretty,
-      filterDir: parsedArgs["filter-dir"],
-      excludeDir: parsedArgs["exclude-dir"],
+      includeSkipped: !args["include-all"],
+      json: args.json,
+      pretty: args.pretty,
+      filterDir: args["filter-dir"],
+      excludeDir: args["exclude-dir"],
     });
     Deno.exit(0);
   }
@@ -362,7 +362,7 @@ if (import.meta.main) {
   // Check if it's add command
   if (Deno.args[0] === "add") {
     const { runAddCommand } = await import("./add-command.ts");
-    let remainingArgs = parsedArgs.slice(1);
+    let remainingArgs = Deno.args.slice(1);
     let filePath = "TODO.md"; // Default to TODO.md in current directory
 
     // Check if first arg is a file path (ends with .md or contains /)
@@ -382,7 +382,7 @@ if (import.meta.main) {
       argsStart = 1;
     }
 
-    const parsedArgs = parseArgs(remainingArgs.slice(argsStart), {
+    const args = parseArgs(remainingArgs.slice(argsStart), {
       string: ["message", "priority"],
       alias: {
         m: "message",
@@ -390,7 +390,7 @@ if (import.meta.main) {
       },
     });
 
-    if (!parsedArgs.message) {
+    if (!args.message) {
       console.error("Error: Message is required for add command");
       console.error("Usage: pcheck add [file] [type] -m <message>");
       Deno.exit(1);
@@ -399,8 +399,8 @@ if (import.meta.main) {
     await runAddCommand(
       filePath,
       sectionType,
-      parsedArgs.message as string,
-      parsedArgs.priority as string,
+      args.message as string,
+      args.priority as string,
     );
     Deno.exit(0);
   }
@@ -612,14 +612,14 @@ CONFIG:
   if (!parsedArgs["no-config"]) {
     config = await loadConfig(parsedArgs.config);
     // Apply CLI options to override config
-    config = applyCliOptions(config, args);
+    config = applyCliOptions(config, parsedArgs);
 
     if (parsedArgs.debug) {
       console.log("Loaded config:", JSON.stringify(config, null, 2));
     }
   } else {
     // Use default config but apply CLI options
-    config = applyCliOptions(DEFAULT_CONFIG, args);
+    config = applyCliOptions(DEFAULT_CONFIG, parsedArgs);
 
     if (parsedArgs.debug) {
       console.log(

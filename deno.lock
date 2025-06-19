@@ -1,38 +1,57 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@david/code-block-writer@^13.0.2": "13.0.3",
     "jsr:@david/console-static-text@0.3": "0.3.0",
     "jsr:@david/dax@0.42": "0.42.0",
     "jsr:@david/dax@~0.43.2": "0.43.2",
     "jsr:@david/path@0.2": "0.2.0",
     "jsr:@david/which@~0.4.1": "0.4.1",
+    "jsr:@deno/cache-dir@~0.10.3": "0.10.3",
+    "jsr:@deno/dnt@~0.41.3": "0.41.3",
     "jsr:@std/assert@0.221": "0.221.0",
+    "jsr:@std/assert@0.223": "0.223.0",
+    "jsr:@std/assert@0.226": "0.226.0",
     "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/bytes@0.221": "0.221.0",
+    "jsr:@std/bytes@0.223": "0.223.0",
     "jsr:@std/bytes@^1.0.5": "1.0.6",
     "jsr:@std/cli@1": "1.0.12",
     "jsr:@std/crypto@^1.0.5": "1.0.5",
     "jsr:@std/expect@^1.0.16": "1.0.16",
+    "jsr:@std/fmt@0.223": "0.223.0",
     "jsr:@std/fmt@1": "1.0.8",
     "jsr:@std/fmt@^1.0.8": "1.0.8",
+    "jsr:@std/fs@0.223": "0.223.0",
     "jsr:@std/fs@1": "1.0.18",
     "jsr:@std/fs@^1.0.18": "1.0.18",
+    "jsr:@std/fs@~0.229.3": "0.229.3",
     "jsr:@std/internal@^1.0.6": "1.0.8",
     "jsr:@std/internal@^1.0.7": "1.0.8",
     "jsr:@std/io@0.221": "0.221.0",
+    "jsr:@std/io@0.223": "0.223.0",
     "jsr:@std/io@0.225": "0.225.2",
+    "jsr:@std/path@0.223": "0.223.0",
     "jsr:@std/path@1": "1.1.0",
+    "jsr:@std/path@1.0.0-rc.1": "1.0.0-rc.1",
     "jsr:@std/path@^1.1.0": "1.1.0",
+    "jsr:@std/path@~0.225.2": "0.225.2",
     "jsr:@std/streams@0.221": "0.221.0",
+    "jsr:@ts-morph/bootstrap@0.24": "0.24.0",
+    "jsr:@ts-morph/common@0.24": "0.24.0",
     "npm:@types/mdast@4": "4.0.4",
+    "npm:@types/node@^24.0.3": "24.0.3",
     "npm:@vue/runtime-dom@^3.5.17": "3.5.17",
     "npm:remark-gfm@^4.0.1": "4.0.1",
     "npm:remark@^15.0.1": "15.0.1",
     "npm:unist-util-visit@5": "5.0.0",
-    "npm:vitepress@*": "1.6.3_vite@5.4.19_vue@3.5.13_focus-trap@7.6.5",
+    "npm:vitepress@*": "1.6.3_vite@5.4.19_vue@3.5.13_focus-trap@7.6.5_@types+node@24.0.3",
     "npm:vue@^3.5.17": "3.5.17"
   },
   "jsr": {
+    "@david/code-block-writer@13.0.3": {
+      "integrity": "f98c77d320f5957899a61bfb7a9bead7c6d83ad1515daee92dbacc861e13bb7f"
+    },
     "@david/console-static-text@0.3.0": {
       "integrity": "2dfb46ecee525755f7989f94ece30bba85bd8ffe3e8666abc1bf926e1ee0698d"
     },
@@ -70,8 +89,34 @@
     "@david/which@0.4.1": {
       "integrity": "896a682b111f92ab866cc70c5b4afab2f5899d2f9bde31ed00203b9c250f225e"
     },
+    "@deno/cache-dir@0.10.3": {
+      "integrity": "eb022f84ecc49c91d9d98131c6e6b118ff63a29e343624d058646b9d50404776",
+      "dependencies": [
+        "jsr:@std/fmt@0.223",
+        "jsr:@std/fs@0.223",
+        "jsr:@std/io@0.223",
+        "jsr:@std/path@0.223"
+      ]
+    },
+    "@deno/dnt@0.41.3": {
+      "integrity": "b2ef2c8a5111eef86cb5bfcae103d6a2938e8e649e2461634a7befb7fc59d6d2",
+      "dependencies": [
+        "jsr:@david/code-block-writer",
+        "jsr:@deno/cache-dir",
+        "jsr:@std/fmt@1",
+        "jsr:@std/fs@1",
+        "jsr:@std/path@1",
+        "jsr:@ts-morph/bootstrap"
+      ]
+    },
     "@std/assert@0.221.0": {
       "integrity": "a5f1aa6e7909dbea271754fd4ab3f4e687aeff4873b4cef9a320af813adb489a"
+    },
+    "@std/assert@0.223.0": {
+      "integrity": "eb8d6d879d76e1cc431205bd346ed4d88dc051c6366365b1af47034b0670be24"
+    },
+    "@std/assert@0.226.0": {
+      "integrity": "0dfb5f7c7723c18cec118e080fec76ce15b4c31154b15ad2bd74822603ef75b3"
     },
     "@std/assert@1.0.13": {
       "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
@@ -81,6 +126,9 @@
     },
     "@std/bytes@0.221.0": {
       "integrity": "64a047011cf833890a4a2ab7293ac55a1b4f5a050624ebc6a0159c357de91966"
+    },
+    "@std/bytes@0.223.0": {
+      "integrity": "84b75052cd8680942c397c2631318772b295019098f40aac5c36cead4cba51a8"
     },
     "@std/bytes@1.0.6": {
       "integrity": "f6ac6adbd8ccd99314045f5703e23af0a68d7f7e58364b47d2c7f408aeb5820a"
@@ -98,8 +146,20 @@
         "jsr:@std/internal@^1.0.7"
       ]
     },
+    "@std/fmt@0.223.0": {
+      "integrity": "6deb37794127dfc7d7bded2586b9fc6f5d50e62a8134846608baf71ffc1a5208"
+    },
     "@std/fmt@1.0.8": {
       "integrity": "71e1fc498787e4434d213647a6e43e794af4fd393ef8f52062246e06f7e372b7"
+    },
+    "@std/fs@0.223.0": {
+      "integrity": "3b4b0550b2c524cbaaa5a9170c90e96cbb7354e837ad1bdaf15fc9df1ae9c31c"
+    },
+    "@std/fs@0.229.3": {
+      "integrity": "783bca21f24da92e04c3893c9e79653227ab016c48e96b3078377ebd5222e6eb",
+      "dependencies": [
+        "jsr:@std/path@1.0.0-rc.1"
+      ]
     },
     "@std/fs@1.0.18": {
       "integrity": "24bcad99eab1af4fde75e05da6e9ed0e0dce5edb71b7e34baacf86ffe3969f3a",
@@ -117,11 +177,33 @@
         "jsr:@std/bytes@0.221"
       ]
     },
+    "@std/io@0.223.0": {
+      "integrity": "2d8c3c2ab3a515619b90da2c6ff5ea7b75a94383259ef4d02116b228393f84f1",
+      "dependencies": [
+        "jsr:@std/assert@0.223",
+        "jsr:@std/bytes@0.223"
+      ]
+    },
     "@std/io@0.225.2": {
       "integrity": "3c740cd4ee4c082e6cfc86458f47e2ab7cb353dc6234d5e9b1f91a2de5f4d6c7",
       "dependencies": [
         "jsr:@std/bytes@^1.0.5"
       ]
+    },
+    "@std/path@0.223.0": {
+      "integrity": "593963402d7e6597f5a6e620931661053572c982fc014000459edc1f93cc3989",
+      "dependencies": [
+        "jsr:@std/assert@0.223"
+      ]
+    },
+    "@std/path@0.225.2": {
+      "integrity": "0f2db41d36b50ef048dcb0399aac720a5348638dd3cb5bf80685bf2a745aa506",
+      "dependencies": [
+        "jsr:@std/assert@0.226"
+      ]
+    },
+    "@std/path@1.0.0-rc.1": {
+      "integrity": "b8c00ae2f19106a6bb7cbf1ab9be52aa70de1605daeb2dbdc4f87a7cbaf10ff6"
     },
     "@std/path@1.1.0": {
       "integrity": "ddc94f8e3c275627281cbc23341df6b8bcc874d70374f75fec2533521e3d6886"
@@ -130,6 +212,19 @@
       "integrity": "47f2f74634b47449277c0ee79fe878da4424b66bd8975c032e3afdca88986e61",
       "dependencies": [
         "jsr:@std/io@0.221"
+      ]
+    },
+    "@ts-morph/bootstrap@0.24.0": {
+      "integrity": "a826a2ef7fa8a7c3f1042df2c034d20744d94da2ee32bf29275bcd4dffd3c060",
+      "dependencies": [
+        "jsr:@ts-morph/common"
+      ]
+    },
+    "@ts-morph/common@0.24.0": {
+      "integrity": "12b625b8e562446ba658cdbe9ad77774b4bd96b992ae8bd34c60dbf24d06c1f3",
+      "dependencies": [
+        "jsr:@std/fs@~0.229.3",
+        "jsr:@std/path@~0.225.2"
       ]
     }
   },
@@ -626,6 +721,12 @@
     "@types/ms@2.1.0": {
       "integrity": "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="
     },
+    "@types/node@24.0.3": {
+      "integrity": "sha512-R4I/kzCYAdRLzfiCabn9hxWfbuHS573x+r0dJMkkzThEa7pbrcDWK+9zu3e7aBOouf+rQAciqPFMnxwr0aWgKg==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
     "@types/unist@3.0.3": {
       "integrity": "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="
     },
@@ -638,7 +739,14 @@
     "@vitejs/plugin-vue@5.2.4_vite@5.4.19_vue@3.5.13": {
       "integrity": "sha512-7Yx/SXSOcQq5HiiV3orevHUFn+pmMB4cgbEkDYgnkUWb0WfeQ/wa2yFv6D5ICiCQOVpjA7vYDXrC7AGO8yjDHA==",
       "dependencies": [
-        "vite",
+        "vite@5.4.19",
+        "vue@3.5.13"
+      ]
+    },
+    "@vitejs/plugin-vue@5.2.4_vite@5.4.19_vue@3.5.13_@types+node@24.0.3": {
+      "integrity": "sha512-7Yx/SXSOcQq5HiiV3orevHUFn+pmMB4cgbEkDYgnkUWb0WfeQ/wa2yFv6D5ICiCQOVpjA7vYDXrC7AGO8yjDHA==",
+      "dependencies": [
+        "vite@5.4.19_@types+node@24.0.3",
         "vue@3.5.13"
       ]
     },
@@ -1555,6 +1663,9 @@
     "trough@2.2.0": {
       "integrity": "sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw=="
     },
+    "undici-types@7.8.0": {
+      "integrity": "sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw=="
+    },
     "unified@11.0.5": {
       "integrity": "sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==",
       "dependencies": [
@@ -1626,6 +1737,22 @@
       ],
       "bin": true
     },
+    "vite@5.4.19_@types+node@24.0.3": {
+      "integrity": "sha512-qO3aKv3HoQC8QKiNSTuUM1l9o/XX3+c+VTgLHbJWHZGeTPVAg2XwazI9UWzoxjIJCGCV2zU60uqMzjeLZuULqA==",
+      "dependencies": [
+        "@types/node",
+        "esbuild",
+        "postcss",
+        "rollup"
+      ],
+      "optionalDependencies": [
+        "fsevents"
+      ],
+      "optionalPeers": [
+        "@types/node"
+      ],
+      "bin": true
+    },
     "vitepress@1.6.3_vite@5.4.19_vue@3.5.13_focus-trap@7.6.5": {
       "integrity": "sha512-fCkfdOk8yRZT8GD9BFqusW3+GggWYZ/rYncOfmgcDtP3ualNHCAg+Robxp2/6xfH1WwPHtGpPwv7mbA3qomtBw==",
       "dependencies": [
@@ -1636,7 +1763,7 @@
         "@shikijs/transformers",
         "@shikijs/types",
         "@types/markdown-it",
-        "@vitejs/plugin-vue",
+        "@vitejs/plugin-vue@5.2.4_vite@5.4.19_vue@3.5.13",
         "@vue/devtools-api",
         "@vue/shared@3.5.16",
         "@vueuse/core",
@@ -1645,7 +1772,31 @@
         "mark.js",
         "minisearch",
         "shiki",
-        "vite",
+        "vite@5.4.19",
+        "vue@3.5.13"
+      ],
+      "bin": true
+    },
+    "vitepress@1.6.3_vite@5.4.19_vue@3.5.13_focus-trap@7.6.5_@types+node@24.0.3": {
+      "integrity": "sha512-fCkfdOk8yRZT8GD9BFqusW3+GggWYZ/rYncOfmgcDtP3ualNHCAg+Robxp2/6xfH1WwPHtGpPwv7mbA3qomtBw==",
+      "dependencies": [
+        "@docsearch/css",
+        "@docsearch/js",
+        "@iconify-json/simple-icons",
+        "@shikijs/core",
+        "@shikijs/transformers",
+        "@shikijs/types",
+        "@types/markdown-it",
+        "@vitejs/plugin-vue@5.2.4_vite@5.4.19_vue@3.5.13_@types+node@24.0.3",
+        "@vue/devtools-api",
+        "@vue/shared@3.5.16",
+        "@vueuse/core",
+        "@vueuse/integrations",
+        "focus-trap",
+        "mark.js",
+        "minisearch",
+        "shiki",
+        "vite@5.4.19_@types+node@24.0.3",
         "vue@3.5.13"
       ],
       "bin": true
@@ -1687,6 +1838,7 @@
       "jsr:@std/fs@^1.0.18",
       "jsr:@std/path@^1.1.0",
       "npm:@types/mdast@4",
+      "npm:@types/node@^24.0.3",
       "npm:remark-gfm@^4.0.1",
       "npm:remark@^15.0.1",
       "npm:unist-util-visit@5",
