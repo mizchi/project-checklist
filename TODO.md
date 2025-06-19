@@ -2,13 +2,13 @@
 
 ## TODO
 
-- [ ] [HIGH] Fix: --codeオプションでtest.jsのTODOが表示されない
+- [ ] [HIGH] Fix: --code オプションで test.js の TODO が表示されない
+
 ### Core Features
 
 - [ ] Create MCP (Model Context Protocol) server integration
 - [ ] Add progress indicators for large directories
 - [ ] Implement caching for better performance
-- [ ] Support for custom ignore patterns via .pcheckignore file
 
 ### Documentation & Examples
 
@@ -32,9 +32,7 @@
 
 ## ICEBOX
 
-- [ ] Create VS Code extension
 - [ ] Add support for task time tracking
-- [ ] Implement task analytics and reporting
 - [ ] Create mobile app for task management
 - [ ] Add support for team collaboration features
 
