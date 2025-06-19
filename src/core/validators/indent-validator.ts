@@ -27,17 +27,32 @@ export class IndentValidator {
     for (const task of tasks) {
       // Check if indent is a multiple of expected indent size
       if (task.indent % indentSize !== 0) {
-        warnings.push({
-          type: "INDENT_WARNING",
-          message:
-            `Inconsistent indentation detected (expected multiple of ${indentSize} spaces, found ${task.indent})`,
-          line: task.lineNumber,
-          severity: "warning",
-          details: {
-            expectedIndentSize: indentSize,
-            actualIndent: task.indent,
-          },
-        });
+        // In strict mode or when task has indentation (suggesting it's a child), this is an error
+        if (options.strict || task.indent > 0) {
+          errors.push({
+            type: "INDENT_ERROR",
+            message:
+              `Inconsistent indentation detected (expected multiple of ${indentSize} spaces, found ${task.indent})`,
+            line: task.lineNumber,
+            severity: "error",
+            details: {
+              expectedIndentSize: indentSize,
+              actualIndent: task.indent,
+            },
+          });
+        } else {
+          warnings.push({
+            type: "INDENT_WARNING",
+            message:
+              `Inconsistent indentation detected (expected multiple of ${indentSize} spaces, found ${task.indent})`,
+            line: task.lineNumber,
+            severity: "warning",
+            details: {
+              expectedIndentSize: indentSize,
+              actualIndent: task.indent,
+            },
+          });
+        }
       }
 
       indentLevels.add(task.indent);

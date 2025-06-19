@@ -2,6 +2,7 @@ import { ValidationEngine } from "../../core/validation-engine.ts";
 import { OutputFormatter } from "../../core/output-formatter.ts";
 import { ValidatorOptions } from "../../types/validation.ts";
 import { parseArgs } from "@std/cli/parse-args";
+import { green } from "@std/fmt/colors";
 
 interface ValidateArgs {
   json?: boolean;
@@ -10,12 +11,16 @@ interface ValidateArgs {
   "indent-size"?: string;
   details?: boolean;
   help?: boolean;
+  fix?: boolean;
   _?: (string | number)[];
 }
 
-export async function runValidateCommand(args: string[]): Promise<void> {
+export async function runValidateCommand(
+  args: string[],
+  options?: { json?: boolean; fix?: boolean; strict?: boolean },
+): Promise<any[] | void> {
   const parsedArgs = parseArgs(args, {
-    boolean: ["json", "pretty", "strict", "details", "help"],
+    boolean: ["json", "pretty", "strict", "details", "help", "fix"],
     string: ["indent-size"],
     alias: {
       j: "json",
@@ -24,6 +29,7 @@ export async function runValidateCommand(args: string[]): Promise<void> {
       d: "details",
       h: "help",
       i: "indent-size",
+      f: "fix",
     },
   }) as ValidateArgs;
 
@@ -37,7 +43,7 @@ export async function runValidateCommand(args: string[]): Promise<void> {
 
   // Prepare validator options
   const validatorOptions: ValidatorOptions = {
-    strict: parsedArgs.strict,
+    strict: options?.strict ?? parsedArgs.strict,
   };
 
   if (parsedArgs["indent-size"]) {
@@ -74,7 +80,92 @@ export async function runValidateCommand(args: string[]): Promise<void> {
   const formatter = new OutputFormatter();
 
   try {
-    const result = await engine.validateFile(filePath, validatorOptions);
+    let result = await engine.validateFile(filePath, validatorOptions);
+
+    // Track if any fixes were applied
+    let wasFixed = false;
+
+    // If called programmatically with json option, return the result early if valid
+    if (options?.json && result.valid) {
+      return [{
+        file: filePath,
+        valid: result.valid,
+        issues: [],
+        fixed: false,
+      }];
+    }
+
+    // If fix option is provided, attempt to fix issues
+    const shouldFix = options?.fix || parsedArgs.fix;
+    if (shouldFix && !result.valid) {
+      // Read the file content
+      const content = await Deno.readTextFile(filePath);
+      let fixedContent = content;
+      let fixed = false;
+
+      // Fix common issues
+      for (const error of result.errors) {
+        if (error.message.includes("Inconsistent indentation")) {
+          // Fix indentation issues
+          const lines = fixedContent.split("\n");
+          const indentSize = validatorOptions.indentSize || 2;
+
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const match = line.match(/^(\s*)-\s*\[/);
+            if (match) {
+              const currentIndent = match[1].length;
+              const expectedLevel = Math.round(currentIndent / indentSize);
+              const expectedIndent = expectedLevel * indentSize;
+              if (currentIndent !== expectedIndent) {
+                lines[i] = " ".repeat(expectedIndent) + line.trimStart();
+                fixed = true;
+              }
+            }
+          }
+
+          fixedContent = lines.join("\n");
+        }
+      }
+
+      // Write back if fixed
+      if (fixed) {
+        await Deno.writeTextFile(filePath, fixedContent);
+        wasFixed = true;
+
+        // Re-validate after fix
+        const fixedResult = await engine.validateFile(
+          filePath,
+          validatorOptions,
+        );
+
+        // Display fix message when not in JSON mode
+        if (!parsedArgs.json) {
+          console.log(green("✓ Fixed validation issues"));
+        }
+
+        // Update result to show fixed result
+        result = fixedResult;
+      }
+    }
+
+    // If called programmatically with json option, return the result
+    if (options?.json) {
+      return [{
+        file: filePath,
+        valid: result.valid,
+        issues: result.errors.map((e) => ({
+          type: "error",
+          message: e.message,
+          line: e.line,
+        })).concat(result.warnings.map((w) => ({
+          type: "warning",
+          message: w.message,
+          line: w.line,
+        }))),
+        fixed: wasFixed,
+      }];
+    }
 
     const output = formatter.formatValidationResult(result, filePath, {
       json: parsedArgs.json,
@@ -111,6 +202,7 @@ Options:
   -s, --strict        Enable strict validation mode
   -d, --details       Show detailed information in console output
   -i, --indent-size   Expected indent size in spaces (default: 2)
+  -f, --fix           Attempt to fix validation issues automatically
 
 Examples:
   pcheck validate                    # Validate TODO.md
@@ -120,6 +212,7 @@ Examples:
   pcheck validate --strict           # Strict validation
   pcheck validate --indent-size 4    # Use 4-space indentation
   pcheck validate --details          # Show detailed output
+  pcheck validate --fix              # Fix validation issues
 
 Validation Rules:
   • Indent consistency (proper spacing and hierarchy)

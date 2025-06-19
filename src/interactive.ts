@@ -1,6 +1,7 @@
 import { $ } from "dax";
 import { bold } from "@std/fmt/colors";
 import { LegacyTodoItem } from "./mod.ts";
+import { TodoItem } from "./types.ts";
 import { updateChecklistItem } from "./markdown-parser.ts";
 import { relative } from "@std/path";
 
@@ -12,40 +13,48 @@ interface InteractiveItem {
 }
 
 export async function runInteractiveMode(
-  todos: LegacyTodoItem[],
+  todos: TodoItem[] | LegacyTodoItem[],
   baseDir: string,
 ) {
   // Flatten todos for interactive selection
   const items: InteractiveItem[] = [];
 
   function collectItems(
-    todoList: LegacyTodoItem[],
+    todoList: TodoItem[] | LegacyTodoItem[],
     filePath: string,
     depth = 0,
   ) {
     for (const todo of todoList) {
-      if (todo.type === "file" && todo.todos) {
+      // Handle LegacyTodoItem
+      if (
+        "type" in todo && todo.type === "file" && "todos" in todo && todo.todos
+      ) {
+        const legacyTodo = todo as LegacyTodoItem;
         const absolutePath = filePath.startsWith("/")
           ? filePath
-          : `${baseDir}/${todo.path}`;
-        collectItems(todo.todos, absolutePath, depth);
+          : `${baseDir}/${legacyTodo.path}`;
+        if (legacyTodo.todos) {
+          collectItems(legacyTodo.todos, absolutePath, depth);
+        }
       } else if (
-        todo.type === "markdown" && todo.id && todo.checked !== undefined
+        "type" in todo && todo.type === "markdown" && "id" in todo && todo.id &&
+        "checked" in todo && todo.checked !== undefined
       ) {
+        const legacyTodo = todo as LegacyTodoItem;
         items.push({
-          todo,
+          todo: legacyTodo,
           path: filePath,
           displayPath: relative(baseDir, filePath),
           depth,
         });
-        if (todo.todos) {
-          collectItems(todo.todos, filePath, depth + 1);
+        if ("todos" in legacyTodo && legacyTodo.todos) {
+          collectItems(legacyTodo.todos, filePath, depth + 1);
         }
       }
     }
   }
 
-  collectItems(todos, baseDir);
+  collectItems(todos as LegacyTodoItem[], baseDir);
 
   if (items.length === 0) {
     console.log("No checklist items found.");

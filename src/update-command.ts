@@ -1,4 +1,4 @@
-import { bold, green, yellow } from "@std/fmt/colors";
+import { bold, green, red, yellow } from "@std/fmt/colors";
 import { runSortCommand } from "./sort-command.ts";
 import { loadConfig } from "./config.ts";
 import { $ } from "dax";
@@ -12,6 +12,8 @@ interface UpdateOptions {
   priority?: boolean;
   indentSize?: number;
   code?: boolean;
+  fix?: boolean;
+  skipValidation?: boolean;
 }
 
 interface ParsedSection {
@@ -270,6 +272,40 @@ export async function runUpdateCommand(
   const config = await loadConfig();
   const actualIndentSize = options.indentSize ?? config.indentSize ?? 2;
 
+  // Initialize content variable
+  let content: string;
+  const operations: string[] = [];
+
+  // Run validation before update unless skipped
+  if (!options.skipValidation && !options.code) {
+    const { runValidateCommand } = await import("./cli/commands/validate.ts");
+
+    console.log("Validating file structure...");
+    // Run validation in strict mode for update command
+    const validationResult = await runValidateCommand([filePath], {
+      json: true,
+      fix: options.fix,
+      strict: true,
+    });
+
+    if (validationResult && validationResult.length > 0) {
+      const fileResult = validationResult[0];
+      if (!fileResult.valid && !options.fix) {
+        console.log(
+          red("Validation failed. Use --fix to attempt automatic fixes."),
+        );
+        console.log("Issues found:");
+        for (const issue of fileResult.issues || []) {
+          console.log(`  - ${issue.message}`);
+        }
+        return;
+      } else if (options.fix && fileResult.fixed) {
+        console.log(green("✓ Fixed validation issues"));
+        operations.push("fixed validation issues");
+      }
+    }
+  }
+
   // Handle --code option first (doesn't need file content)
   if (options.code) {
     const directory = filePath === "TODO.md" ? "." : dirname(filePath);
@@ -371,7 +407,6 @@ ${checklists.join("\n")}
   }
 
   // Read file for other operations
-  let content: string;
   try {
     content = await Deno.readTextFile(filePath);
   } catch (error) {
@@ -381,8 +416,6 @@ ${checklists.join("\n")}
     }
     throw error;
   }
-
-  const operations: string[] = [];
 
   // If no options provided, ask user what they want to do
   if (
@@ -480,12 +513,17 @@ ${checklists.join("\n")}
     const collectTaskHierarchy = (
       task: ParsedTask,
       baseIndent: number = 0,
+      indentSize: number = actualIndentSize,
     ): void => {
       if (task.checked) {
         // Remove the [x] checkbox and format for completed section
         const taskContent = task.content.replace(/^\[.*?\]\s*/, ""); // Remove priority if present
+        // If validation is skipped, preserve original spacing
+        const taskIndent = options.skipValidation
+          ? task.indent
+          : Math.round(task.indent / indentSize) * indentSize;
         const formatted = `${
-          "  ".repeat(baseIndent + task.indent)
+          " ".repeat(baseIndent * indentSize + taskIndent)
         }- ${taskContent}`;
         completedTasksWithHierarchy.push({ task, formatted });
         completedTasks.push(formatted);
@@ -501,9 +539,11 @@ ${checklists.join("\n")}
               skipLines.add(child.lineNumber); // Skip child lines too
               const childContent = child.content.replace(/^\[.*?\]\s*/, "");
               // Calculate relative indent from the original top-level task
-              const relativeIndent = child.indent - task.indent;
+              const actualChildIndent = options.skipValidation
+                ? child.indent
+                : Math.round(child.indent / indentSize) * indentSize;
               const childFormatted = `${
-                "  ".repeat(baseIndent + task.indent + relativeIndent)
+                " ".repeat(baseIndent * indentSize + actualChildIndent)
               }- ${childContent}`;
               completedTasks.push(childFormatted);
 
@@ -523,8 +563,11 @@ ${checklists.join("\n")}
             // They will be handled separately
             if (child.checked) {
               const childContent = child.content.replace(/^\[.*?\]\s*/, "");
+              const childIndent = options.skipValidation
+                ? child.indent
+                : Math.round(child.indent / indentSize) * indentSize;
               const formatted = `${
-                "  ".repeat(baseIndent + child.indent)
+                " ".repeat(baseIndent * indentSize + childIndent)
               }- ${childContent}`;
               completedTasksWithHierarchy.push({ task: child, formatted });
               completedTasks.push(formatted);
@@ -542,9 +585,13 @@ ${checklists.join("\n")}
                       /^\[.*?\]\s*/,
                       "",
                     );
-                    const relativeIndent = grandchild.indent - child.indent;
+                    const actualGrandchildIndent = options.skipValidation
+                      ? grandchild.indent
+                      : Math.round(grandchild.indent / indentSize) * indentSize;
                     const grandchildFormatted = `${
-                      "  ".repeat(baseIndent + child.indent + relativeIndent)
+                      " ".repeat(
+                        baseIndent * indentSize + actualGrandchildIndent,
+                      )
                     }- ${grandchildContent}`;
                     completedTasks.push(grandchildFormatted);
 
@@ -561,7 +608,7 @@ ${checklists.join("\n")}
               }
             } else if (child.children) {
               // If child is not checked, recurse to check its children
-              collectTaskHierarchy(child, baseIndent);
+              collectTaskHierarchy(child, baseIndent, indentSize);
             }
           }
         }
@@ -706,8 +753,13 @@ ${checklists.join("\n")}
     // Count completed tasks before writing
     const completedTaskCount = completedTasksWithHierarchy.length;
 
+    // Normalize format before writing (only if validation was not skipped)
+    const finalContent = options.skipValidation
+      ? newLines.join("\n")
+      : normalizeMarkdownFormat(newLines.join("\n"));
+
     // Write back to file
-    await Deno.writeTextFile(filePath, newLines.join("\n"));
+    await Deno.writeTextFile(filePath, finalContent);
 
     if (options["force-clear"]) {
       operations.push(`cleared ${doneSection?.name || "completed"} section`);
@@ -747,7 +799,11 @@ ${checklists.join("\n")}
       }
     }
 
-    await Deno.writeTextFile(filePath, newLines.join("\n"));
+    // Normalize format before writing (only if validation was not skipped)
+    const finalContent = options.skipValidation
+      ? newLines.join("\n")
+      : normalizeMarkdownFormat(newLines.join("\n"));
+    await Deno.writeTextFile(filePath, finalContent);
     operations.push(`cleared ${completedSection?.name || "completed"} section`);
   }
 

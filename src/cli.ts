@@ -65,7 +65,7 @@ Commands:
   check <id>        Toggle a checklist item by ID (use --off to uncheck)
   add [file] [type] Add a new task to TODO.md (use -m for message, -p for priority)
   sort [file]       Sort tasks by priority within each section
-  update/u [file]   Update TODO.md (--priority, --done, --force-clear, --code)
+  update/u [file]   Update TODO.md (--priority, --done, --force-clear, --code, --fix)
   test [path]       Find test cases in TypeScript files (--include-all, --json)
   code-checklist    Find checklist items in code comments
 
@@ -90,6 +90,7 @@ Examples:
   pcheck check ff5d5f83     # Toggle task by ID
   pcheck sort              # Sort tasks by priority
   pcheck update --done     # Move completed tasks to DONE
+  pcheck update --fix      # Validate and fix issues before updating
   pcheck u --priority --done  # Sort by priority and move completed tasks
   pcheck update --code     # Extract checklists from code to TODO.md
   pcheck test              # Find skipped tests in current directory
@@ -185,7 +186,15 @@ if (import.meta.main) {
     }
 
     const args = parseArgs(remainingArgs, {
-      boolean: ["sort", "done", "force-clear", "priority", "code"],
+      boolean: [
+        "sort",
+        "done",
+        "force-clear",
+        "priority",
+        "code",
+        "fix",
+        "skip-validation",
+      ],
     });
 
     await runUpdateCommand(filePath, args);
