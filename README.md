@@ -16,6 +16,7 @@ deno install -Afg --name pcheck jsr:@mizchi/project-checklist/cli
 
 - 🤖 AI-friendly output format for easy parsing by LLMs
 - 📋 Markdown checklist format (`- [ ]` and `- [x]`) for clear task tracking
+- 💻 Code comment scanning for `TODO:`, `FIXME:`, and checklist items (`- [ ]`)
 - 🌳 Hierarchical tree display with section context
 - 🎯 Interactive selection mode for AI-assisted task management
 - 🔍 Recursively scans TODO.md, README.md, and other Markdown files
@@ -94,6 +95,21 @@ $ pcheck
    ```bash
    $ pcheck --unchecked-only
    ```
+
+5. **Scan code for TODO comments and checklists**:
+   ```bash
+   # Find TODO:, FIXME:, and checklist items in code
+   $ pcheck --code
+   
+   # Include test files
+   $ pcheck --code --cases
+   ```
+   
+   Supports patterns like:
+   - `// TODO: Fix this issue`
+   - `// TODO(username): Assigned task`
+   - `// - [ ] Implement feature`
+   - `// - [x] Completed task`
 
 ## Why project-checklist?
 
