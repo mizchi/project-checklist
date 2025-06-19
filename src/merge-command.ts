@@ -1,6 +1,11 @@
 import { join, relative } from "@std/path";
 import { walk } from "@std/fs/walk";
 import { type ParsedSection, parseMarkdown } from "./core/markdown-parser.ts";
+import { 
+  type AutoResponse, 
+  getNextMultiSelectResponse, 
+  getNextConfirmResponse 
+} from "./cli/auto-response.ts";
 
 export interface MergeOptions {
   targetFile?: string;
@@ -8,6 +13,7 @@ export interface MergeOptions {
   dryRun?: boolean;
   preserveSource?: boolean;
   skipEmpty?: boolean;
+  autoResponse?: AutoResponse;
 }
 
 interface TodoFile {
@@ -43,7 +49,7 @@ export async function runMergeCommand(
 
   // Interactive selection
   if (options.interactive !== false) {
-    filesToProcess = await selectFilesInteractively(filesToProcess);
+    filesToProcess = await selectFilesInteractively(filesToProcess, options.autoResponse);
 
     if (filesToProcess.length === 0) {
       console.log("No files selected.");
@@ -68,11 +74,27 @@ export async function runMergeCommand(
 
     // Optionally remove source files
     if (!options.preserveSource) {
-      const { $ } = await import("dax");
-      const shouldRemove = await $.confirm({
-        message: "Remove merged source files?",
-        default: false,
-      });
+      let shouldRemove = false;
+      
+      if (options.autoResponse) {
+        const response = getNextConfirmResponse(options.autoResponse);
+        if (response !== undefined) {
+          shouldRemove = response;
+        } else {
+          // Fallback to interactive if no auto response available
+          const { $ } = await import("dax");
+          shouldRemove = await $.confirm({
+            message: "Remove merged source files?",
+            default: false,
+          });
+        }
+      } else {
+        const { $ } = await import("dax");
+        shouldRemove = await $.confirm({
+          message: "Remove merged source files?",
+          default: false,
+        });
+      }
 
       if (shouldRemove) {
         for (const file of filesToProcess) {
@@ -125,9 +147,8 @@ async function findTodoFiles(
 
 async function selectFilesInteractively(
   files: TodoFile[],
+  autoResponse?: AutoResponse,
 ): Promise<TodoFile[]> {
-  const { $ } = await import("dax");
-
   // Prepare options for multiSelect
   const options = files.map((file) => {
     const taskCount = file.sections.reduce((sum, s) => sum + s.tasks.length, 0);
@@ -139,10 +160,27 @@ async function selectFilesInteractively(
     };
   });
 
-  const selectedIndices = await $.multiSelect({
-    message: "Select files to merge:",
-    options,
-  });
+  let selectedIndices: number[] | undefined;
+
+  if (autoResponse) {
+    const response = getNextMultiSelectResponse(autoResponse);
+    if (response !== undefined) {
+      selectedIndices = response;
+    } else {
+      // Fallback to interactive if no auto response available
+      const { $ } = await import("dax");
+      selectedIndices = await $.multiSelect({
+        message: "Select files to merge:",
+        options,
+      });
+    }
+  } else {
+    const { $ } = await import("dax");
+    selectedIndices = await $.multiSelect({
+      message: "Select files to merge:",
+      options,
+    });
+  }
 
   if (!selectedIndices || selectedIndices.length === 0) {
     return [];

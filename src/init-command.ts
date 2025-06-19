@@ -1,11 +1,16 @@
 import { blue, green, yellow } from "@std/fmt/colors";
 import { exists } from "@std/fs/exists";
 import { join } from "@std/path";
+import {
+  type AutoResponse,
+  getNextPromptResponse,
+} from "./cli/auto-response.ts";
 
 interface InitOptions {
   force?: boolean;
   template?: string;
   skipConfig?: boolean;
+  autoResponse?: AutoResponse;
 }
 
 const DEFAULT_TEMPLATE = `# TODO
@@ -206,8 +211,22 @@ export async function runInitCommand(
       );
 
       // Ask user if they want to import them
-      console.log("\nWould you like to import these tasks? (y/n)");
-      const answer = prompt(">");
+      let answer: string | null;
+      
+      if (options.autoResponse) {
+        const response = getNextPromptResponse(options.autoResponse);
+        if (response !== undefined) {
+          answer = response;
+          console.log("\nWould you like to import these tasks? (y/n)");
+          console.log(`> ${answer}`);
+        } else {
+          console.log("\nWould you like to import these tasks? (y/n)");
+          answer = prompt(">");
+        }
+      } else {
+        console.log("\nWould you like to import these tasks? (y/n)");
+        answer = prompt(">");
+      }
 
       if (answer?.toLowerCase() === "y") {
         // Group tasks by completion status
@@ -239,8 +258,22 @@ export async function runInitCommand(
         content = newSections.join("\n\n");
 
         // Ask if user wants to remove checklists from README.md
-        console.log("\nRemove imported checklists from README.md? (y/n)");
-        const removeAnswer = prompt(">");
+        let removeAnswer: string | null;
+        
+        if (options.autoResponse) {
+          const response = getNextPromptResponse(options.autoResponse);
+          if (response !== undefined) {
+            removeAnswer = response;
+            console.log("\nRemove imported checklists from README.md? (y/n)");
+            console.log(`> ${removeAnswer}`);
+          } else {
+            console.log("\nRemove imported checklists from README.md? (y/n)");
+            removeAnswer = prompt(">");
+          }
+        } else {
+          console.log("\nRemove imported checklists from README.md? (y/n)");
+          removeAnswer = prompt(">");
+        }
 
         if (removeAnswer?.toLowerCase() === "y") {
           // Remove checklist lines from README.md
@@ -295,7 +328,20 @@ export async function runInitCommand(
       console.log("  3) Standard configuration (recommended)");
       console.log("  4) Full configuration (all options)");
 
-      const configChoice = prompt("\nSelect an option (1-4, default: 1):");
+      let configChoice: string | null;
+      
+      if (options.autoResponse) {
+        const response = getNextPromptResponse(options.autoResponse);
+        if (response !== undefined) {
+          configChoice = response;
+          console.log("\nSelect an option (1-4, default: 1):");
+          console.log(`> ${configChoice}`);
+        } else {
+          configChoice = prompt("\nSelect an option (1-4, default: 1):");
+        }
+      } else {
+        configChoice = prompt("\nSelect an option (1-4, default: 1):");
+      }
 
       if (configChoice && configChoice !== "1") {
         let selectedConfig;
@@ -321,10 +367,29 @@ export async function runInitCommand(
         if (selectedConfig) {
           // Ask about enabling code scanning
           if (configChoice !== "4") {
-            console.log(
-              "\nEnable scanning for TODO comments in code files? (y/n, default: y)",
-            );
-            const enableCode = prompt(">");
+            let enableCode: string | null;
+            
+            if (options.autoResponse) {
+              const response = getNextPromptResponse(options.autoResponse);
+              if (response !== undefined) {
+                enableCode = response;
+                console.log(
+                  "\nEnable scanning for TODO comments in code files? (y/n, default: y)",
+                );
+                console.log(`> ${enableCode}`);
+              } else {
+                console.log(
+                  "\nEnable scanning for TODO comments in code files? (y/n, default: y)",
+                );
+                enableCode = prompt(">");
+              }
+            } else {
+              console.log(
+                "\nEnable scanning for TODO comments in code files? (y/n, default: y)",
+              );
+              enableCode = prompt(">");
+            }
+            
             if (enableCode?.toLowerCase() === "n") {
               selectedConfig.code.enabled = false;
             }

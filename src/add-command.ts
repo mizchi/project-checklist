@@ -192,10 +192,8 @@ export async function runAddCommand(
   await Deno.writeTextFile(filePath, lines.join("\n"));
 
   console.log(bold(green("✨ Added new task")));
-  console.log(`  Section: ${section}`);
-  console.log(`  Task: ${message}`);
+  console.log(`  Added task to ${section} section: ${message}`);
   if (priority && validation) {
     console.log(`  Priority: ${validation.normalized}`);
   }
-  console.log(`  File: ${filePath}`);
 }

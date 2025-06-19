@@ -5,10 +5,7 @@
 ### Core Features
 
 - [ ] Add --root option to explicitly specify root directory for scanning
-- [ ] Create MCP (Model Context Protocol) server integration
-- [ ] Implement AI agent interface using Vercel AI SDK for task manipulation
-- [ ] Add progress indicators for large directories
-- [ ] Implement caching for better performance
+- [ ] `pcheck add -m "message" --in <Category>` for `## Category` task adding
 
 ### Documentation & Examples
 
@@ -36,6 +33,8 @@
 - [ ] Add support for task time tracking
 - [ ] Create mobile app for task management
 - [ ] Add support for team collaboration features
+- [ ] Create MCP (Model Context Protocol) server integration
+- [ ] Implement AI agent interface using Vercel AI SDK for task manipulation
 
 ## COMPLETED
 

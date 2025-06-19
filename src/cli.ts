@@ -1,5 +1,5 @@
 #!/usr/bin/env -S deno run --allow-read --allow-env --allow-run
-import { parseArgs } from "@std/cli";
+import { parseArgs } from "node:util";
 import { findTodos, findTodosInFile, LegacyTodoItem } from "./mod.ts";
 import { detectBestEngine, getEngineByName } from "./search/mod.ts";
 import {
@@ -154,20 +154,22 @@ if (import.meta.main) {
   // Check if it's init command
   if (Deno.args[0] === "init") {
     const { runInitCommand } = await import("./init-command.ts");
-    const parsedArgs = parseArgs(Deno.args.slice(1), {
-      boolean: ["force", "skip-config"],
-      string: ["template"],
-      alias: {
-        f: "force",
-        t: "template",
+    const { values, positionals } = parseArgs({
+      args: Deno.args.slice(1),
+      options: {
+        force: { type: "boolean", short: "f" },
+        "skip-config": { type: "boolean" },
+        template: { type: "string", short: "t" },
       },
+      strict: false,
+      allowPositionals: true,
     });
 
-    const directory = parsedArgs._[0]?.toString() || ".";
+    const directory = positionals[0]?.toString() || ".";
     await runInitCommand(directory, {
-      force: parsedArgs.force,
-      template: parsedArgs.template,
-      skipConfig: parsedArgs["skip-config"],
+      force: values.force as boolean,
+      template: values.template as string,
+      skipConfig: values["skip-config"] as boolean,
     });
     Deno.exit(0);
   }
@@ -218,14 +220,17 @@ if (import.meta.main) {
     }
 
     const { runCheckCommand } = await import("./check-command.ts");
-    const args = parseArgs(Deno.args.slice(2), {
-      boolean: ["off", "gitroot", "private"],
-      alias: {
-        g: "gitroot",
-        p: "private",
+    const { values } = parseArgs({
+      args: Deno.args.slice(2),
+      options: {
+        off: { type: "boolean" },
+        gitroot: { type: "boolean", short: "g" },
+        private: { type: "boolean", short: "p" },
       },
+      strict: false,
+      allowPositionals: true,
     });
-    await runCheckCommand(itemId, args);
+    await runCheckCommand(itemId, values);
     Deno.exit(0);
   }
 
@@ -247,37 +252,35 @@ if (import.meta.main) {
   if (Deno.args[0] === "update" || Deno.args[0] === "u") {
     const { runUpdateCommand } = await import("./update-command.ts");
     let filePath = "TODO.md"; // Default to TODO.md
-    const remainingArgs = Deno.args.slice(1);
+    let argsToUse = Deno.args.slice(1);
 
     // Check if file path is provided
-    if (remainingArgs.length > 0 && !remainingArgs[0].startsWith("-")) {
-      filePath = remainingArgs[0];
-      remainingArgs.shift();
+    if (argsToUse.length > 0 && !argsToUse[0].startsWith("-")) {
+      filePath = argsToUse[0];
+      argsToUse = argsToUse.slice(1);
     }
 
-    const args = parseArgs(remainingArgs, {
-      boolean: [
-        "sort",
-        "completed",
-        "done", // Alias for completed
-        "priority",
-        "code",
-        "fix",
-        "skip-validation",
-        "vacuum",
-        "force-clear",
-      ],
-      alias: {
-        d: "done",
-        s: "sort",
-        p: "priority",
+    const { values } = parseArgs({
+      args: argsToUse,
+      options: {
+        sort: { type: "boolean", short: "s" },
+        completed: { type: "boolean" },
+        done: { type: "boolean", short: "d" }, // Alias for completed
+        priority: { type: "boolean", short: "p" },
+        code: { type: "boolean" },
+        fix: { type: "boolean" },
+        "skip-validation": { type: "boolean" },
+        vacuum: { type: "boolean" },
+        "force-clear": { type: "boolean" },
       },
+      strict: false,
+      allowPositionals: true,
     });
 
     // Map 'done' to 'completed' for backward compatibility
     const updateOptions = {
-      ...args,
-      completed: args.completed || args.done,
+      ...values,
+      completed: values.completed || values.done,
     };
     await runUpdateCommand(filePath, updateOptions);
     Deno.exit(0);
@@ -288,18 +291,26 @@ if (import.meta.main) {
     const { runTestCommand } = await import("./test-command.ts");
     const targetPath = Deno.args[1] || ".";
 
-    const args = parseArgs(Deno.args.slice(2), {
-      boolean: ["json", "pretty", "include-all"],
-      string: ["filter-dir", "exclude-dir"],
+    const { values } = parseArgs({
+      args: Deno.args.slice(2),
+      options: {
+        json: { type: "boolean" },
+        pretty: { type: "boolean" },
+        "include-all": { type: "boolean" },
+        "filter-dir": { type: "string" },
+        "exclude-dir": { type: "string" },
+      },
+      strict: false,
+      allowPositionals: true,
     });
 
     await runTestCommand({
       path: targetPath,
-      includeSkipped: !args["include-all"],
-      json: args.json,
-      pretty: args.pretty,
-      filterDir: args["filter-dir"],
-      excludeDir: args["exclude-dir"],
+      includeSkipped: !values["include-all"],
+      json: values.json as boolean,
+      pretty: values.pretty as boolean,
+      filterDir: values["filter-dir"] as string,
+      excludeDir: values["exclude-dir"] as string,
     });
     Deno.exit(0);
   }
@@ -309,26 +320,28 @@ if (import.meta.main) {
     const { runCodeChecklistCommand } = await import(
       "./cli/commands/code-checklists.ts"
     );
-    const parsedArgs = parseArgs(Deno.args.slice(1), {
-      boolean: ["stats", "group-by-file", "checked", "unchecked"],
-      string: ["patterns"],
-      alias: {
-        s: "stats",
-        g: "group-by-file",
-        c: "checked",
-        u: "unchecked",
+    const { values, positionals } = parseArgs({
+      args: Deno.args.slice(1),
+      options: {
+        stats: { type: "boolean", short: "s" },
+        "group-by-file": { type: "boolean", short: "g" },
+        checked: { type: "boolean", short: "c" },
+        unchecked: { type: "boolean", short: "u" },
+        patterns: { type: "string" },
       },
+      strict: false,
+      allowPositionals: true,
     });
 
-    const targetPath = parsedArgs._[0]?.toString() || ".";
+    const targetPath = positionals[0]?.toString() || ".";
 
     await runCodeChecklistCommand({
       path: targetPath,
-      stats: parsedArgs.stats,
-      "group-by-file": parsedArgs["group-by-file"],
-      checked: parsedArgs.checked,
-      unchecked: parsedArgs.unchecked,
-      patterns: parsedArgs.patterns?.split(","),
+      stats: values.stats as boolean,
+      "group-by-file": values["group-by-file"] as boolean,
+      checked: values.checked as boolean,
+      unchecked: values.unchecked as boolean,
+      patterns: values.patterns ? (values.patterns as string).split(",") : undefined,
     });
     Deno.exit(0);
   }
@@ -336,25 +349,27 @@ if (import.meta.main) {
   // Check if it's merge command
   if (Deno.args[0] === "merge") {
     const { runMergeCommand } = await import("./merge-command.ts");
-    const parsedArgs = parseArgs(Deno.args.slice(1), {
-      boolean: ["dry-run", "preserve", "skip-empty", "all"],
-      string: ["target"],
-      alias: {
-        d: "dry-run",
-        p: "preserve",
-        t: "target",
-        a: "all",
+    const { values, positionals } = parseArgs({
+      args: Deno.args.slice(1),
+      options: {
+        "dry-run": { type: "boolean", short: "d" },
+        preserve: { type: "boolean", short: "p" },
+        "skip-empty": { type: "boolean" },
+        all: { type: "boolean", short: "a" },
+        target: { type: "string", short: "t" },
       },
+      strict: false,
+      allowPositionals: true,
     });
 
-    const targetPath = parsedArgs._[0]?.toString() || ".";
+    const targetPath = positionals[0]?.toString() || ".";
 
     await runMergeCommand(targetPath, {
-      targetFile: parsedArgs.target,
-      dryRun: parsedArgs["dry-run"],
-      preserveSource: parsedArgs.preserve,
-      skipEmpty: parsedArgs["skip-empty"],
-      interactive: !parsedArgs.all, // If --all is specified, run non-interactively
+      targetFile: values.target as string,
+      dryRun: values["dry-run"] as boolean,
+      preserveSource: values.preserve as boolean,
+      skipEmpty: values["skip-empty"] as boolean,
+      interactive: !values.all, // If --all is specified, run non-interactively
     });
     Deno.exit(0);
   }
@@ -382,15 +397,17 @@ if (import.meta.main) {
       argsStart = 1;
     }
 
-    const args = parseArgs(remainingArgs.slice(argsStart), {
-      string: ["message", "priority"],
-      alias: {
-        m: "message",
-        p: "priority",
+    const { values } = parseArgs({
+      args: remainingArgs.slice(argsStart),
+      options: {
+        message: { type: "string", short: "m" },
+        priority: { type: "string", short: "p" },
       },
+      strict: false,
+      allowPositionals: true,
     });
 
-    if (!args.message) {
+    if (!values.message) {
       console.error("Error: Message is required for add command");
       console.error("Usage: pcheck add [file] [type] -m <message>");
       Deno.exit(1);
@@ -399,74 +416,62 @@ if (import.meta.main) {
     await runAddCommand(
       filePath,
       sectionType,
-      args.message as string,
-      args.priority as string,
+      values.message as string,
+      values.priority as string,
     );
     Deno.exit(0);
   }
 
-  const parsedArgs = parseArgs(Deno.args, {
-    boolean: [
-      "help",
-      "version",
-      "no-files",
-      "code",
-      "cases",
-      "scan-tests",
-      "list-engines",
-      "list-files",
-      "interactive",
-      "unchecked",
-      "select-multiple",
-      "gitroot",
-      "private",
-      "show-ids",
-      "json",
-      "pretty",
-      "no-config",
-      "debug",
-    ],
-    string: [
-      "engine",
-      "select",
-      "fields",
-      "filter-type",
-      "filter-dir",
-      "exclude-dir",
-      "exclude",
-      "config",
-      "max-items",
-      "max-depth",
-      "ignore",
-      "root",
-    ],
-    alias: {
-      h: "help",
-      v: "version",
-      i: "interactive",
-      s: "select",
-      u: "unchecked",
-      m: "select-multiple",
-      g: "gitroot",
-      p: "private",
-      j: "json",
-      n: "max-items",
-      d: "max-depth",
+  const { values, positionals } = parseArgs({
+    args: Deno.args,
+    options: {
+      help: { type: "boolean", short: "h" },
+      version: { type: "boolean", short: "v" },
+      "no-files": { type: "boolean" },
+      code: { type: "boolean" },
+      cases: { type: "boolean" },
+      "scan-tests": { type: "boolean" },
+      "list-engines": { type: "boolean" },
+      "list-files": { type: "boolean" },
+      interactive: { type: "boolean", short: "i" },
+      unchecked: { type: "boolean", short: "u" },
+      "select-multiple": { type: "boolean", short: "m" },
+      gitroot: { type: "boolean", short: "g" },
+      private: { type: "boolean", short: "p" },
+      "show-ids": { type: "boolean" },
+      json: { type: "boolean", short: "j" },
+      pretty: { type: "boolean" },
+      "no-config": { type: "boolean" },
+      debug: { type: "boolean" },
+      engine: { type: "string" },
+      select: { type: "string", short: "s" },
+      fields: { type: "string" },
+      "filter-type": { type: "string" },
+      "filter-dir": { type: "string" },
+      "exclude-dir": { type: "string" },
+      exclude: { type: "string" },
+      config: { type: "string" },
+      "max-items": { type: "string", short: "n" },
+      "max-depth": { type: "string", short: "d" },
+      ignore: { type: "string" },
+      root: { type: "string" },
     },
+    strict: false,
+    allowPositionals: true,
   });
 
-  if (parsedArgs.help) {
+  if (values.help) {
     printHelp();
     Deno.exit(0);
   }
 
-  if (parsedArgs.version) {
+  if (values.version) {
     console.log(`pcheck v${VERSION}`);
     Deno.exit(0);
   }
 
   // Quick reference card
-  if (parsedArgs._ && parsedArgs._[0] === "help" && parsedArgs._[1] === "quick") {
+  if (positionals.length >= 2 && positionals[0] === "help" && positionals[1] === "quick") {
     console.log(`pcheck Quick Reference Card
 
 MOST COMMON:
@@ -501,7 +506,7 @@ CONFIG:
     Deno.exit(0);
   }
 
-  if (parsedArgs["list-engines"]) {
+  if (values["list-engines"]) {
     console.log("Available search engines:");
     const engines = ["rg (ripgrep)", "git-grep", "grep", "native (Deno)"];
     for (const engine of engines) {
@@ -511,10 +516,10 @@ CONFIG:
   }
 
   // Determine target path based on options
-  let targetPath = parsedArgs._[0]?.toString() || ".";
+  let targetPath = positionals[0]?.toString() || ".";
 
   // Check for conflicting location options
-  const locationOptions = [parsedArgs.root, parsedArgs.gitroot, parsedArgs.private].filter(Boolean);
+  const locationOptions = [values.root, values.gitroot, values.private].filter(Boolean);
   if (locationOptions.length > 1) {
     console.error(
       "Error: Cannot use multiple location options (--root, --gitroot, --private) together",
@@ -523,11 +528,11 @@ CONFIG:
   }
 
   // Handle --root option first
-  if (parsedArgs.root) {
-    targetPath = parsedArgs.root;
+  if (values.root) {
+    targetPath = values.root as string;
   }
 
-  if (parsedArgs.gitroot) {
+  if (values.gitroot) {
     // Find git root
     try {
       const command = new Deno.Command("git", {
@@ -546,7 +551,7 @@ CONFIG:
       console.error("Error: Git command failed");
       Deno.exit(1);
     }
-  } else if (parsedArgs.private) {
+  } else if (values.private) {
     // Use ~/.todo directory
     const homeDir = Deno.env.get("HOME");
     if (!homeDir) {
@@ -589,11 +594,11 @@ CONFIG:
 
   // Get search engine
   let searchEngine;
-  if (parsedArgs.engine) {
-    searchEngine = await getEngineByName(parsedArgs.engine);
+  if (values.engine) {
+    searchEngine = await getEngineByName(values.engine as string);
     if (!searchEngine) {
       console.error(
-        `Error: Search engine '${parsedArgs.engine}' is not available or not found.`,
+        `Error: Search engine '${values.engine}' is not available or not found.`,
       );
       console.error("Run 'pcheck --list-engines' to see available engines.");
       Deno.exit(1);
@@ -609,19 +614,19 @@ CONFIG:
   );
 
   // Skip config loading if --no-config is specified
-  if (!parsedArgs["no-config"]) {
-    config = await loadConfig(parsedArgs.config);
+  if (!values["no-config"]) {
+    config = await loadConfig(values.config as string);
     // Apply CLI options to override config
-    config = applyCliOptions(config, parsedArgs);
+    config = applyCliOptions(config, values);
 
-    if (parsedArgs.debug) {
+    if (values.debug) {
       console.log("Loaded config:", JSON.stringify(config, null, 2));
     }
   } else {
     // Use default config but apply CLI options
-    config = applyCliOptions(DEFAULT_CONFIG, parsedArgs);
+    config = applyCliOptions(DEFAULT_CONFIG, values);
 
-    if (parsedArgs.debug) {
+    if (values.debug) {
       console.log(
         "Using default config with CLI options:",
         JSON.stringify(config, null, 2),
@@ -630,7 +635,7 @@ CONFIG:
   }
 
   // Check if ast-grep is available when scan-tests is requested
-  if (parsedArgs["scan-tests"]) {
+  if (values["scan-tests"]) {
     const { checkAstGrepInstalled } = await import("./ast-test-detector.ts");
     if (!(await checkAstGrepInstalled())) {
       console.error(
@@ -645,16 +650,16 @@ CONFIG:
   }
 
   const options = {
-    scanFiles: !parsedArgs["no-files"],
-    scanCode: parsedArgs["code"] ?? config?.code?.enabled ?? false,
-    includeTestCases: parsedArgs["cases"] ?? config?.code?.includeTests ?? false,
-    scanTests: parsedArgs["scan-tests"],
+    scanFiles: !values["no-files"],
+    scanCode: values.code ?? config?.code?.enabled ?? false,
+    includeTestCases: values.cases ?? config?.code?.includeTests ?? false,
+    scanTests: values["scan-tests"],
     searchEngine,
-    filterType: parsedArgs["filter-type"],
-    filterDir: parsedArgs["filter-dir"],
-    excludeDir: parsedArgs["exclude-dir"],
+    filterType: values["filter-type"],
+    filterDir: values["filter-dir"],
+    excludeDir: values["exclude-dir"],
     config,
-    ignore: parsedArgs["ignore"],
+    ignore: values.ignore,
   };
 
   if (options.scanCode) {
@@ -662,7 +667,7 @@ CONFIG:
   }
 
   // Handle --list-files option
-  if (parsedArgs["list-files"]) {
+  if (values["list-files"]) {
     const { listScanFiles } = await import("./list-files.ts");
     const files = await listScanFiles(targetPath, options);
     for (const file of files) {
@@ -697,22 +702,22 @@ CONFIG:
       throw error;
     }
 
-    if (parsedArgs.interactive) {
+    if (values.interactive) {
       // Run interactive mode
       const { runInteractiveMode } = await import("./interactive.ts");
       await runInteractiveMode(todos, basePath);
-    } else if (parsedArgs["select-multiple"]) {
+    } else if (values["select-multiple"]) {
       // Run multi-select mode
       const { runMultiSelectMode } = await import("./multi-select.ts");
-      await runMultiSelectMode(todos, basePath, parsedArgs.unchecked);
-    } else if (parsedArgs.select !== undefined) {
+      await runMultiSelectMode(todos, basePath, Boolean(values.unchecked));
+    } else if (values.select !== undefined) {
       // Run select mode
       const { runSelectMode } = await import("./select.ts");
-      await runSelectMode(todos, basePath, parsedArgs.select);
-    } else if (parsedArgs.json) {
+      await runSelectMode(todos, basePath, values.select as string);
+    } else if (values.json) {
       // JSON output mode
-      const jsonOutput = formatTodosAsJson(todos, args);
-      if (parsedArgs.pretty) {
+      const jsonOutput = formatTodosAsJson(todos, values);
+      if (values.pretty) {
         console.log(JSON.stringify(jsonOutput, null, 2));
       } else {
         console.log(JSON.stringify(jsonOutput));
@@ -727,10 +732,10 @@ CONFIG:
         // Convert to tree nodes and display
         const treeNodes = todos.map(convertTodoToTreeNode);
         const treeOptions: TreeDisplayOptions = {
-          showIds: parsedArgs["show-ids"],
-          maxItems: parsedArgs["max-items"] ? parseInt(parsedArgs["max-items"]) : undefined,
-          maxDepth: parsedArgs["max-depth"] ? parseInt(parsedArgs["max-depth"]) : undefined,
-          uncheckedOnly: parsedArgs.unchecked,
+          showIds: Boolean(values["show-ids"]),
+          maxItems: values["max-items"] ? parseInt(values["max-items"] as string) : undefined,
+          maxDepth: values["max-depth"] ? parseInt(values["max-depth"] as string) : undefined,
+          uncheckedOnly: Boolean(values.unchecked),
         };
 
         for (const node of treeNodes) {
@@ -753,6 +758,7 @@ CONFIG:
 interface JsonOutputOptions {
   fields?: string;
   unchecked?: boolean;
+  [key: string]: unknown;
 }
 
 function formatTodosAsJson(

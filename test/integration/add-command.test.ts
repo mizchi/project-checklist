@@ -84,7 +84,7 @@ Deno.test("add command - to ICEBOX section", async () => {
   const result = await pcheck("add", "ICEBOX", "-m", "Future feature");
 
   assertEquals(result.code, 0);
-  assertStringIncludes(result.stdout, "Section: ICEBOX");
+  assertStringIncludes(result.stdout, "Added task to ICEBOX section:");
 
   const content = await Deno.readTextFile(testTodoPath);
   const lines = content.split("\n");
@@ -101,7 +101,7 @@ Deno.test("add command - creates new section", async () => {
   const result = await pcheck("add", "BACKLOG", "-m", "Backlog item");
 
   assertEquals(result.code, 0);
-  assertStringIncludes(result.stdout, "Section: BACKLOG");
+  assertStringIncludes(result.stdout, "Added task to BACKLOG section:");
 
   const content = await Deno.readTextFile(testTodoPath);
   assertStringIncludes(content, "## BACKLOG");

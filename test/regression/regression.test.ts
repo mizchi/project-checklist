@@ -153,7 +153,8 @@ Deno.test("Regression: COMPLETED section should preserve checkboxes", async () =
     const completedSection = content.split("## COMPLETED")[1];
     
     assertEquals(completedSection.includes("- [x] Completed task 1"), true);
-    assertEquals(completedSection.includes("- [x] [HIGH] Completed priority task"), true);
+    // Priority tags are removed when moving to COMPLETED
+    assertEquals(completedSection.includes("- [x] Completed priority task"), true);
   } finally {
     await Deno.remove(testDir, { recursive: true });
   }

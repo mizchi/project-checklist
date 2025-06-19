@@ -88,8 +88,8 @@ Deno.test("update command - move completed tasks to COMPLETED", async () => {
   // Check the file was updated correctly
   const updated = await Deno.readTextFile(testTodoPath);
   assertStringIncludes(updated, "## COMPLETED");
-  assertStringIncludes(updated, "- Completed task 1");
-  assertStringIncludes(updated, "- Completed task 2");
+  assertStringIncludes(updated, "- [x] Completed task 1");
+  assertStringIncludes(updated, "- [x] Completed task 2");
 
   // Check completed tasks were removed from TODO section
   const todoSection = updated.split("## COMPLETED")[0];
@@ -128,9 +128,9 @@ Deno.test("update command - sort and move combined", async () => {
   assertEquals(todoTasks[0], "- [ ] [HIGH] Uncompleted high priority");
   assertEquals(todoTasks[1], "- [ ] [LOW] Low priority");
 
-  // COMPLETED section should have completed tasks
-  assertStringIncludes(updated, "- Completed high priority");
-  assertStringIncludes(updated, "- No priority completed");
+  // COMPLETED section should have completed tasks (without priority tags)
+  assertStringIncludes(updated, "- [x] Completed high priority");
+  assertStringIncludes(updated, "- [x] No priority completed");
 });
 
 Deno.test("update command - force clear COMPLETED section", async () => {

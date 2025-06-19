@@ -4,6 +4,11 @@ import { loadConfig } from "./config.ts";
 import { $ } from "dax";
 import { dirname, join, resolve } from "@std/path";
 import { findTodos } from "./mod.ts";
+import {
+  type AutoResponse,
+  getNextConfirmResponse,
+  getNextPromptResponse,
+} from "./cli/auto-response.ts";
 
 interface UpdateOptions {
   sort?: boolean;
@@ -15,6 +20,7 @@ interface UpdateOptions {
   skipValidation?: boolean;
   vacuum?: boolean;
   "force-clear"?: boolean;
+  autoResponse?: AutoResponse;
 }
 
 interface ParsedSection {
@@ -324,10 +330,28 @@ export async function runUpdateCommand(
 
     if (targetFile.type === "none") {
       // Ask user to create TODO.md
-      console.log(
-        "No TODO.md or README.md found. Create TODO.md in current directory? (y/n)",
-      );
-      const answer = prompt(">");
+      let answer: string | null;
+      
+      if (options.autoResponse) {
+        const response = getNextPromptResponse(options.autoResponse);
+        if (response !== undefined) {
+          answer = response;
+          console.log(
+            "No TODO.md or README.md found. Create TODO.md in current directory? (y/n)",
+          );
+          console.log(`> ${answer}`);
+        } else {
+          console.log(
+            "No TODO.md or README.md found. Create TODO.md in current directory? (y/n)",
+          );
+          answer = prompt(">");
+        }
+      } else {
+        console.log(
+          "No TODO.md or README.md found. Create TODO.md in current directory? (y/n)",
+        );
+        answer = prompt(">");
+      }
 
       if (answer?.toLowerCase() !== "y") {
         console.log(yellow("Operation cancelled."));
@@ -454,7 +478,21 @@ ${checklists.join("\n")}
 
     // Only ask about priority sorting if there are tasks with priority
     if (hasPriorityTasks) {
-      const sortChoice = await $.confirm("Sort tasks by priority?");
+      let sortChoice: boolean;
+      
+      if (options.autoResponse) {
+        const response = getNextConfirmResponse(options.autoResponse);
+        if (response !== undefined) {
+          sortChoice = response;
+          console.log("Sort tasks by priority?");
+          console.log(`> ${sortChoice ? "Yes" : "No"}`);
+        } else {
+          sortChoice = await $.confirm("Sort tasks by priority?");
+        }
+      } else {
+        sortChoice = await $.confirm("Sort tasks by priority?");
+      }
+      
       if (sortChoice) {
         options.priority = true;
       }
@@ -462,9 +500,25 @@ ${checklists.join("\n")}
 
     // Only ask about moving completed tasks if there are any
     if (hasCompletedTasks) {
-      const doneChoice = await $.confirm(
-        "Move completed tasks to COMPLETED section?",
-      );
+      let doneChoice: boolean;
+      
+      if (options.autoResponse) {
+        const response = getNextConfirmResponse(options.autoResponse);
+        if (response !== undefined) {
+          doneChoice = response;
+          console.log("Move completed tasks to COMPLETED section?");
+          console.log(`> ${doneChoice ? "Yes" : "No"}`);
+        } else {
+          doneChoice = await $.confirm(
+            "Move completed tasks to COMPLETED section?",
+          );
+        }
+      } else {
+        doneChoice = await $.confirm(
+          "Move completed tasks to COMPLETED section?",
+        );
+      }
+      
       if (doneChoice) {
         options.completed = true;
       }
@@ -668,13 +722,15 @@ ${checklists.join("\n")}
       indentSize: number = actualIndentSize,
     ): void => {
       if (task.checked) {
-        // Keep the checkbox in completed section
+        // Keep checkbox but remove priority tags when moving to completed section
         const taskIndent = options.skipValidation
           ? task.indent
           : Math.round(task.indent / indentSize) * indentSize;
+        // Remove priority tags like [HIGH], [MID], [LOW], or numeric [1-99]
+        const contentWithoutPriority = task.content.replace(/^\[(HIGH|MID|LOW|P\d+|\d+)\]\s*/, "");
         const formatted = `${
           " ".repeat(baseIndent * indentSize + taskIndent)
-        }- [x] ${task.content}`;
+        }- [x] ${contentWithoutPriority}`;
         completedTasksWithHierarchy.push({ task, formatted });
         completedTasks.push(formatted);
         skipLines.add(task.lineNumber);
@@ -691,6 +747,7 @@ ${checklists.join("\n")}
               const actualChildIndent = options.skipValidation
                 ? child.indent
                 : Math.round(child.indent / indentSize) * indentSize;
+              // When parent is moved to COMPLETED, keep checkboxes for children
               const checkbox = child.checked ? "[x]" : "[ ]";
               const childFormatted = `${
                 " ".repeat(baseIndent * indentSize + actualChildIndent)
