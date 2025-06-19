@@ -37,6 +37,7 @@ export default defineConfig({
         items: [
           { text: "Quick Start", link: "/guide/quick-start" },
           { text: "Configuration", link: "/guide/config" },
+          { text: "GTD Best Practices", link: "/guide/gtd-best-practices" },
         ],
       },
       {

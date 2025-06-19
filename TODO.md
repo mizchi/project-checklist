@@ -4,7 +4,9 @@
 
 ### Core Features
 
+- [ ] Add --root option to explicitly specify root directory for scanning
 - [ ] Create MCP (Model Context Protocol) server integration
+- [ ] Implement AI agent interface using Vercel AI SDK for task manipulation
 - [ ] Add progress indicators for large directories
 - [ ] Implement caching for better performance
 

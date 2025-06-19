@@ -24,7 +24,7 @@
     "remark": "npm:remark@^15.0.1",
     "remark-gfm": "npm:remark-gfm@^4.0.1",
     "unist-util-visit": "npm:unist-util-visit@^5.0.0",
-    "mdast": "npm:mdast@^3.0.0",
+    "@types/mdast": "npm:@types/mdast@^4.0.0",
     "dax": "jsr:@david/dax@^0.42.0",
     "vue": "npm:vue@^3.5.17",
     "@deno/dnt": "jsr:@deno/dnt@^0.41.3"

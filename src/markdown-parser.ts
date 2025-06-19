@@ -1,7 +1,7 @@
 import { remark } from "remark";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
-import type { ListItem, Root } from "mdast";
+import type { ListItem, Root } from "npm:@types/mdast@^4.0.0";
 import { crypto } from "@std/crypto";
 
 export interface ChecklistItem {

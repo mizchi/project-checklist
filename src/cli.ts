@@ -62,6 +62,7 @@ DISPLAY OPTIONS:
   --pretty            Pretty print JSON output
 
 LOCATION OPTIONS:
+  --root <path>       Use specified root directory for scanning
   -g, --gitroot       Search from git repository root
   -p, --private       Search from ~/.todo directory
 
@@ -139,21 +140,21 @@ For more info: https://github.com/mizchi/project-checklist
   );
 }
 
-export async function runCli(args: string[] = Deno.args) {
+if (import.meta.main) {
   // Check for command-specific help
   if (
-    parsedArgs.length >= 2 &&
-    (parsedArgs[1] === "--help" || parsedArgs[1] === "-h")
+    Deno.args.length >= 2 &&
+    (Deno.args[1] === "--help" || Deno.args[1] === "-h")
   ) {
     const { showCommandHelp } = await import("./cli/help.ts");
-    showCommandHelp(parsedArgs[0]);
+    showCommandHelp(Deno.args[0]);
     Deno.exit(0);
   }
 
   // Check if it's init command
-  if (parsedArgs[0] === "init") {
+  if (Deno.args[0] === "init") {
     const { runInitCommand } = await import("./init-command.ts");
-    const parsedArgs = parseArgs(parsedArgs.slice(1), {
+    const parsedArgs = parseArgs(Deno.args.slice(1), {
       boolean: ["force", "skip-config"],
       string: ["template"],
       alias: {
@@ -172,14 +173,14 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's doctor command
-  if (parsedArgs[0] === "doctor") {
+  if (Deno.args[0] === "doctor") {
     const { runDiagnostics } = await import("./doctor.ts");
     await runDiagnostics();
     Deno.exit(0);
   }
 
   // Check if it's validate command
-  if (parsedArgs[0] === "validate") {
+  if (Deno.args[0] === "validate") {
     // Special case: validate config file
     if (parsedArgs[1] === "--config" || parsedArgs[1]?.endsWith(".json")) {
       const { validateConfigFile } = await import("./config-validator.ts");
@@ -208,7 +209,7 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's check command
-  if (parsedArgs[0] === "check") {
+  if (Deno.args[0] === "check") {
     const itemId = parsedArgs[1];
     if (!itemId) {
       console.error("Error: Item ID is required for check command");
@@ -217,7 +218,7 @@ export async function runCli(args: string[] = Deno.args) {
     }
 
     const { runCheckCommand } = await import("./check-command.ts");
-    const parsedArgs = parseArgs(parsedArgs.slice(2), {
+    const parsedArgs = parseArgs(Deno.args.slice(2), {
       boolean: ["off", "gitroot", "private"],
       alias: {
         g: "gitroot",
@@ -229,7 +230,7 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's sort command
-  if (parsedArgs[0] === "sort") {
+  if (Deno.args[0] === "sort") {
     const { runSortCommand } = await import("./sort-command.ts");
     let filePath = "TODO.md"; // Default to TODO.md
 
@@ -243,7 +244,7 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's update command (or alias 'u')
-  if (parsedArgs[0] === "update" || parsedArgs[0] === "u") {
+  if (Deno.args[0] === "update" || parsedArgs[0] === "u") {
     const { runUpdateCommand } = await import("./update-command.ts");
     let filePath = "TODO.md"; // Default to TODO.md
     const remainingArgs = parsedArgs.slice(1);
@@ -283,11 +284,11 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's test command
-  if (parsedArgs[0] === "test") {
+  if (Deno.args[0] === "test") {
     const { runTestCommand } = await import("./test-command.ts");
     const targetPath = parsedArgs[1] || ".";
 
-    const parsedArgs = parseArgs(parsedArgs.slice(2), {
+    const parsedArgs = parseArgs(Deno.args.slice(2), {
       boolean: ["json", "pretty", "include-all"],
       string: ["filter-dir", "exclude-dir"],
     });
@@ -304,11 +305,11 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's code-checklist command
-  if (parsedArgs[0] === "code-checklist") {
+  if (Deno.args[0] === "code-checklist") {
     const { runCodeChecklistCommand } = await import(
       "./cli/commands/code-checklists.ts"
     );
-    const parsedArgs = parseArgs(parsedArgs.slice(1), {
+    const parsedArgs = parseArgs(Deno.args.slice(1), {
       boolean: ["stats", "group-by-file", "checked", "unchecked"],
       string: ["patterns"],
       alias: {
@@ -333,9 +334,9 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's merge command
-  if (parsedArgs[0] === "merge") {
+  if (Deno.args[0] === "merge") {
     const { runMergeCommand } = await import("./merge-command.ts");
-    const parsedArgs = parseArgs(parsedArgs.slice(1), {
+    const parsedArgs = parseArgs(Deno.args.slice(1), {
       boolean: ["dry-run", "preserve", "skip-empty", "all"],
       string: ["target"],
       alias: {
@@ -359,7 +360,7 @@ export async function runCli(args: string[] = Deno.args) {
   }
 
   // Check if it's add command
-  if (parsedArgs[0] === "add") {
+  if (Deno.args[0] === "add") {
     const { runAddCommand } = await import("./add-command.ts");
     let remainingArgs = parsedArgs.slice(1);
     let filePath = "TODO.md"; // Default to TODO.md in current directory
@@ -437,6 +438,7 @@ export async function runCli(args: string[] = Deno.args) {
       "max-items",
       "max-depth",
       "ignore",
+      "root",
     ],
     alias: {
       h: "help",
@@ -511,11 +513,18 @@ CONFIG:
   // Determine target path based on options
   let targetPath = parsedArgs._[0]?.toString() || ".";
 
-  if (parsedArgs.gitroot && parsedArgs.private) {
+  // Check for conflicting location options
+  const locationOptions = [parsedArgs.root, parsedArgs.gitroot, parsedArgs.private].filter(Boolean);
+  if (locationOptions.length > 1) {
     console.error(
-      "Error: Cannot use both --gitroot and --private options together",
+      "Error: Cannot use multiple location options (--root, --gitroot, --private) together",
     );
     Deno.exit(1);
+  }
+
+  // Handle --root option first
+  if (parsedArgs.root) {
+    targetPath = parsedArgs.root;
   }
 
   if (parsedArgs.gitroot) {

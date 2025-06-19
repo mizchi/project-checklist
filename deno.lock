@@ -26,7 +26,6 @@
     "jsr:@std/streams@0.221": "0.221.0",
     "npm:@types/mdast@4": "4.0.4",
     "npm:@vue/runtime-dom@^3.5.17": "3.5.17",
-    "npm:mdast@3": "3.0.0",
     "npm:remark-gfm@^4.0.1": "4.0.1",
     "npm:remark@^15.0.1": "15.0.1",
     "npm:unist-util-visit@5": "5.0.0",
@@ -1142,10 +1141,6 @@
         "@types/mdast"
       ]
     },
-    "mdast@3.0.0": {
-      "integrity": "sha512-xySmf8g4fPKMeC07jXGz971EkLbWAJ83s4US2Tj9lEdnZ142UP5grN73H1Xd3HzrdbU5o9GYYP/y8F9ZSwLE9g==",
-      "deprecated": true
-    },
     "micromark-core-commonmark@2.0.3": {
       "integrity": "sha512-RDBrHEMSxVFLg6xvnXmb1Ayr2WzLAWjeSATAoxwKYJV94TeNavgoIdA0a9ytzDSVzBy2YKFK+emCPOEibLeCrg==",
       "dependencies": [
@@ -1683,6 +1678,7 @@
     "dependencies": [
       "jsr:@david/dax@0.42",
       "jsr:@david/dax@~0.43.2",
+      "jsr:@deno/dnt@~0.41.3",
       "jsr:@std/assert@^1.0.13",
       "jsr:@std/cli@1",
       "jsr:@std/crypto@^1.0.5",
@@ -1690,7 +1686,7 @@
       "jsr:@std/fmt@^1.0.8",
       "jsr:@std/fs@^1.0.18",
       "jsr:@std/path@^1.1.0",
-      "npm:mdast@3",
+      "npm:@types/mdast@4",
       "npm:remark-gfm@^4.0.1",
       "npm:remark@^15.0.1",
       "npm:unist-util-visit@5",

@@ -1,19 +1,21 @@
 # project-checklist
 
-プロジェクト内のTODOを再帰的に探索して表示するDenoベースのCLIツールです。
+プロジェクト内の TODO を再帰的に探索して表示する Deno ベースの CLI ツールです。
 
 **正式名称**: project-checklist  
 **コマンド名**: pcheck
 
+開発用の CLI は pcheck-dev としてインストールされています。デバッグ時は pcheck-dev を使ってください。
+
 ## 概要
 
-- TODO.mdファイルの探索と解析
-- ソースコード内のTODOコメント検索
+- TODO.md ファイルの探索と解析
+- ソースコード内の TODO コメント検索
 - 結果を入れ子構造で表示
-- 複数の検索エンジンサポート（ripgrepをデフォルトとして、git
+- 複数の検索エンジンサポート（ripgrep をデフォルトとして、git
   grep、grep、ネイティブ）
-- doctorコマンドで環境診断
-- 将来的にMCPサーバーとして動作予定
+- doctor コマンドで環境診断
+- 将来的に MCP サーバーとして動作予定
 
 ## プロジェクト構造
 
@@ -89,14 +91,14 @@ deno task doc:build
 - TypeScript
 - @std/fs - ファイルシステム操作
 - @std/path - パス操作
-- @std/cli - CLIパース
+- @std/cli - CLI パース
 - @std/expect - テストアサーション
 
 ## 今後の拡張予定
 
-- MCPサーバー機能の実装
-- より多くのTODO形式のサポート（FIXME、HACK、NOTE等）
-- JSON出力形式
+- MCP サーバー機能の実装
+- より多くの TODO 形式のサポート（FIXME、HACK、NOTE 等）
+- JSON 出力形式
 - 設定ファイル（.pcheck.json）のサポート
 - カスタム無視パターン
 - キャッシング機能
