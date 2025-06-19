@@ -59,6 +59,7 @@ Options:
   --ignore <patterns> Comma-separated patterns to ignore (e.g., "tmp/,*.bak,test-*")
 
 Commands:
+  init [directory]  Initialize TODO.md file (--force, --template)
   doctor            Check your environment and available search engines
   validate [file]   Validate Markdown checklist structure and hierarchy
   check <id>        Toggle a checklist item by ID (use --off to uncheck)
@@ -69,6 +70,9 @@ Commands:
   code-checklist    Find checklist items in code comments
 
 Examples:
+  pcheck init               # Create TODO.md in current directory
+  pcheck init --template gtd # Create with GTD template
+  pcheck init --force       # Overwrite existing TODO.md
   pcheck                    # Scan current directory
   pcheck ./src              # Scan specific directory
   pcheck TODO.md            # Scan specific file
@@ -99,6 +103,26 @@ Examples:
 }
 
 if (import.meta.main) {
+  // Check if it's init command
+  if (Deno.args[0] === "init") {
+    const { runInitCommand } = await import("./init-command.ts");
+    const args = parseArgs(Deno.args.slice(1), {
+      boolean: ["force"],
+      string: ["template"],
+      alias: {
+        f: "force",
+        t: "template",
+      },
+    });
+
+    const directory = args._[0]?.toString() || ".";
+    await runInitCommand(directory, {
+      force: args.force,
+      template: args.template,
+    });
+    Deno.exit(0);
+  }
+
   // Check if it's doctor command
   if (Deno.args[0] === "doctor") {
     const { runDiagnostics } = await import("./doctor.ts");

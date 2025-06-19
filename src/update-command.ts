@@ -28,6 +28,8 @@ interface ParsedTask {
   checked: boolean;
   content: string;
   indent: number;
+  children?: ParsedTask[];
+  parentLineNumber?: number;
 }
 
 function parseMarkdownFile(content: string): {
@@ -76,7 +78,86 @@ function parseMarkdownFile(content: string): {
     sections.push(currentSection);
   }
 
+  // Build task hierarchy
+  for (const section of sections) {
+    const taskStack: ParsedTask[] = [];
+
+    for (const task of section.tasks) {
+      // Find parent task
+      while (
+        taskStack.length > 0 &&
+        taskStack[taskStack.length - 1].indent >= task.indent
+      ) {
+        taskStack.pop();
+      }
+
+      if (taskStack.length > 0) {
+        const parent = taskStack[taskStack.length - 1];
+        if (!parent.children) {
+          parent.children = [];
+        }
+        parent.children.push(task);
+        task.parentLineNumber = parent.lineNumber;
+      }
+
+      taskStack.push(task);
+    }
+  }
+
   return { sections, lines };
+}
+
+// Calculate Levenshtein distance between two strings
+function levenshteinDistance(str1: string, str2: string): number {
+  const len1 = str1.length;
+  const len2 = str2.length;
+  const dp: number[][] = Array(len1 + 1).fill(null).map(() =>
+    Array(len2 + 1).fill(0)
+  );
+
+  for (let i = 0; i <= len1; i++) {
+    dp[i][0] = i;
+  }
+  for (let j = 0; j <= len2; j++) {
+    dp[0][j] = j;
+  }
+
+  for (let i = 1; i <= len1; i++) {
+    for (let j = 1; j <= len2; j++) {
+      const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1, // deletion
+        dp[i][j - 1] + 1, // insertion
+        dp[i - 1][j - 1] + cost, // substitution
+      );
+    }
+  }
+
+  return dp[len1][len2];
+}
+
+// Find similar task in completed section using fuzzy matching
+function findSimilarTask(
+  searchTask: string,
+  completedTasks: string[],
+  threshold: number = 3,
+): number {
+  let bestMatch = -1;
+  let bestDistance = threshold + 1;
+
+  const normalizedSearch = searchTask.toLowerCase().trim();
+
+  for (let i = 0; i < completedTasks.length; i++) {
+    const normalizedTask = completedTasks[i].toLowerCase().trim();
+    const distance = levenshteinDistance(normalizedSearch, normalizedTask);
+
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestMatch = i;
+    }
+  }
+
+  return bestDistance <= threshold ? bestMatch : -1;
 }
 
 async function findNearestTodoFile(
@@ -388,18 +469,112 @@ ${checklists.join("\n")}
       sections.find((s) => s.name.toUpperCase() === "DONE") ||
       null;
 
-    // Process lines and collect completed tasks
+    // Process lines and collect completed tasks with hierarchy
     const skipLines = new Set<number>();
+    const completedTasksWithHierarchy: {
+      task: ParsedTask;
+      formatted: string;
+    }[] = [];
+
+    // Helper function to collect task and its children
+    const collectTaskHierarchy = (
+      task: ParsedTask,
+      baseIndent: number = 0,
+    ): void => {
+      if (task.checked) {
+        // Remove the [x] checkbox and format for completed section
+        const taskContent = task.content.replace(/^\[.*?\]\s*/, ""); // Remove priority if present
+        const formatted = `${
+          "  ".repeat(baseIndent + task.indent)
+        }- ${taskContent}`;
+        completedTasksWithHierarchy.push({ task, formatted });
+        completedTasks.push(formatted);
+        skipLines.add(task.lineNumber);
+
+        // If parent is checked, collect all children (checked or not)
+        if (task.children) {
+          const collectAllChildren = (
+            children: ParsedTask[],
+            _parentTask: ParsedTask,
+          ) => {
+            for (const child of children) {
+              skipLines.add(child.lineNumber); // Skip child lines too
+              const childContent = child.content.replace(/^\[.*?\]\s*/, "");
+              // Calculate relative indent from the original top-level task
+              const relativeIndent = child.indent - task.indent;
+              const childFormatted = `${
+                "  ".repeat(baseIndent + task.indent + relativeIndent)
+              }- ${childContent}`;
+              completedTasks.push(childFormatted);
+
+              // Recursively collect grandchildren
+              if (child.children) {
+                collectAllChildren(child.children, child);
+              }
+            }
+          };
+          collectAllChildren(task.children, task);
+        }
+      } else {
+        // Process children - if parent is not checked, check children individually
+        if (task.children) {
+          for (const child of task.children) {
+            // When processing children of unchecked parent, don't include their own children
+            // They will be handled separately
+            if (child.checked) {
+              const childContent = child.content.replace(/^\[.*?\]\s*/, "");
+              const formatted = `${
+                "  ".repeat(baseIndent + child.indent)
+              }- ${childContent}`;
+              completedTasksWithHierarchy.push({ task: child, formatted });
+              completedTasks.push(formatted);
+              skipLines.add(child.lineNumber);
+
+              // Include all children recursively when parent is checked
+              if (child.children) {
+                const collectGrandchildren = (
+                  tasks: ParsedTask[],
+                  _parentIndent: number,
+                ) => {
+                  for (const grandchild of tasks) {
+                    skipLines.add(grandchild.lineNumber);
+                    const grandchildContent = grandchild.content.replace(
+                      /^\[.*?\]\s*/,
+                      "",
+                    );
+                    const relativeIndent = grandchild.indent - child.indent;
+                    const grandchildFormatted = `${
+                      "  ".repeat(baseIndent + child.indent + relativeIndent)
+                    }- ${grandchildContent}`;
+                    completedTasks.push(grandchildFormatted);
+
+                    // Recurse for great-grandchildren
+                    if (grandchild.children) {
+                      collectGrandchildren(
+                        grandchild.children,
+                        grandchild.indent,
+                      );
+                    }
+                  }
+                };
+                collectGrandchildren(child.children, child.indent);
+              }
+            } else if (child.children) {
+              // If child is not checked, recurse to check its children
+              collectTaskHierarchy(child, baseIndent);
+            }
+          }
+        }
+      }
+    };
 
     for (const section of sections) {
       const sectionNameUpper = section.name.toUpperCase();
       if (sectionNameUpper !== "DONE" && sectionNameUpper !== "COMPLETED") {
+        // Process only top-level tasks (those without parents)
         for (const task of section.tasks) {
-          if (task.checked) {
-            // Remove the [x] checkbox and format for completed section
-            const taskContent = task.content.replace(/^\[.*?\]\s*/, ""); // Remove priority if present
-            completedTasks.push(`${"  ".repeat(task.indent)}- ${taskContent}`);
-            skipLines.add(task.lineNumber);
+          if (!task.parentLineNumber) {
+            collectTaskHierarchy(task);
           }
         }
       }
@@ -478,10 +653,35 @@ ${checklists.join("\n")}
             insertIndex++;
           }
 
-          // Insert completed tasks
+          // Collect existing tasks in completed section
+          const existingCompletedTasks: string[] = [];
+          let existingIndex = insertIndex;
+          while (existingIndex < newLines.length) {
+            const line = newLines[existingIndex];
+            // Check if we've reached a new section
+            if (line.match(/^#+\s+/)) break;
+            // Collect task lines
+            if (line.match(/^\s*-\s+/)) {
+              existingCompletedTasks.push(line);
+            }
+            existingIndex++;
+          }
+
+          // Insert completed tasks, avoiding duplicates using fuzzy matching
           for (const task of completedTasks) {
-            newLines.splice(insertIndex, 0, task);
-            insertIndex++;
+            const taskText = task.replace(/^\s*-\s+/, "").trim();
+            const similarIndex = findSimilarTask(
+              taskText,
+              existingCompletedTasks.map((t) =>
+                t.replace(/^\s*-\s+/, "").trim()
+              ),
+            );
+
+            if (similarIndex === -1) {
+              // No similar task found, insert it
+              newLines.splice(insertIndex, 0, task);
+              insertIndex++;
+            }
           }
 
           // Add empty line after if next line is not empty
@@ -492,7 +692,7 @@ ${checklists.join("\n")}
             newLines.splice(insertIndex, 0, "");
           }
 
-          // Instead of adding at the end, we inserted in place
+          // Clear the array since we've processed all tasks
           completedTasks.length = 0;
         }
       }
@@ -503,15 +703,18 @@ ${checklists.join("\n")}
       }
     }
 
+    // Count completed tasks before writing
+    const completedTaskCount = completedTasksWithHierarchy.length;
+
     // Write back to file
     await Deno.writeTextFile(filePath, newLines.join("\n"));
 
     if (options["force-clear"]) {
       operations.push(`cleared ${doneSection?.name || "completed"} section`);
-    } else if (completedTasks.length > 0) {
+    } else if (completedTaskCount > 0) {
       const sectionName = doneSection?.name || "COMPLETED";
       operations.push(
-        `moved ${completedTasks.length} completed tasks to ${sectionName}`,
+        `moved ${completedTaskCount} completed tasks to ${sectionName}`,
       );
     }
   } else if (options["force-clear"]) {
