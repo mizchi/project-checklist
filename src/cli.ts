@@ -36,6 +36,7 @@ Options:
   -v, --version       Show version
   --no-files          Skip TODO.md files
   --code              Include TODO comments in code (default: off)
+  --cases             Include TODO comments from test cases when using --code
   --scan-tests        Scan TypeScript test files for skipped tests (requires ast-grep)
   --engine <name>     Use specific search engine (rg, git-grep, grep, native)
   --list-engines      List available search engines
@@ -65,6 +66,7 @@ Commands:
   sort [file]       Sort tasks by priority within each section
   update/u [file]   Update TODO.md (--priority, --done, --force-clear)
   test [path]       Find test cases in TypeScript files (--include-all, --json)
+  code-checklist    Find checklist items in code comments
 
 Examples:
   pcheck                    # Scan current directory
@@ -89,6 +91,9 @@ Examples:
   pcheck test src          # Find skipped tests in src directory
   pcheck test --json       # Output test cases as JSON
   pcheck test --include-all # Include all tests, not just skipped
+  pcheck code-checklist    # Find checklists in code comments
+  pcheck code-checklist --stats  # Show statistics
+  pcheck code-checklist --group-by-file  # Group by file
 `);
 }
 
@@ -183,6 +188,33 @@ if (import.meta.main) {
     Deno.exit(0);
   }
 
+  // Check if it's code-checklist command
+  if (Deno.args[0] === "code-checklist") {
+    const { runCodeChecklistCommand } = await import("./cli/commands/code-checklists.ts");
+    const args = parseArgs(Deno.args.slice(1), {
+      boolean: ["stats", "group-by-file", "checked", "unchecked"],
+      string: ["patterns"],
+      alias: {
+        s: "stats",
+        g: "group-by-file",
+        c: "checked",
+        u: "unchecked",
+      },
+    });
+
+    const targetPath = args._[0]?.toString() || ".";
+    
+    await runCodeChecklistCommand({
+      path: targetPath,
+      stats: args.stats,
+      "group-by-file": args["group-by-file"],
+      checked: args.checked,
+      unchecked: args.unchecked,
+      patterns: args.patterns?.split(","),
+    });
+    Deno.exit(0);
+  }
+
   // Check if it's add command
   if (Deno.args[0] === "add") {
     const { runAddCommand } = await import("./add-command.ts");
@@ -235,6 +267,7 @@ if (import.meta.main) {
       "version",
       "no-files",
       "code",
+      "cases",
       "scan-tests",
       "list-engines",
       "interactive",
@@ -402,6 +435,7 @@ if (import.meta.main) {
   const options = {
     scanFiles: !args["no-files"],
     scanCode: args["code"], // Default is false, only true if --code is specified
+    includeTestCases: args["cases"],
     scanTests: args["scan-tests"],
     searchEngine,
     filterType: args["filter-type"],
@@ -464,7 +498,7 @@ if (import.meta.main) {
     } else {
       // Normal display mode
       if (todos.length === 0) {
-        console.log("No TODOs/FIXMEs/HACKs/NOTEs found.");
+        console.log("No TODOs/FIXMEs/HACKs/NOTEs/CHECKLISTs found.");
       } else {
         console.log("Found items:\n");
 

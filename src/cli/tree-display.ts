@@ -162,18 +162,14 @@ export function convertTodoToTreeNode(todo: any): TreeNode {
   if (todo.type === "file") {
     node.content = todo.path;
   } else if (todo.type === "code") {
-    const typeEmoji = {
-      "TODO": "📝",
-      "FIXME": "🔧",
-      "HACK": "⚡",
-      "NOTE": "📌",
-      "XXX": "❌",
-      "WARNING": "⚠️",
-    } as Record<string, string>;
-    const emoji = typeEmoji[todo.commentType || "TODO"] || "📝";
-    node.content = `${emoji} ${todo.path}:${todo.line} [${
-      todo.commentType || "TODO"
-    }] - ${todo.content}`;
+    // For CHECKLIST type, show the content directly (it already has [✓] or [ ] prefix)
+    if (todo.commentType === "CHECKLIST") {
+      node.content = `Line ${todo.line}: ${todo.content}`;
+    } else {
+      node.content = `Line ${todo.line}: [${
+        todo.commentType || "TODO"
+      }] - ${todo.content}`;
+    }
   } else if (todo.type === "markdown") {
     node.content = todo.content;
     node.isChecked = todo.checked;

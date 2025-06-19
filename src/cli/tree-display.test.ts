@@ -166,7 +166,7 @@ Deno.test("convertTodoToTreeNode - code type", () => {
 
   const node = convertTodoToTreeNode(todo);
 
-  assertEquals(node.content, "📝 src/main.ts:42 [TODO] - Fix this later");
+  assertEquals(node.content, "Line 42: [TODO] - Fix this later");
   assertEquals(node.type, "code");
 });
 

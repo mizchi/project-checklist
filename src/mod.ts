@@ -10,7 +10,7 @@ export interface LegacyTodoItem {
   line?: number;
   content?: string;
   todos?: LegacyTodoItem[];
-  commentType?: "TODO" | "FIXME" | "HACK" | "NOTE" | "XXX" | "WARNING";
+  commentType?: "TODO" | "FIXME" | "HACK" | "NOTE" | "XXX" | "WARNING" | "CHECKLIST";
   id?: string;
   checked?: boolean;
 }
@@ -21,6 +21,7 @@ import { type PcheckConfig } from "./config.ts";
 export interface FindTodosOptions {
   scanFiles?: boolean;
   scanCode?: boolean;
+  includeTestCases?: boolean;
   scanTests?: boolean;
   searchEngine?: SearchEngine;
   filterType?: string;
@@ -56,11 +57,18 @@ const CODE_EXTENSIONS = [
   ".h",
   ".hpp",
 ];
-// Support multiple comment formats: TODO, FIXME, HACK, NOTE, XXX, WARNING
+// Support multiple comment formats: TODO:, TODO(user):, FIXME:, etc., and checklists
 const TODO_PATTERNS = [
-  /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
-  /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i, // Python, Ruby, Shell
-  /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)\*\//i, // C-style block comments
+  /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)/i,
+  /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)/i, // With username
+  /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)/i, // Python, Ruby, Shell
+  /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)/i, // With username
+  /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)\*\//i, // C-style block comments
+  /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)\*\//i, // With username
+  /\/\/\s*-\s*\[([ x])\]\s*(.+)/i, // Checklist in // comments
+  /#\s*-\s*\[([ x])\]\s*(.+)/i, // Checklist in # comments
+  /\/\*\s*-\s*\[([ x])\]\s*(.+)/i, // Checklist in /* comments
+  /\*\s*-\s*\[([ x])\]\s*(.+)/i, // Checklist in * comments (multi-line)
 ];
 const IGNORE_DIRS = [
   "node_modules",
@@ -151,13 +159,25 @@ export async function findTodosInFile(
 
   // Check if it's a code file
   if (mergedOptions.scanCode && isCodeFile(filePath)) {
+    // Skip test files unless includeTestCases is true
+    if (!mergedOptions.includeTestCases && isTestFile(filePath)) {
+      return todos;
+    }
+    
     // For single files, always use native search
     // Search engines are designed for directory searches
     const codeTodos = await findTodosInCode(filePath);
-    for (const todo of codeTodos) {
-      todos.push({
+    if (codeTodos.length > 0) {
+      // Update paths to use fileName
+      const updatedTodos = codeTodos.map(todo => ({
         ...todo,
         path: fileName,
+      }));
+      
+      todos.push({
+        type: "file" as const,
+        path: fileName,
+        todos: updatedTodos,
       });
     }
   }
@@ -192,6 +212,11 @@ export async function findTodos(
 
     // Apply filters to search engine results
     const filteredTodos = codeTodos.filter((todo) => {
+      // Skip test files unless includeTestCases is true
+      if (!mergedOptions.includeTestCases && isTestFile(todo.path)) {
+        return false;
+      }
+      
       // Filter by extension
       if (
         filterExtensions &&
@@ -278,6 +303,11 @@ export async function findTodos(
       mergedOptions.scanCode && !mergedOptions.searchEngine &&
       isCodeFile(entry.path)
     ) {
+      // Skip test files unless includeTestCases is true
+      if (!mergedOptions.includeTestCases && isTestFile(entry.path)) {
+        continue;
+      }
+      
       // Apply extension filter
       if (
         filterExtensions &&
@@ -296,11 +326,52 @@ export async function findTodos(
     }
   }
 
+  // Group code todos by file if scanCode is enabled
+  if (mergedOptions.scanCode) {
+    const groupedTodos: LegacyTodoItem[] = [];
+    const codeByFile = new Map<string, LegacyTodoItem[]>();
+    
+    // Separate code todos from other types
+    for (const todo of todos) {
+      if (todo.type === "code") {
+        const fileTodos = codeByFile.get(todo.path) || [];
+        fileTodos.push(todo);
+        codeByFile.set(todo.path, fileTodos);
+      } else {
+        groupedTodos.push(todo);
+      }
+    }
+    
+    // Create file-type todo items for each file with code todos
+    for (const [filePath, fileTodos] of codeByFile) {
+      // Sort by line number
+      fileTodos.sort((a, b) => (a.line || 0) - (b.line || 0));
+      groupedTodos.push({
+        type: "file",
+        path: filePath,
+        todos: fileTodos,
+      });
+    }
+    
+    return groupedTodos;
+  }
+
   return todos;
 }
 
 function isCodeFile(path: string): boolean {
   return CODE_EXTENSIONS.some((ext) => path.endsWith(ext));
+}
+
+function isTestFile(path: string): boolean {
+  const lowerPath = path.toLowerCase();
+  return lowerPath.includes('.test.') || 
+         lowerPath.includes('.spec.') ||
+         lowerPath.includes('_test.') ||
+         lowerPath.includes('_spec.') ||
+         lowerPath.includes('/test/') ||
+         lowerPath.includes('/tests/') ||
+         lowerPath.includes('/__tests__/');
 }
 
 import { parseTodoFileWithChecklist } from "./markdown-parser.ts";
@@ -359,7 +430,45 @@ async function findTodosInCode(filePath: string): Promise<LegacyTodoItem[]> {
   const lines = content.split("\n");
 
   lines.forEach((line, index) => {
-    for (const pattern of TODO_PATTERNS) {
+    // First check for checklist patterns
+    const checklistPatterns = [
+      /\/\/\s*-\s*\[([ x])\]\s*(.+)/i,
+      /#\s*-\s*\[([ x])\]\s*(.+)/i,
+      /\/\*\s*-\s*\[([ x])\]\s*(.+)/i,
+      /\*\s*-\s*\[([ x])\]\s*(.+)/i,
+    ];
+    
+    let matched = false;
+    for (const pattern of checklistPatterns) {
+      const match = line.match(pattern);
+      if (match) {
+        const checked = match[1] === 'x';
+        const prefix = checked ? '[✓]' : '[ ]';
+        todos.push({
+          type: "code" as const,
+          path: filePath,
+          line: index + 1,
+          content: `${prefix} ${match[2].trim()}`,
+          commentType: "CHECKLIST",
+        });
+        matched = true;
+        break;
+      }
+    }
+    
+    if (matched) return;
+    
+    // Then check for traditional TODO patterns
+    const todoPatterns = [
+      /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)/i,
+      /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)/i,
+      /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)/i,
+      /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)/i,
+      /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)\*\//i,
+      /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)\*\//i,
+    ];
+    
+    for (const pattern of todoPatterns) {
       const match = line.match(pattern);
       if (match) {
         const commentType = match[1]

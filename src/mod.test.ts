@@ -80,15 +80,18 @@ Deno.test("findTodosInFile should process single code file", async () => {
 
   const todos = await findTodosInFile(codeFile);
 
-  expect(todos.length).toBe(2);
-  expect(todos[0].type).toBe("code");
+  expect(todos.length).toBe(1);
+  expect(todos[0].type).toBe("file");
   expect(todos[0].path).toBe("test.ts");
-  expect(todos[0].line).toBe(2);
-  expect(todos[0].content).toBe("Implement this function");
-  expect(todos[0].commentType).toBe("TODO");
-  expect(todos[1].line).toBe(4);
-  expect(todos[1].content).toBe("Add error handling");
-  expect(todos[1].commentType).toBe("FIXME");
+  expect(todos[0].todos).toBeDefined();
+  expect(todos[0].todos!.length).toBe(2);
+  expect(todos[0].todos![0].type).toBe("code");
+  expect(todos[0].todos![0].line).toBe(2);
+  expect(todos[0].todos![0].content).toBe("Implement this function");
+  expect(todos[0].todos![0].commentType).toBe("TODO");
+  expect(todos[0].todos![1].line).toBe(4);
+  expect(todos[0].todos![1].content).toBe("Add error handling");
+  expect(todos[0].todos![1].commentType).toBe("FIXME");
 
   await Deno.remove(testDir, { recursive: true });
 });
@@ -136,19 +139,92 @@ Deno.test("findTodos should find TODO comments in code", async () => {
     `function example() {
   // TODO: Implement this function
   console.log("Not implemented");
-  // TODO Add error handling
+  // TODO Add error handling (this should not match)
 }`,
   );
 
   const todos = await findTodos(testDir, { scanFiles: false, scanCode: true });
 
-  expect(todos.length).toBe(2);
-  expect(todos[0].type).toBe("code");
-  expect(todos[0].line).toBe(2);
-  expect(todos[0].content).toBe("Implement this function");
-  expect(todos[0].commentType).toBe("TODO");
-  expect(todos[1].content).toBe("Add error handling");
-  expect(todos[1].commentType).toBe("TODO");
+  expect(todos.length).toBe(1);
+  expect(todos[0].type).toBe("file");
+  expect(todos[0].todos!.length).toBe(1);
+  expect(todos[0].todos![0].type).toBe("code");
+  expect(todos[0].todos![0].line).toBe(2);
+  expect(todos[0].todos![0].content).toBe("Implement this function");
+  expect(todos[0].todos![0].commentType).toBe("TODO");
+
+  await Deno.remove(testDir, { recursive: true });
+});
+
+Deno.test("findTodos should match TODO with colon and username patterns", async () => {
+  const testDir = await Deno.makeTempDir();
+
+  await Deno.writeTextFile(
+    join(testDir, "test.ts"),
+    `function example() {
+  // TODO: Basic todo with colon
+  // TODO(alice): Todo with username
+  // TODO This should not match (no colon)
+  // FIXME: Fix this
+  // FIXME(bob): Fix assigned to bob
+  // - [ ] Checklist item
+  // - [x] Completed checklist
+}`,
+  );
+
+  const todos = await findTodos(testDir, { scanFiles: false, scanCode: true });
+
+  expect(todos.length).toBe(1);
+  expect(todos[0].type).toBe("file");
+  expect(todos[0].todos!.length).toBe(6);
+  
+  expect(todos[0].todos![0].content).toBe("Basic todo with colon");
+  expect(todos[0].todos![1].content).toBe("Todo with username");
+  expect(todos[0].todos![2].content).toBe("Fix this");
+  expect(todos[0].todos![3].content).toBe("Fix assigned to bob");
+  expect(todos[0].todos![4].content).toBe("[ ] Checklist item");
+  expect(todos[0].todos![5].content).toBe("[✓] Completed checklist");
+
+  await Deno.remove(testDir, { recursive: true });
+});
+
+Deno.test("findTodos should exclude test files by default with --code", async () => {
+  const testDir = await Deno.makeTempDir();
+
+  await Deno.writeTextFile(
+    join(testDir, "code.ts"),
+    `// TODO: Regular code todo`,
+  );
+  
+  await Deno.writeTextFile(
+    join(testDir, "code.test.ts"),
+    `// TODO: Test file todo`,
+  );
+  
+  await Deno.writeTextFile(
+    join(testDir, "code.spec.ts"),
+    `// TODO: Spec file todo`,
+  );
+
+  // Without includeTestCases
+  const todosWithoutTests = await findTodos(testDir, { 
+    scanFiles: false, 
+    scanCode: true 
+  });
+  
+  expect(todosWithoutTests.length).toBe(1);
+  expect(todosWithoutTests[0].path).toBe("code.ts");
+
+  // With includeTestCases
+  const todosWithTests = await findTodos(testDir, { 
+    scanFiles: false, 
+    scanCode: true,
+    includeTestCases: true 
+  });
+  
+  expect(todosWithTests.length).toBe(3);
+  const paths = todosWithTests.map(t => t.path).sort();
+  expect(paths).toEqual(["code.spec.ts", "code.test.ts", "code.ts"]);
 
   await Deno.remove(testDir, { recursive: true });
 });
@@ -186,27 +262,32 @@ Deno.test("findTodos should find different comment types", async () => {
 
   const todos = await findTodos(testDir, { scanFiles: false, scanCode: true });
 
+  expect(todos.length).toBe(3); // 3 files
+
   // Filter and check TypeScript comments
-  const tsTodos = todos.filter((t) => t.path.endsWith("test.ts"));
-  expect(tsTodos.length).toBe(6);
-  expect(tsTodos[0].commentType).toBe("TODO");
-  expect(tsTodos[1].commentType).toBe("FIXME");
-  expect(tsTodos[2].commentType).toBe("HACK");
-  expect(tsTodos[3].commentType).toBe("NOTE");
-  expect(tsTodos[4].commentType).toBe("XXX");
-  expect(tsTodos[5].commentType).toBe("WARNING");
+  const tsFile = todos.find((t) => t.path.endsWith("test.ts"));
+  expect(tsFile).toBeDefined();
+  expect(tsFile!.todos!.length).toBe(6);
+  expect(tsFile!.todos![0].commentType).toBe("TODO");
+  expect(tsFile!.todos![1].commentType).toBe("FIXME");
+  expect(tsFile!.todos![2].commentType).toBe("HACK");
+  expect(tsFile!.todos![3].commentType).toBe("NOTE");
+  expect(tsFile!.todos![4].commentType).toBe("XXX");
+  expect(tsFile!.todos![5].commentType).toBe("WARNING");
 
   // Check Python comments
-  const pyTodos = todos.filter((t) => t.path.endsWith("test.py"));
-  expect(pyTodos.length).toBe(2);
-  expect(pyTodos[0].commentType).toBe("TODO");
-  expect(pyTodos[1].commentType).toBe("FIXME");
+  const pyFile = todos.find((t) => t.path.endsWith("test.py"));
+  expect(pyFile).toBeDefined();
+  expect(pyFile!.todos!.length).toBe(2);
+  expect(pyFile!.todos![0].commentType).toBe("TODO");
+  expect(pyFile!.todos![1].commentType).toBe("FIXME");
 
   // Check C comments
-  const cTodos = todos.filter((t) => t.path.endsWith("test.c"));
-  expect(cTodos.length).toBe(2);
-  expect(cTodos[0].commentType).toBe("TODO");
-  expect(cTodos[1].commentType).toBe("HACK");
+  const cFile = todos.find((t) => t.path.endsWith("test.c"));
+  expect(cFile).toBeDefined();
+  expect(cFile!.todos!.length).toBe(2);
+  expect(cFile!.todos![0].commentType).toBe("TODO");
+  expect(cFile!.todos![1].commentType).toBe("HACK");
 
   await Deno.remove(testDir, { recursive: true });
 });
@@ -222,7 +303,8 @@ Deno.test("findTodos should respect options", async () => {
     scanCode: true,
   });
   expect(noFiles.length).toBe(1);
-  expect(noFiles[0].type).toBe("code");
+  expect(noFiles[0].type).toBe("file");
+  expect(noFiles[0].todos![0].type).toBe("code");
 
   const noCode = await findTodos(testDir, { scanCode: false });
   expect(noCode.length).toBe(1);
@@ -267,7 +349,7 @@ Deno.test("findTodos should ignore node_modules", async () => {
   const todos = await findTodos(testDir, { scanCode: true });
 
   expect(todos.length).toBe(1);
-  expect(todos[0].content).toBe("Should be found");
+  expect(todos[0].todos![0].content).toBe("Should be found");
 
   await Deno.remove(testDir, { recursive: true });
 });

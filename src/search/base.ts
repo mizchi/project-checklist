@@ -27,7 +27,7 @@ export function parseGrepLine(
   return {
     file: match[1],
     lineNum: parseInt(match[2], 10),
-    content: match[3].trim(),
+    content: match[3],
   };
 }
 
@@ -35,10 +35,34 @@ export function parseGrepLine(
 export function extractTodoContent(
   line: string,
 ): { type: string; content: string } | null {
+  // First check for checklist patterns in comments
+  const checklistPatterns = [
+    /\/\/\s*-\s*\[([ x])\]\s*(.+)/i,
+    /#\s*-\s*\[([ x])\]\s*(.+)/i,
+    /\/\*\s*-\s*\[([ x])\]\s*(.+)/i,
+    /\*\s*-\s*\[([ x])\]\s*(.+)/i, // For multi-line comments
+  ];
+
+  for (const pattern of checklistPatterns) {
+    const match = line.match(pattern);
+    if (match) {
+      const checked = match[1] === 'x';
+      const prefix = checked ? '[✓]' : '[ ]';
+      return {
+        type: "CHECKLIST",
+        content: `${prefix} ${match[2].trim()}`,
+      };
+    }
+  }
+
+  // Then check for traditional TODO patterns
   const patterns = [
-    /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
-    /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)/i,
-    /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):?\s*(.+)\*\//i,
+    /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)/i,
+    /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)/i,
+    /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)/i,
+    /#\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)/i,
+    /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)\*\//i,
+    /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)\*\//i,
   ];
 
   for (const pattern of patterns) {
