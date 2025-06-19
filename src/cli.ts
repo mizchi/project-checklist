@@ -351,7 +351,9 @@ if (import.meta.main) {
       "group-by-file": values["group-by-file"] as boolean,
       checked: values.checked as boolean,
       unchecked: values.unchecked as boolean,
-      patterns: values.patterns ? (values.patterns as string).split(",") : undefined,
+      patterns: values.patterns
+        ? (values.patterns as string).split(",")
+        : undefined,
     });
     Deno.exit(0);
   }
@@ -481,7 +483,10 @@ if (import.meta.main) {
   }
 
   // Quick reference card
-  if (positionals.length >= 2 && positionals[0] === "help" && positionals[1] === "quick") {
+  if (
+    positionals.length >= 2 && positionals[0] === "help" &&
+    positionals[1] === "quick"
+  ) {
     console.log(`pcheck Quick Reference Card
 
 MOST COMMON:
@@ -529,7 +534,9 @@ CONFIG:
   let targetPath = positionals[0]?.toString() || ".";
 
   // Check for conflicting location options
-  const locationOptions = [values.root, values.gitroot, values.private].filter(Boolean);
+  const locationOptions = [values.root, values.gitroot, values.private].filter(
+    Boolean,
+  );
   if (locationOptions.length > 1) {
     console.error(
       "Error: Cannot use multiple location options (--root, --gitroot, --private) together",
@@ -662,7 +669,8 @@ CONFIG:
   const options = {
     scanFiles: !values["no-files"],
     scanCode: (values.code ?? config?.code?.enabled ?? false) as boolean,
-    includeTestCases: (values.cases ?? config?.code?.includeTests ?? false) as boolean,
+    includeTestCases:
+      (values.cases ?? config?.code?.includeTests ?? false) as boolean,
     scanTests: values["scan-tests"] as boolean,
     searchEngine,
     filterType: values["filter-type"] as string,
@@ -746,8 +754,12 @@ CONFIG:
         const treeNodes = todos.map(convertTodoToTreeNode);
         const treeOptions: TreeDisplayOptions = {
           showIds: Boolean(values["show-ids"]),
-          maxItems: values["max-items"] ? parseInt(values["max-items"] as string) : undefined,
-          maxDepth: values["max-depth"] ? parseInt(values["max-depth"] as string) : undefined,
+          maxItems: values["max-items"]
+            ? parseInt(values["max-items"] as string)
+            : undefined,
+          maxDepth: values["max-depth"]
+            ? parseInt(values["max-depth"] as string)
+            : undefined,
           uncheckedOnly: Boolean(values.unchecked),
         };
 

@@ -331,7 +331,7 @@ export async function runUpdateCommand(
     if (targetFile.type === "none") {
       // Ask user to create TODO.md
       let answer: string | null;
-      
+
       if (options.autoResponse) {
         const response = getNextPromptResponse(options.autoResponse);
         if (response !== undefined) {
@@ -479,7 +479,7 @@ ${checklists.join("\n")}
     // Only ask about priority sorting if there are tasks with priority
     if (hasPriorityTasks) {
       let sortChoice: boolean;
-      
+
       if (options.autoResponse) {
         const response = getNextConfirmResponse(options.autoResponse);
         if (response !== undefined) {
@@ -492,7 +492,7 @@ ${checklists.join("\n")}
       } else {
         sortChoice = await $.confirm("Sort tasks by priority?");
       }
-      
+
       if (sortChoice) {
         options.priority = true;
       }
@@ -501,7 +501,7 @@ ${checklists.join("\n")}
     // Only ask about moving completed tasks if there are any
     if (hasCompletedTasks) {
       let doneChoice: boolean;
-      
+
       if (options.autoResponse) {
         const response = getNextConfirmResponse(options.autoResponse);
         if (response !== undefined) {
@@ -518,7 +518,7 @@ ${checklists.join("\n")}
           "Move completed tasks to COMPLETED section?",
         );
       }
-      
+
       if (doneChoice) {
         options.completed = true;
       }
@@ -727,7 +727,10 @@ ${checklists.join("\n")}
           ? task.indent
           : Math.round(task.indent / indentSize) * indentSize;
         // Remove priority tags like [HIGH], [MID], [LOW], or numeric [1-99]
-        const contentWithoutPriority = task.content.replace(/^\[(HIGH|MID|LOW|P\d+|\d+)\]\s*/, "");
+        const contentWithoutPriority = task.content.replace(
+          /^\[(HIGH|MID|LOW|P\d+|\d+)\]\s*/,
+          "",
+        );
         const formatted = `${
           " ".repeat(baseIndent * indentSize + taskIndent)
         }- [x] ${contentWithoutPriority}`;

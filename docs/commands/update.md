@@ -12,15 +12,18 @@ pcheck u [file] [options]
 ## Options
 
 ### Organization Options
+
 - `--completed` - Move completed tasks to COMPLETED section
 - `--priority` - Sort tasks by priority
 - `--vacuum` - Remove completed tasks and output them
 - `--fix` - Validate and fix formatting before updating
 
 ### Code Integration
+
 - `--code` - Extract TODOs from source code and add to TODO.md
 
 ### Output Options
+
 - `-o, --output <file>` - Write to different file
 - `--dry-run` - Show changes without writing
 

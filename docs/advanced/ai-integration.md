@@ -5,11 +5,13 @@
 ## Design Principles
 
 ### Structured Output
+
 - Clear, parseable output format
 - Consistent task IDs across sessions
 - JSON output for machine processing
 
 ### Predictable Commands
+
 - Intuitive command structure
 - Minimal flags and options
 - Consistent behavior

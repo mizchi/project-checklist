@@ -2,10 +2,11 @@
 
 プロジェクト内の TODO を再帰的に探索して表示する Deno ベースの CLI ツールです。
 
-**正式名称**: project-checklist  
+**正式名称**: project-checklist\
 **コマンド名**: pcheck
 
-開発用の CLI は pcheck-dev としてインストールされています。デバッグ時は pcheck-dev を使ってください。
+開発用の CLI は pcheck-dev としてインストールされています。デバッグ時は
+pcheck-dev を使ってください。
 
 ## 概要
 

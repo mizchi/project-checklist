@@ -2,7 +2,8 @@
 
 ## GTDの基本原則
 
-GTD（Getting Things Done）は、David Allenによって開発されたタスク管理メソッドです。pcheckは、ソフトウェア開発プロジェクトにGTDの原則を適用するのに最適なツールです。
+GTD（Getting Things Done）は、David
+Allenによって開発されたタスク管理メソッドです。pcheckは、ソフトウェア開発プロジェクトにGTDの原則を適用するのに最適なツールです。
 
 ### GTDの5つのステップ
 
@@ -29,7 +30,9 @@ pcheckでは、タスクを階層化して詳細を追加できます：
 
 ```markdown
 # TODO.md
+
 ## TODO
+
 - [ ] [HIGH] ユーザー認証のバグを修正
   - [ ] セッションタイムアウトの問題を調査
   - [ ] リフレッシュトークンの実装
@@ -42,17 +45,23 @@ pcheckでは、タスクを階層化して詳細を追加できます：
 
 ```markdown
 # TODO.md
+
 ## TODO
+
 ### 今週のタスク
+
 - [ ] [HIGH] 本番環境のバグ修正
 - [ ] [HIGH] セキュリティパッチの適用
 
 ### 次のスプリント
+
 - [ ] [MID] パフォーマンス改善
 - [ ] [MID] ドキュメントの更新
 
 ## ICEBOX
+
 ### 将来的な機能
+
 - [ ] [LOW] ダークモードの実装
 - [ ] [LOW] 多言語対応
 ```
@@ -67,6 +76,7 @@ pcheck init --template gtd
 ### 4. 見直し（Review）- 定期的なレビュー
 
 #### 毎日のレビュー
+
 ```bash
 # 現在のタスクを確認
 pcheck
@@ -79,6 +89,7 @@ pcheck --show-ids
 ```
 
 #### 週次レビュー
+
 ```bash
 # 完了したタスクを整理
 pcheck update --completed
@@ -137,20 +148,26 @@ pcheck --json --fields content,priority
 ## ベストプラクティス
 
 ### 1. 2分ルール
+
 GTDの原則：2分以内に終わるタスクはすぐに実行。それ以外はpcheckに記録。
 
 ### 2. コンテキストの活用
+
 ```markdown
 ## TODO
+
 ### @office - オフィスでのタスク
+
 - [ ] [HIGH] チームミーティングの準備
 
 ### @home - リモートでできるタスク
+
 - [ ] [MID] コードレビュー
 - [ ] [LOW] ドキュメント作成
 ```
 
 ### 3. 定期的な整理
+
 ```bash
 # 毎週金曜日に実行
 pcheck update --completed --priority
@@ -158,6 +175,7 @@ git add TODO.md && git commit -m "Weekly TODO cleanup"
 ```
 
 ### 4. プライベートタスクの分離
+
 ```bash
 # 個人的なTODOは ~/.todo に保存
 pcheck --private
@@ -167,6 +185,7 @@ pcheck add --private -m "個人的な学習計画"
 ## 実践例：開発サイクルでのGTD
 
 ### 月曜日 - 週の計画
+
 ```bash
 # 現状確認
 pcheck --gitroot
@@ -177,6 +196,7 @@ pcheck add -m "バグ修正 #123" -p high
 ```
 
 ### 毎日 - 進捗管理
+
 ```bash
 # 朝：今日のタスクを確認
 pcheck --unchecked
@@ -189,6 +209,7 @@ pcheck update
 ```
 
 ### 金曜日 - 週次レビュー
+
 ```bash
 # 完了タスクを整理
 pcheck update --completed --priority
@@ -202,17 +223,21 @@ git commit -m "Weekly tasks completed 🎉"
 ## Tips & Tricks
 
 ### 1. 優先度の使い分け
+
 - **HIGH/P0-P1**: 今週中に完了すべきタスク
 - **MID/P2**: 次のスプリントで対応
 - **LOW/P3**: 時間があるときに対応
 
 ### 2. ICEBOXの活用
+
 将来のアイデアはICEBOXセクションに保存し、定期的に見直して優先度を再評価。
 
 ### 3. 完了タスクの記録
+
 `--vacuum`で削除する前に、完了タスクを別ファイルに保存しておくと、後で振り返りができます。
 
 ### 4. チーム連携
+
 ```bash
 # チーム全体のTODOを統合
 pcheck merge src/ docs/ tests/ --target team-todos.md

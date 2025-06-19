@@ -40,9 +40,8 @@ pcheck validate --json
 ## Common Issues Fixed
 
 ```markdown
-❌ -[] Task        → ✅ - [ ] Task
-❌ P1 Fix bug      → ✅ [P1] Fix bug
-❌ 3 space indent  → ✅ 2 space indent
+❌ -[] Task → ✅ - [ ] Task ❌ P1 Fix bug → ✅ [P1] Fix bug ❌ 3 space indent →
+✅ 2 space indent
 ```
 
 ## Output

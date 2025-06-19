@@ -212,7 +212,7 @@ export async function runInitCommand(
 
       // Ask user if they want to import them
       let answer: string | null;
-      
+
       if (options.autoResponse) {
         const response = getNextPromptResponse(options.autoResponse);
         if (response !== undefined) {
@@ -259,7 +259,7 @@ export async function runInitCommand(
 
         // Ask if user wants to remove checklists from README.md
         let removeAnswer: string | null;
-        
+
         if (options.autoResponse) {
           const response = getNextPromptResponse(options.autoResponse);
           if (response !== undefined) {
@@ -329,7 +329,7 @@ export async function runInitCommand(
       console.log("  4) Full configuration (all options)");
 
       let configChoice: string | null;
-      
+
       if (options.autoResponse) {
         const response = getNextPromptResponse(options.autoResponse);
         if (response !== undefined) {
@@ -368,7 +368,7 @@ export async function runInitCommand(
           // Ask about enabling code scanning
           if (configChoice !== "4") {
             let enableCode: string | null;
-            
+
             if (options.autoResponse) {
               const response = getNextPromptResponse(options.autoResponse);
               if (response !== undefined) {
@@ -389,7 +389,7 @@ export async function runInitCommand(
               );
               enableCode = prompt(">");
             }
-            
+
             if (enableCode?.toLowerCase() === "n") {
               selectedConfig.code.enabled = false;
             }

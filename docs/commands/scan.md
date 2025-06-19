@@ -13,7 +13,8 @@ pcheck [path] [options]
 - `--code` - Include TODO comments from source code
 - `--no-files` - Skip TODO.md and README.md files
 - `--exclude <patterns>` - Exclude file patterns
-- `--engine <name>` - Search engine: `rg` (default), `git-grep`, `grep`, `native`
+- `--engine <name>` - Search engine: `rg` (default), `git-grep`, `grep`,
+  `native`
 - `-u, --unchecked` - Show only unchecked items
 - `--show-ids` - Display task IDs
 - `-j, --json` - Output in JSON format

@@ -19,7 +19,7 @@ async function readTestFile(path: string): Promise<string> {
 Deno.test("init command - auto response for importing from README", async () => {
   const projectDir = join(testDir, "auto-import");
   await ensureDir(projectDir);
-  
+
   // Create README.md with checklists
   await createTestFile(
     "auto-import/README.md",
@@ -86,10 +86,10 @@ Deno.test("init command - auto response for config creation", async () => {
   // Check config was created
   const configPath = join(projectDir, "pcheck.config.json");
   assertEquals(await exists(configPath), true);
-  
+
   const configContent = await readTestFile("auto-config/pcheck.config.json");
   const config = JSON.parse(configContent);
-  
+
   // Should be standard config
   assertEquals(config.$schema, "./pcheck.schema.json");
   assertEquals(config.code.enabled, true);
@@ -101,7 +101,7 @@ Deno.test("init command - auto response for config creation", async () => {
 Deno.test("init command - auto response declining import", async () => {
   const projectDir = join(testDir, "auto-decline");
   await ensureDir(projectDir);
-  
+
   // Create README.md with checklists
   await createTestFile(
     "auto-decline/README.md",
@@ -155,7 +155,7 @@ Deno.test("init command - auto response with minimal config and no code scanning
   // Check config was created
   const configContent = await readTestFile("auto-minimal/pcheck.config.json");
   const config = JSON.parse(configContent);
-  
+
   // Should have code scanning disabled
   assertEquals(config.code.enabled, false);
   assertEquals(Array.isArray(config.exclude), true);
@@ -179,7 +179,7 @@ Deno.test("init command - auto response with full config", async () => {
   // Check config was created
   const configContent = await readTestFile("auto-full/pcheck.config.json");
   const config = JSON.parse(configContent);
-  
+
   // Should be full config with all options
   assertEquals(config.$schema, "./pcheck.schema.json");
   assertEquals(config.code.enabled, true);
@@ -192,7 +192,7 @@ Deno.test("init command - auto response with full config", async () => {
 Deno.test("init command - force overwrite with auto response", async () => {
   const projectDir = join(testDir, "auto-force");
   await ensureDir(projectDir);
-  
+
   // Create existing TODO.md
   await createTestFile(
     "auto-force/TODO.md",

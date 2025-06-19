@@ -38,10 +38,12 @@ pcheck init
 ```
 
 Creates:
+
 ```markdown
 # TODO
 
 ## Tasks
+
 - [ ] Initial project setup
 - [ ] Add documentation
 - [ ] Write tests

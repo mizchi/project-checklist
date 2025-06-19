@@ -37,7 +37,9 @@ export async function runValidateCommand(
 
   const engine = new ValidationEngine();
   const validatorOptions: ValidatorOptions = {
-    indentSize: values["indent-size"] ? parseInt(values["indent-size"] as string) : undefined,
+    indentSize: values["indent-size"]
+      ? parseInt(values["indent-size"] as string)
+      : undefined,
     strict: useStrict as boolean,
   };
 
@@ -48,7 +50,9 @@ export async function runValidateCommand(
     // If fixing is requested, we need to handle it differently
     // For now, just report the issues
     if (useFix && result.errors.length > 0) {
-      console.log(green(`Found ${result.errors.length} issue(s) in ${filePath}`));
+      console.log(
+        green(`Found ${result.errors.length} issue(s) in ${filePath}`),
+      );
       console.log("Note: Auto-fix is not yet implemented");
     }
 
@@ -76,7 +80,9 @@ export async function runValidateCommand(
     if (error instanceof Deno.errors.NotFound) {
       console.error(`Error: File not found: ${filePath}`);
     } else {
-      console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      console.error(
+        `Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
     Deno.exit(1);
   }

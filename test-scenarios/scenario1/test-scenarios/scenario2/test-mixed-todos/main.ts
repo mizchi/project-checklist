@@ -6,16 +6,16 @@
 export function startServer() {
   // FIXME: Port should be configurable
   const port = 3000;
-  
+
   // NOTE: Consider using environment variables
-  const dbHost = 'localhost';
-  
+  const dbHost = "localhost";
+
   // HACK: Temporary solution for authentication
   const tempAuth = () => true;
-  
+
   // TODO: Add proper logging system
   console.log(`Server starting on port ${port}`);
-  
+
   // Checklist for production:
   // - [ ] Enable HTTPS
   // - [x] Set up monitoring

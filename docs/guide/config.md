@@ -1,6 +1,7 @@
 # Configuration
 
-`pcheck` can be configured using a `pcheck.config.json` file in your project root.
+`pcheck` can be configured using a `pcheck.config.json` file in your project
+root.
 
 ## Configuration File
 
@@ -31,21 +32,25 @@ Create `pcheck.config.json`:
 ## Options
 
 ### searchEngine
+
 - Type: `"rg" | "git-grep" | "grep" | "native"`
 - Default: `"rg"` (if available)
 - The search engine to use for finding files
 
 ### exclude
+
 - Type: `string[]`
 - Default: `["node_modules/**", ".git/**"]`
 - Glob patterns for files/directories to exclude
 
 ### include
+
 - Type: `string[]`
 - Default: `["**/*.md", "**/*.ts", "**/*.js", "**/*.tsx", "**/*.jsx"]`
 - Glob patterns for files to include when searching for code TODOs
 
 ### codePatterns
+
 - Type: `string[]`
 - Default: `["TODO", "FIXME", "HACK", "NOTE"]`
 - Patterns to search for in code comments

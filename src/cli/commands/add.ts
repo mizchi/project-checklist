@@ -1,6 +1,6 @@
 import { runAddCommand as runAddCore } from "../../add-command.ts";
 import { parseArgs } from "node:util";
-import { yellow, red } from "@std/fmt/colors";
+import { red, yellow } from "@std/fmt/colors";
 
 export async function runAddCommand(args: string[]) {
   let filePath = "TODO.md";

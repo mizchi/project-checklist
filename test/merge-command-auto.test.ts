@@ -78,7 +78,7 @@ Deno.test("merge command - auto response for file selection", async () => {
   assertStringIncludes(merged, "Main task");
   assertStringIncludes(merged, "Doc task 1");
   assertStringIncludes(merged, "Source task 1");
-  
+
   // Should NOT contain tasks from unselected file (tests)
   assertEquals(merged.includes("Test task 1"), false);
 });

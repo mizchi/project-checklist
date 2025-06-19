@@ -3,7 +3,7 @@ import { defineConfig } from "npm:vitepress";
 // Hyrum's Law: With a sufficient number of users of an API,
 // it does not matter what you promise in the contract:
 // all observable behaviors of your system will be depended on by somebody.
-// 
+//
 // ドキュメントとして公開した内容は、実質的な仕様となり変更が困難になります。
 // 特にCLIインターフェースは多くのスクリプトや自動化に組み込まれるため、
 // 後方互換性を慎重に考慮する必要があります。
@@ -15,11 +15,15 @@ export default defineConfig({
   head: [
     ["link", { rel: "icon", href: "/favicon.ico" }],
     // Redirect from / to /guide/quick-start
-    ["script", {}, `
+    [
+      "script",
+      {},
+      `
       if (location.pathname === '/' || location.pathname === '/index.html') {
         location.replace('/guide/quick-start');
       }
-    `]
+    `,
+    ],
   ],
 
   themeConfig: {
@@ -77,12 +81,12 @@ export default defineConfig({
         link: "https://github.com/mizchi/project-checklist",
       },
     ],
-    
+
     footer: {
       message: "Released under the MIT License.",
       copyright: "Copyright © 2025 mizchi",
     },
-    
+
     search: {
       provider: "local",
     },

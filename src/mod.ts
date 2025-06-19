@@ -223,7 +223,7 @@ export async function findTodos(
       const normalizedPath = todo.path.startsWith("./")
         ? todo.path.slice(2)
         : todo.path;
-      
+
       // Skip test files unless includeTestCases is true
       if (!mergedOptions.includeTestCases && isTestFile(normalizedPath)) {
         return false;
@@ -231,10 +231,12 @@ export async function findTodos(
 
       // Filter by extension
       // Use default code extensions if no filter is specified
-      const extensionsToCheck = filterExtensions || 
-        (mergedOptions.config?.code?.fileExtensions?.map(ext => ext.startsWith('.') ? ext : `.${ext}`)) ||
+      const extensionsToCheck = filterExtensions ||
+        (mergedOptions.config?.code?.fileExtensions?.map((ext) =>
+          ext.startsWith(".") ? ext : `.${ext}`
+        )) ||
         CODE_EXTENSIONS;
-      
+
       if (!extensionsToCheck.some((ext) => normalizedPath.endsWith(ext))) {
         return false;
       }

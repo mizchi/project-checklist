@@ -1,6 +1,7 @@
 # Scripting
 
-`pcheck` is designed to be scriptable and integrate well with your development workflow.
+`pcheck` is designed to be scriptable and integrate well with your development
+workflow.
 
 ## Shell Scripting
 
@@ -139,6 +140,7 @@ done
 ## Environment Variables
 
 Future versions may support:
+
 - `PCHECK_CONFIG` - Custom config path
 - `PCHECK_ENGINE` - Default search engine
 - `PCHECK_FORMAT` - Default output format

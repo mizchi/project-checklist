@@ -11,16 +11,19 @@ pcheck merge [path] [options]
 ## Options
 
 ### Merge Options
+
 - `--target <file>` - Target file to merge into (default: `./TODO.md`)
 - `--all` - Merge all files without interactive selection
 - `--preserve` - Keep source files after merging
 - `--skip-empty` - Skip files with no tasks
 
 ### Interactive Options
+
 - Default behavior is interactive selection
 - Use `--all` to skip interaction
 
 ### Output Options
+
 - `--dry-run` - Preview merge without making changes
 - `-j, --json` - Output merge plan as JSON
 
@@ -62,9 +65,11 @@ Found TODO.md files:
 # TODO
 
 ## src/TODO.md
+
 - [ ] Implement authentication
 - [ ] Add error handling
 
 ## tests/TODO.md
+
 - [ ] Write unit tests
 ```

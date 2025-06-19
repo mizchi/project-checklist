@@ -38,6 +38,7 @@
 
 ## COMPLETED
 
-- [x] [HIGH] Fix: --code オプションで test.js の TODO が表示されない (2025-06-19)
+- [x] [HIGH] Fix: --code オプションで test.js の TODO が表示されない
+      (2025-06-19)
 
 _See release notes for completed features_

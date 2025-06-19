@@ -1,10 +1,10 @@
 import { join, relative } from "@std/path";
 import { walk } from "@std/fs/walk";
 import { type ParsedSection, parseMarkdown } from "./core/markdown-parser.ts";
-import { 
-  type AutoResponse, 
-  getNextMultiSelectResponse, 
-  getNextConfirmResponse 
+import {
+  type AutoResponse,
+  getNextConfirmResponse,
+  getNextMultiSelectResponse,
 } from "./cli/auto-response.ts";
 
 export interface MergeOptions {
@@ -49,7 +49,10 @@ export async function runMergeCommand(
 
   // Interactive selection
   if (options.interactive !== false) {
-    filesToProcess = await selectFilesInteractively(filesToProcess, options.autoResponse);
+    filesToProcess = await selectFilesInteractively(
+      filesToProcess,
+      options.autoResponse,
+    );
 
     if (filesToProcess.length === 0) {
       console.log("No files selected.");
@@ -75,7 +78,7 @@ export async function runMergeCommand(
     // Optionally remove source files
     if (!options.preserveSource) {
       let shouldRemove = false;
-      
+
       if (options.autoResponse) {
         const response = getNextConfirmResponse(options.autoResponse);
         if (response !== undefined) {

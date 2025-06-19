@@ -67,7 +67,10 @@ Deno.test("User Scenario: New project setup workflow", async () => {
 
     const doctorResult = await doctorCmd.output();
     if (!doctorResult.success) {
-      console.error("Doctor command failed:", new TextDecoder().decode(doctorResult.stderr));
+      console.error(
+        "Doctor command failed:",
+        new TextDecoder().decode(doctorResult.stderr),
+      );
       console.error("stdout:", new TextDecoder().decode(doctorResult.stdout));
     }
     assertEquals(doctorResult.success, true);
@@ -88,12 +91,12 @@ Deno.test("User Scenario: New project setup workflow", async () => {
 
     const viewResult = await viewCmd.output();
     assertEquals(viewResult.success, true);
-    
+
     const outputText = new TextDecoder().decode(viewResult.stdout);
-    const lines = outputText.split('\n');
-    let jsonLine = '';
+    const lines = outputText.split("\n");
+    let jsonLine = "";
     for (const line of lines) {
-      if (line.trim().startsWith('{') || line.trim().startsWith('[')) {
+      if (line.trim().startsWith("{") || line.trim().startsWith("[")) {
         jsonLine = line;
         break;
       }
@@ -111,7 +114,9 @@ Deno.test("User Scenario: Task management workflow", async () => {
 
   try {
     // Setup: Create TODO with various tasks
-    await Deno.writeTextFile(todoPath, `# TODO
+    await Deno.writeTextFile(
+      todoPath,
+      `# TODO
 
 ## TODO
 
@@ -123,7 +128,8 @@ Deno.test("User Scenario: Task management workflow", async () => {
 
 - [ ] [P1] Fix login timeout
 - [ ] Fix validation error
-`);
+`,
+    );
 
     // Step 1: Show tasks with IDs
     const showCmd = new Deno.Command(Deno.execPath(), {
@@ -142,12 +148,12 @@ Deno.test("User Scenario: Task management workflow", async () => {
 
     const showResult = await showCmd.output();
     assertEquals(showResult.success, true);
-    
+
     const outputText = new TextDecoder().decode(showResult.stdout);
-    const lines = outputText.split('\n');
-    let jsonLine = '';
+    const lines = outputText.split("\n");
+    let jsonLine = "";
     for (const line of lines) {
-      if (line.trim().startsWith('{') || line.trim().startsWith('[')) {
+      if (line.trim().startsWith("{") || line.trim().startsWith("[")) {
         jsonLine = line;
         break;
       }
@@ -206,28 +212,37 @@ Deno.test("User Scenario: Code TODO integration", async () => {
 
   try {
     // Create various code files
-    await Deno.writeTextFile(join(testDir, "app.ts"), `
+    await Deno.writeTextFile(
+      join(testDir, "app.ts"),
+      `
 // TODO: Add error handling
 export function processData(data: any) {
   // FIXME: Type safety needed
   return data;
 }
-`);
+`,
+    );
 
-    await Deno.writeTextFile(join(testDir, "utils.py"), `
+    await Deno.writeTextFile(
+      join(testDir, "utils.py"),
+      `
 # TODO: Optimize this function
 def calculate_average(numbers):
     # HACK: Quick implementation
     return sum(numbers) / len(numbers)
-`);
+`,
+    );
 
-    await Deno.writeTextFile(join(testDir, "TODO.md"), `# TODO
+    await Deno.writeTextFile(
+      join(testDir, "TODO.md"),
+      `# TODO
 
 ## TODO
 
 - [ ] Setup project structure
 - [ ] Configure CI/CD
-`);
+`,
+    );
 
     // Scan with code TODOs
     const scanCmd = new Deno.Command(Deno.execPath(), {
@@ -249,24 +264,24 @@ def calculate_average(numbers):
     assertEquals(scanResult.success, true);
 
     const outputText = new TextDecoder().decode(scanResult.stdout);
-    const lines = outputText.split('\n');
-    let jsonLine = '';
+    const lines = outputText.split("\n");
+    let jsonLine = "";
     for (const line of lines) {
-      if (line.trim().startsWith('{') || line.trim().startsWith('[')) {
+      if (line.trim().startsWith("{") || line.trim().startsWith("[")) {
         jsonLine = line;
         break;
       }
     }
     const output = JSON.parse(jsonLine);
-    
+
     // Should find both markdown and code TODOs
-    const markdownTodos = output.items.filter((item: any) => 
+    const markdownTodos = output.items.filter((item: any) =>
       item.path.endsWith("TODO.md")
     );
-    const codeTodos = output.items.filter((item: any) => 
+    const codeTodos = output.items.filter((item: any) =>
       item.type === "file" && !item.path.endsWith(".md")
     );
-    
+
     assertEquals(markdownTodos.length, 1);
     // Note: codeTodos might be empty due to known issue with some file types
     // assertEquals(codeTodos.length >= 1, true);
@@ -283,32 +298,41 @@ Deno.test.ignore("User Scenario: Multi-file TODO merge", async () => {
     // Create subdirectories with TODO files
     const srcDir = join(testDir, "src");
     const docsDir = join(testDir, "docs");
-    
+
     await Deno.mkdir(srcDir, { recursive: true });
     await Deno.mkdir(docsDir, { recursive: true });
 
-    await Deno.writeTextFile(join(srcDir, "TODO.md"), `# TODO
+    await Deno.writeTextFile(
+      join(srcDir, "TODO.md"),
+      `# TODO
 
 ## TODO
 
 - [ ] Implement core features
 - [ ] Add unit tests
-`);
+`,
+    );
 
-    await Deno.writeTextFile(join(docsDir, "TODO.md"), `# TODO
+    await Deno.writeTextFile(
+      join(docsDir, "TODO.md"),
+      `# TODO
 
 ## TODO
 
 - [ ] Write API documentation
 - [ ] Create user guide
-`);
+`,
+    );
 
-    await Deno.writeTextFile(join(testDir, "TODO.md"), `# TODO
+    await Deno.writeTextFile(
+      join(testDir, "TODO.md"),
+      `# TODO
 
 ## TODO
 
 - [ ] Project setup
-`);
+`,
+    );
 
     // Merge TODOs with --all flag
     const mergeCmd = new Deno.Command(Deno.execPath(), {
@@ -330,7 +354,7 @@ Deno.test.ignore("User Scenario: Multi-file TODO merge", async () => {
 
     // Verify merged content
     const mergedContent = await Deno.readTextFile(join(testDir, "TODO.md"));
-    
+
     // Should contain sections for each source file
     assertEquals(mergedContent.includes("## src/TODO.md"), true);
     assertEquals(mergedContent.includes("## docs/TODO.md"), true);
@@ -348,7 +372,9 @@ Deno.test.ignore("User Scenario: Validation and auto-fix", async () => {
 
   try {
     // Create malformed TODO.md
-    await Deno.writeTextFile(todoPath, `## Tasks
+    await Deno.writeTextFile(
+      todoPath,
+      `## Tasks
 
 -[] Missing space
 - [] Correct format
@@ -357,7 +383,8 @@ Deno.test.ignore("User Scenario: Validation and auto-fix", async () => {
 
 ## Bugs
 - [ ] p1 Missing brackets priority
-`);
+`,
+    );
 
     // Validate without fix
     const validateCmd = new Deno.Command(Deno.execPath(), {
@@ -375,12 +402,12 @@ Deno.test.ignore("User Scenario: Validation and auto-fix", async () => {
 
     const validateResult = await validateCmd.output();
     assertEquals(validateResult.success, true);
-    
+
     const outputText = new TextDecoder().decode(validateResult.stdout);
-    const lines = outputText.split('\n');
-    let jsonLine = '';
+    const lines = outputText.split("\n");
+    let jsonLine = "";
     for (const line of lines) {
-      if (line.trim().startsWith('{') || line.trim().startsWith('[')) {
+      if (line.trim().startsWith("{") || line.trim().startsWith("[")) {
         jsonLine = line;
         break;
       }

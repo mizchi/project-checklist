@@ -109,7 +109,6 @@ export class RipgrepEngine implements SearchEngine {
 
     for (const line of lines) {
       if (!line) continue;
-      
 
       // Handle single file output (no filename prefix)
       const singleFileMatch = line.match(/^(\d+):(.*)$/);

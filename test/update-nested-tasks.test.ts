@@ -55,14 +55,16 @@ Deno.test("update --done preserves nested structure", async () => {
   await Deno.remove(testDir, { recursive: true });
 });
 
-Deno.test.ignore("update --done avoids duplicates using fuzzy matching", async () => {
-  const testDir = await Deno.makeTempDir();
-  const todoFile = join(testDir, "TODO.md");
+Deno.test.ignore(
+  "update --done avoids duplicates using fuzzy matching",
+  async () => {
+    const testDir = await Deno.makeTempDir();
+    const todoFile = join(testDir, "TODO.md");
 
-  // Create TODO.md with tasks that have slight variations
-  await Deno.writeTextFile(
-    todoFile,
-    `# TODO
+    // Create TODO.md with tasks that have slight variations
+    await Deno.writeTextFile(
+      todoFile,
+      `# TODO
 
 ## Tasks
 - [x] Implement user authentication
@@ -74,40 +76,41 @@ Deno.test.ignore("update --done avoids duplicates using fuzzy matching", async (
 - Implement user authentication
 - Setup database connection
 `,
-  );
+    );
 
-  await runUpdateCommand(todoFile, { completed: true });
+    await runUpdateCommand(todoFile, { completed: true });
 
-  const content = await Deno.readTextFile(todoFile);
+    const content = await Deno.readTextFile(todoFile);
 
-  // Count occurrences of similar tasks in COMPLETED section
-  const lines = content.split("\n");
-  const completedIndex = lines.findIndex((line) => line === "## COMPLETED");
-  const completedSection = lines.slice(completedIndex);
+    // Count occurrences of similar tasks in COMPLETED section
+    const lines = content.split("\n");
+    const completedIndex = lines.findIndex((line) => line === "## COMPLETED");
+    const completedSection = lines.slice(completedIndex);
 
-  // Should not have duplicate entries for similar tasks
-  const authTasks = completedSection.filter((line) =>
-    line.toLowerCase().includes("user") && line.toLowerCase().includes("auth")
-  );
-  const dbTasks = completedSection.filter((line) =>
-    line.toLowerCase().includes("database") &&
-    line.toLowerCase().includes("connect")
-  );
+    // Should not have duplicate entries for similar tasks
+    const authTasks = completedSection.filter((line) =>
+      line.toLowerCase().includes("user") && line.toLowerCase().includes("auth")
+    );
+    const dbTasks = completedSection.filter((line) =>
+      line.toLowerCase().includes("database") &&
+      line.toLowerCase().includes("connect")
+    );
 
-  // With fuzzy matching, similar tasks should not be duplicated
-  assertEquals(
-    authTasks.length <= 2,
-    true,
-    "Should not duplicate authentication tasks",
-  );
-  assertEquals(
-    dbTasks.length <= 2,
-    true,
-    "Should not duplicate database tasks",
-  );
+    // With fuzzy matching, similar tasks should not be duplicated
+    assertEquals(
+      authTasks.length <= 2,
+      true,
+      "Should not duplicate authentication tasks",
+    );
+    assertEquals(
+      dbTasks.length <= 2,
+      true,
+      "Should not duplicate database tasks",
+    );
 
-  await Deno.remove(testDir, { recursive: true });
-});
+    await Deno.remove(testDir, { recursive: true });
+  },
+);
 
 Deno.test("update --done handles deeply nested tasks", async () => {
   const testDir = await Deno.makeTempDir();

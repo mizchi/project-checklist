@@ -32,20 +32,25 @@ pcheck init --force
 ## Created Files
 
 ### TODO.md
+
 ```markdown
 # TODO
 
 ## Tasks
+
 - [ ] Initial project setup
 - [ ] Add documentation
 - [ ] Write tests
 
 ## Bugs
+
 ## Features
+
 ## COMPLETED
 ```
 
 ### pcheck.config.json (with --config)
+
 ```json
 {
   "searchEngine": "rg",

@@ -29,12 +29,18 @@ export class RipgrepEngine implements SearchEngine {
         "--color=never",
         "--type-add=code:*.{ts,tsx,js,jsx,py,go,rs,java,c,cpp,h,hpp}",
         "--type=code",
-        "-e", "TODO:",
-        "-e", "FIXME:",
-        "-e", "HACK:",
-        "-e", "NOTE:",
-        "-e", "XXX:",
-        "-e", "WARNING:",
+        "-e",
+        "TODO:",
+        "-e",
+        "FIXME:",
+        "-e",
+        "HACK:",
+        "-e",
+        "NOTE:",
+        "-e",
+        "XXX:",
+        "-e",
+        "WARNING:",
         directory,
       ],
       stdout: "piped",
@@ -52,7 +58,7 @@ export class RipgrepEngine implements SearchEngine {
 
     for (const line of lines) {
       if (!line) continue;
-      
+
       const parsed = parseGrepLine(line);
       if (!parsed) continue;
 
