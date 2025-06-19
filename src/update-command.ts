@@ -1,7 +1,9 @@
-import { bold, green, yellow } from "@std/fmt/colors";
+import { bold, green, yellow, red } from "@std/fmt/colors";
 import { runSortCommand } from "./sort-command.ts";
 import { loadConfig } from "./config.ts";
 import { $ } from "dax";
+import { dirname, join, resolve } from "@std/path";
+import { findTodos } from "./mod.ts";
 
 interface UpdateOptions {
   sort?: boolean;
@@ -9,6 +11,7 @@ interface UpdateOptions {
   "force-clear"?: boolean;
   priority?: boolean;
   indentSize?: number;
+  code?: boolean;
 }
 
 interface ParsedSection {
@@ -76,6 +79,104 @@ function parseMarkdownFile(content: string): {
   return { sections, lines };
 }
 
+async function findNearestTodoFile(startPath: string): Promise<{ path: string; type: 'todo' | 'readme' | 'none' }> {
+  let currentPath = resolve(startPath);
+  
+  while (currentPath !== "/" && currentPath !== ".") {
+    // Check for TODO.md
+    const todoPath = join(currentPath, "TODO.md");
+    try {
+      const stat = await Deno.stat(todoPath);
+      if (stat.isFile) {
+        return { path: todoPath, type: 'todo' };
+      }
+    } catch {
+      // File doesn't exist
+    }
+    
+    // Check for README.md
+    const readmePath = join(currentPath, "README.md");
+    try {
+      const stat = await Deno.stat(readmePath);
+      if (stat.isFile) {
+        return { path: readmePath, type: 'readme' };
+      }
+    } catch {
+      // File doesn't exist
+    }
+    
+    const parent = dirname(currentPath);
+    if (parent === currentPath) break; // Reached root
+    currentPath = parent;
+  }
+  
+  return { path: '', type: 'none' };
+}
+
+async function extractCodeChecklists(directory: string): Promise<string[]> {
+  const todos = await findTodos(directory, {
+    scanFiles: false,
+    scanCode: true,
+    includeTestCases: false,
+  });
+  
+  const checklists: string[] = [];
+  
+  for (const file of todos) {
+    if (file.todos) {
+      for (const todo of file.todos) {
+        if (todo.commentType === "CHECKLIST" && todo.content) {
+          // Extract checklist content
+          const checklistMatch = todo.content.match(/^\[([ ✓])\]\s*(.+)$/);
+          if (checklistMatch) {
+            const checked = checklistMatch[1] === '✓';
+            const content = checklistMatch[2];
+            checklists.push(`- [${checked ? 'x' : ' '}] ${content}`);
+          }
+        }
+      }
+    }
+  }
+  
+  return checklists;
+}
+
+function normalizeMarkdownFormat(content: string): string {
+  const lines = content.split('\n');
+  const normalized: string[] = [];
+  let prevWasEmpty = false;
+  let prevWasHeader = false;
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    const isEmpty = trimmed === '';
+    const isHeader = trimmed.startsWith('#');
+    
+    // Skip multiple empty lines
+    if (isEmpty && prevWasEmpty) {
+      continue;
+    }
+    
+    // Ensure empty line after header
+    if (prevWasHeader && !isEmpty) {
+      normalized.push('');
+    }
+    
+    normalized.push(line);
+    
+    prevWasEmpty = isEmpty;
+    prevWasHeader = isHeader;
+  }
+  
+  // Remove trailing empty lines
+  while (normalized.length > 0 && normalized[normalized.length - 1].trim() === '') {
+    normalized.pop();
+  }
+  
+  return normalized.join('\n');
+}
+
 export async function runUpdateCommand(
   filePath: string,
   options: UpdateOptions,
@@ -84,7 +185,101 @@ export async function runUpdateCommand(
   const config = await loadConfig();
   const actualIndentSize = options.indentSize ?? config.indentSize ?? 2;
 
-  // Read file
+  // Handle --code option first (doesn't need file content)
+  if (options.code) {
+    const directory = filePath === "TODO.md" ? "." : dirname(filePath);
+    const checklists = await extractCodeChecklists(directory);
+    
+    if (checklists.length === 0) {
+      console.log(yellow("No checklist items found in code comments."));
+      return;
+    }
+    
+    console.log(`Found ${checklists.length} checklist items in code comments.`);
+    
+    // Find the nearest TODO.md or README.md
+    const targetFile = await findNearestTodoFile(directory);
+    
+    if (targetFile.type === 'none') {
+      // Ask user to create TODO.md
+      console.log("No TODO.md or README.md found. Create TODO.md in current directory? (y/n)");
+      const answer = prompt(">");
+      
+      if (answer?.toLowerCase() !== 'y') {
+        console.log(yellow("Operation cancelled."));
+        return;
+      }
+      
+      // Create new TODO.md
+      const newTodoPath = join(directory, "TODO.md");
+      const content = `# TODO
+
+## Tasks
+${checklists.join('\n')}
+`;
+      await Deno.writeTextFile(newTodoPath, content);
+      console.log(green(`Created ${newTodoPath} with ${checklists.length} items.`));
+      return;
+    }
+    
+    // Add to existing file
+    const targetContent = await Deno.readTextFile(targetFile.path);
+    let newContent: string;
+    
+    if (targetFile.type === 'readme') {
+      // Add TODO section to README.md
+      const lines = targetContent.split('\n');
+      
+      // Check if TODO section already exists
+      const todoSectionIndex = lines.findIndex(line => 
+        line.match(/^##\s+TODO\s*$/i)
+      );
+      
+      if (todoSectionIndex >= 0) {
+        // Insert after existing TODO section header
+        lines.splice(todoSectionIndex + 1, 0, '', ...checklists);
+      } else {
+        // Add new TODO section at the end
+        if (lines[lines.length - 1] !== '') {
+          lines.push('');
+        }
+        lines.push('## TODO', '', ...checklists);
+      }
+      
+      newContent = lines.join('\n');
+    } else {
+      // Add to TODO.md
+      const { sections, lines } = parseMarkdownFile(targetContent);
+      
+      // Find tasks or todo section
+      const taskSection = sections.find(s => 
+        s.name.toUpperCase() === 'TASKS' || 
+        s.name.toUpperCase() === 'TODO'
+      );
+      
+      if (taskSection) {
+        // Insert at the end of the section
+        const insertIndex = taskSection.endLine;
+        lines.splice(insertIndex, 0, ...checklists);
+      } else {
+        // Add at the end of file
+        if (lines[lines.length - 1] !== '') {
+          lines.push('');
+        }
+        lines.push('## Tasks', '', ...checklists);
+      }
+      
+      newContent = lines.join('\n');
+    }
+    
+    // Normalize format before writing
+    const normalizedContent = normalizeMarkdownFormat(newContent);
+    await Deno.writeTextFile(targetFile.path, normalizedContent);
+    console.log(green(`Added ${checklists.length} checklist items to ${targetFile.path}`));
+    return;
+  }
+
+  // Read file for other operations
   let content: string;
   try {
     content = await Deno.readTextFile(filePath);
