@@ -31,7 +31,7 @@ validation:
   checks:
     - path: "dist/bundle.js"
       exists: true
-      min_size: 1000  # bytes
+      min_size: 1000 # bytes
     - path: "config.json"
       exists: true
       content_contains:
@@ -96,13 +96,14 @@ validation:
 
 ### 基本的な検証式
 
-```markdown
+````markdown
 ## 検証方法
 
 1. ファイルの存在確認
    ```bash
    test -f output.txt
    ```
+````
 
 2. 出力内容の確認
    ```bash
@@ -118,8 +119,8 @@ validation:
    ```bash
    test -f output.txt && grep -q "Success" output.txt
    ```
-```
 
+````
 ### 高度な検証
 
 ```bash
@@ -132,7 +133,7 @@ tail -n 100 app.log | grep -c "ERROR" | test $(cat) -eq 0
 # パフォーマンス検証
 response_time=$(curl -w "%{time_total}" -o /dev/null -s http://localhost:3000)
 echo "$response_time < 1.0" | bc -l | grep -q 1
-```
+````
 
 ## カスタム検証スクリプト
 

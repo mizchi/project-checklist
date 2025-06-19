@@ -21,23 +21,46 @@
   ],
   "code": {
     "enabled": true,
-    "patterns": ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE", "REFACTOR", "XXX"],
+    "patterns": [
+      "TODO",
+      "FIXME",
+      "HACK",
+      "NOTE",
+      "BUG",
+      "OPTIMIZE",
+      "REFACTOR",
+      "XXX"
+    ],
     "includeTests": false,
     "fileExtensions": [
-      "js", "jsx", "ts", "tsx", "mjs", "cjs",
-      "py", "pyw",
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "mjs",
+      "cjs",
+      "py",
+      "pyw",
       "rs",
       "go",
       "java",
-      "c", "cpp", "cc", "cxx", "h", "hpp",
+      "c",
+      "cpp",
+      "cc",
+      "cxx",
+      "h",
+      "hpp",
       "cs",
       "rb",
       "php",
       "swift",
-      "kt", "kts",
+      "kt",
+      "kts",
       "scala",
       "lua",
-      "sh", "bash", "zsh"
+      "sh",
+      "bash",
+      "zsh"
     ]
   },
   "display": {
@@ -64,7 +87,14 @@
   "languages": {
     "typescript": {
       "detectTests": true,
-      "testPatterns": ["Deno.test", "it(", "test(", "describe(", "it.skip(", "test.skip("],
+      "testPatterns": [
+        "Deno.test",
+        "it(",
+        "test(",
+        "describe(",
+        "it.skip(",
+        "test.skip("
+      ],
       "includeSkipped": true
     }
   },

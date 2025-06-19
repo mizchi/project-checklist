@@ -81,20 +81,33 @@ export const DEFAULT_CONFIG: PcheckConfig = {
     patterns: ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE", "REFACTOR"],
     includeTests: false,
     fileExtensions: [
-      "js", "jsx", "ts", "tsx", "mjs", "cjs",
-      "py", "pyw",
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "mjs",
+      "cjs",
+      "py",
+      "pyw",
       "rs",
       "go",
       "java",
-      "c", "cpp", "cc", "cxx", "h", "hpp",
+      "c",
+      "cpp",
+      "cc",
+      "cxx",
+      "h",
+      "hpp",
       "cs",
       "rb",
       "php",
       "swift",
-      "kt", "kts",
+      "kt",
+      "kts",
       "scala",
       "lua",
-      "sh", "bash",
+      "sh",
+      "bash",
     ],
   },
   display: {
@@ -147,16 +160,25 @@ export async function loadConfig(path?: string): Promise<PcheckConfig> {
 }
 
 // Deep merge configuration objects
-export function mergeConfig(base: PcheckConfig, override: PcheckConfig): PcheckConfig {
+export function mergeConfig(
+  base: PcheckConfig,
+  override: PcheckConfig,
+): PcheckConfig {
   const result = { ...base };
 
   // Simple properties
   if (override.include !== undefined) result.include = override.include;
   if (override.exclude !== undefined) result.exclude = override.exclude;
   if (override.ignore !== undefined) result.ignore = override.ignore;
-  if (override.todoPatterns !== undefined) result.todoPatterns = override.todoPatterns;
-  if (override.searchEngine !== undefined) result.searchEngine = override.searchEngine;
-  if (override.indentSize !== undefined) result.indentSize = override.indentSize;
+  if (override.todoPatterns !== undefined) {
+    result.todoPatterns = override.todoPatterns;
+  }
+  if (override.searchEngine !== undefined) {
+    result.searchEngine = override.searchEngine;
+  }
+  if (override.indentSize !== undefined) {
+    result.indentSize = override.indentSize;
+  }
 
   // Nested objects
   if (override.code !== undefined) {
@@ -196,7 +218,10 @@ export function mergeConfig(base: PcheckConfig, override: PcheckConfig): PcheckC
 }
 
 // Apply CLI options to config
-export function applyCliOptions(config: PcheckConfig, options: Record<string, unknown>): PcheckConfig {
+export function applyCliOptions(
+  config: PcheckConfig,
+  options: Record<string, unknown>,
+): PcheckConfig {
   const result = { ...config };
 
   // Map CLI options to config
@@ -207,7 +232,7 @@ export function applyCliOptions(config: PcheckConfig, options: Record<string, un
     result.code = { ...result.code, enabled: false };
   }
   // Otherwise, keep the config value
-  
+
   if (options.cases === true && result.code) {
     result.code.includeTests = true;
   }
@@ -220,10 +245,10 @@ export function applyCliOptions(config: PcheckConfig, options: Record<string, un
   if (options.quiet === true) {
     result.output = { ...result.output, quiet: true };
   }
-  
+
   // Handle --exclude option
   if (options.exclude && typeof options.exclude === "string") {
-    const excludePatterns = options.exclude.split(",").map(p => p.trim());
+    const excludePatterns = options.exclude.split(",").map((p) => p.trim());
     result.exclude = [...(result.exclude || []), ...excludePatterns];
   }
 
@@ -247,14 +272,22 @@ export function validateConfig(config: unknown): config is PcheckConfig {
   }
 
   // Validate nested objects
-  if (cfg.code !== undefined && (typeof cfg.code !== "object" || cfg.code === null)) {
+  if (
+    cfg.code !== undefined &&
+    (typeof cfg.code !== "object" || cfg.code === null)
+  ) {
     throw new Error("Config error: 'code' must be an object");
   }
 
   if (cfg.output !== undefined) {
     const output = cfg.output as Record<string, unknown>;
-    if (output.format !== undefined && !["tree", "flat", "json"].includes(output.format as string)) {
-      throw new Error("Config error: 'output.format' must be 'tree', 'flat', or 'json'");
+    if (
+      output.format !== undefined &&
+      !["tree", "flat", "json"].includes(output.format as string)
+    ) {
+      throw new Error(
+        "Config error: 'output.format' must be 'tree', 'flat', or 'json'",
+      );
     }
   }
 

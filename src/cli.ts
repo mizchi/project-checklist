@@ -144,23 +144,25 @@ if (import.meta.main) {
     // Special case: validate config file
     if (Deno.args[1] === "--config" || Deno.args[1]?.endsWith(".json")) {
       const { validateConfigFile } = await import("./config-validator.ts");
-      const configPath = Deno.args[1] === "--config" 
+      const configPath = Deno.args[1] === "--config"
         ? (Deno.args[2] || "./pcheck.config.json")
         : Deno.args[1];
-      
+
       const result = await validateConfigFile(configPath);
       if (result.valid) {
         console.log(`✓ Configuration file is valid: ${configPath}`);
       } else {
         console.log(`✗ Configuration file has errors: ${configPath}`);
         for (const error of result.errors || []) {
-          console.log(`  - ${error.path ? error.path + ": " : ""}${error.message}`);
+          console.log(
+            `  - ${error.path ? error.path + ": " : ""}${error.message}`,
+          );
         }
         Deno.exit(1);
       }
       Deno.exit(0);
     }
-    
+
     const { runValidateCommand } = await import("./cli/commands/validate.ts");
     await runValidateCommand(Deno.args.slice(1));
     Deno.exit(0);
@@ -217,15 +219,27 @@ if (import.meta.main) {
       boolean: [
         "sort",
         "completed",
+        "done", // Alias for completed
         "priority",
         "code",
         "fix",
         "skip-validation",
         "vacuum",
+        "force-clear",
       ],
+      alias: {
+        d: "done",
+        s: "sort",
+        p: "priority",
+      },
     });
 
-    await runUpdateCommand(filePath, args);
+    // Map 'done' to 'completed' for backward compatibility
+    const updateOptions = {
+      ...args,
+      completed: args.completed || args.done,
+    };
+    await runUpdateCommand(filePath, updateOptions);
     Deno.exit(0);
   }
 
@@ -480,23 +494,28 @@ if (import.meta.main) {
 
   // Load config (from file or use defaults)
   let config;
-  const { loadConfig, applyCliOptions, DEFAULT_CONFIG } = await import("./config.ts");
-  
+  const { loadConfig, applyCliOptions, DEFAULT_CONFIG } = await import(
+    "./config.ts"
+  );
+
   // Skip config loading if --no-config is specified
   if (!args["no-config"]) {
     config = await loadConfig(args.config);
     // Apply CLI options to override config
     config = applyCliOptions(config, args);
-    
+
     if (args.debug) {
       console.log("Loaded config:", JSON.stringify(config, null, 2));
     }
   } else {
     // Use default config but apply CLI options
     config = applyCliOptions(DEFAULT_CONFIG, args);
-    
+
     if (args.debug) {
-      console.log("Using default config with CLI options:", JSON.stringify(config, null, 2));
+      console.log(
+        "Using default config with CLI options:",
+        JSON.stringify(config, null, 2),
+      );
     }
   }
 

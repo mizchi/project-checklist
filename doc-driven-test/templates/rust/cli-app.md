@@ -1,14 +1,17 @@
 # テストケース: Rust CLIアプリケーションの開発と検証
 
 ## 概要
+
 Rustを使用したコマンドラインツールの作成、テスト、ビルド、配布までの開発フローを検証します。
 
 ## 前提条件
+
 - Rust 1.70 以上がインストールされていること（rustup推奨）
 - cargo が利用可能であること
 - Git がインストールされていること
 
 ## 手順
+
 1. プロジェクトの作成
    ```bash
    cargo new --bin rust-cli-app
@@ -19,7 +22,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    ```bash
    # Cargo.tomlに依存関係を追加
    cat >> Cargo.toml << 'EOF'
-   
+
    [dependencies]
    clap = { version = "4.4", features = ["derive"] }
    anyhow = "1.0"
@@ -27,7 +30,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    serde_json = "1.0"
    tokio = { version = "1.35", features = ["full"] }
    reqwest = { version = "0.11", features = ["json"] }
-   
+
    [dev-dependencies]
    assert_cmd = "2.0"
    predicates = "3.0"
@@ -41,7 +44,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    use clap::{Parser, Subcommand};
    use anyhow::Result;
    use serde::{Serialize, Deserialize};
-   
+
    #[derive(Parser)]
    #[command(name = "rust-cli")]
    #[command(about = "A sample Rust CLI application", long_about = None)]
@@ -49,7 +52,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
        #[command(subcommand)]
        command: Commands,
    }
-   
+
    #[derive(Subcommand)]
    enum Commands {
        /// Shows greeting message
@@ -67,14 +70,14 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
            input: String,
        },
    }
-   
+
    #[derive(Serialize, Deserialize)]
    struct StatusInfo {
        status: String,
        version: String,
        timestamp: String,
    }
-   
+
    fn main() -> Result<()> {
        let cli = Cli::parse();
        
@@ -100,7 +103,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
        Ok(())
    }
    EOF
-   
+
    # chronoを依存関係に追加
    sed -i '/\[dependencies\]/a chrono = "0.4"' Cargo.toml
    ```
@@ -112,7 +115,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    use predicates::prelude::*;
    use std::fs;
    use tempfile::tempdir;
-   
+
    #[test]
    fn test_hello_default() {
        let mut cmd = Command::cargo_bin("rust-cli-app").unwrap();
@@ -121,7 +124,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
            .success()
            .stdout(predicate::str::contains("Hello, World!"));
    }
-   
+
    #[test]
    fn test_hello_with_name() {
        let mut cmd = Command::cargo_bin("rust-cli-app").unwrap();
@@ -130,7 +133,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
            .success()
            .stdout(predicate::str::contains("Hello, Rust!"));
    }
-   
+
    #[test]
    fn test_status() {
        let mut cmd = Command::cargo_bin("rust-cli-app").unwrap();
@@ -140,7 +143,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
            .stdout(predicate::str::contains("healthy"))
            .stdout(predicate::str::contains("version"));
    }
-   
+
    #[test]
    fn test_process_json() {
        let dir = tempdir().unwrap();
@@ -159,7 +162,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
 5. ユニットテストの追加
    ```bash
    cat >> src/main.rs << 'EOF'
-   
+
    #[cfg(test)]
    mod tests {
        use super::*;
@@ -183,10 +186,10 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    ```bash
    # フォーマット
    cargo fmt
-   
+
    # リント
    cargo clippy -- -D warnings
-   
+
    # セキュリティ監査
    cargo install cargo-audit
    cargo audit
@@ -196,10 +199,10 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    ```bash
    # ユニットテスト
    cargo test --lib
-   
+
    # 統合テスト
    cargo test --test cli_test
-   
+
    # すべてのテスト
    cargo test
    ```
@@ -208,10 +211,10 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    ```bash
    # デバッグビルド
    cargo build
-   
+
    # リリースビルド
    cargo build --release
-   
+
    # バイナリサイズの最適化
    strip target/release/rust-cli-app
    ```
@@ -221,13 +224,14 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
    # ビルドされたバイナリを実行
    ./target/release/rust-cli-app hello --name "Test"
    ./target/release/rust-cli-app status
-   
+
    # JSONファイルでのテスト
    echo '[{"id": 1, "name": "item1"}, {"id": 2, "name": "item2"}]' > test.json
    ./target/release/rust-cli-app process --input test.json
    ```
 
 ## 期待結果
+
 - Cargoプロジェクトが正常に作成される
 - 依存関係が問題なくダウンロード・コンパイルされる
 - すべてのテストがパスする
@@ -236,6 +240,7 @@ Rustを使用したコマンドラインツールの作成、テスト、ビル�
 - cargo clippyで警告が出ない
 
 ## 検証方法
+
 ```bash
 # プロジェクト構造の確認
 test -f Cargo.toml
@@ -264,11 +269,13 @@ cargo test --quiet 2>&1 | grep -q "test result: ok"
 ```
 
 ## トラブルシューティング
+
 - **問題**: error[E0433]: failed to resolve: use of undeclared crate
   - **解決策**: Cargo.tomlに必要な依存関係が追加されているか確認
 
 - **問題**: リンカーエラー (linking with `cc` failed)
-  - **解決策**: 開発ツールがインストールされているか確認（build-essential on Linux, Xcode on macOS）
+  - **解決策**: 開発ツールがインストールされているか確認（build-essential on
+    Linux, Xcode on macOS）
 
 - **問題**: テストがタイムアウトする
   - **解決策**: `cargo test -- --test-threads=1` で並列実行を無効化
@@ -284,6 +291,7 @@ cargo test --quiet 2>&1 | grep -q "test result: ok"
     ```
 
 ## 参考情報
+
 - [The Rust Programming Language](https://doc.rust-lang.org/book/)
 - [Cargo Book](https://doc.rust-lang.org/cargo/)
 - [clap Documentation](https://docs.rs/clap/latest/clap/)

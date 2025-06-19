@@ -45,7 +45,7 @@ export async function runUpdateCommandCLI(args: string[]): Promise<void> {
 
   const options = {
     sort: parsedArgs.sort,
-    done: parsedArgs.done,
+    completed: parsedArgs.done, // CLI uses --done flag, but interface uses completed
     "force-clear": parsedArgs["force-clear"],
     priority: parsedArgs.priority,
     indentSize,
@@ -67,7 +67,7 @@ Options:
   -h, --help          Show this help message
   -s, --sort          Sort tasks by priority
   -p, --priority      Sort tasks by priority (same as --sort)
-  -d, --done          Move completed tasks to COMPLETED/DONE section
+  -d, --done          Move completed tasks to COMPLETED section
   --force-clear       Clear COMPLETED/DONE section completely
   -i, --indent-size   Indent size in spaces (default: 2)
 
@@ -80,7 +80,7 @@ Examples:
   pcheck update --indent-size 4    # Use 4-space indentation
 
 Notes:
-  - Completed tasks are moved to COMPLETED section (preferred) or DONE section
+  - Completed tasks are moved to COMPLETED section
   - If no options are provided, interactive mode will ask what to do
   - Priority order: HIGH > MID > LOW > numeric > no priority
 `);

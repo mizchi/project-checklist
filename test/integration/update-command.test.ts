@@ -65,7 +65,7 @@ Deno.test("update command - sort by priority", async () => {
   assertEquals(taskLines[3], "- [ ] No priority task");
 });
 
-Deno.test("update command - move completed tasks to DONE", async () => {
+Deno.test("update command - move completed tasks to COMPLETED", async () => {
   await setup();
 
   // Create test TODO.md with completed tasks
@@ -133,15 +133,15 @@ Deno.test("update command - sort and move combined", async () => {
   assertStringIncludes(updated, "- No priority completed");
 });
 
-Deno.test("update command - force clear DONE section", async () => {
+Deno.test("update command - force clear COMPLETED section", async () => {
   await setup();
 
-  // Create test TODO.md with DONE section
+  // Create test TODO.md with COMPLETED section
   const content = `# TODO
 
 - [ ] Active task
 
-## DONE
+## COMPLETED
 
 - Old completed task 1
 - Old completed task 2
@@ -153,12 +153,12 @@ Deno.test("update command - force clear DONE section", async () => {
   const result = await pcheck("update", "--force-clear");
 
   assertEquals(result.code, 0);
-  // The implementation will say "cleared DONE section" because it found a DONE section
-  assertStringIncludes(result.stdout, "cleared DONE section");
+  // The implementation will say "cleared COMPLETED section" because it found a COMPLETED section
+  assertStringIncludes(result.stdout, "cleared COMPLETED section");
 
-  // Check DONE section was removed
+  // Check COMPLETED section was removed
   const updated = await Deno.readTextFile(testTodoPath);
-  assertEquals(updated.includes("## DONE"), false);
+  assertEquals(updated.includes("## COMPLETED"), false);
   assertEquals(updated.includes("Old completed task"), false);
 });
 

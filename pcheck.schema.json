@@ -35,7 +35,15 @@
           "items": {
             "type": "string"
           },
-          "default": ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE", "REFACTOR"]
+          "default": [
+            "TODO",
+            "FIXME",
+            "HACK",
+            "NOTE",
+            "BUG",
+            "OPTIMIZE",
+            "REFACTOR"
+          ]
         },
         "includeTests": {
           "type": "boolean",

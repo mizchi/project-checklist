@@ -33,20 +33,20 @@ const CONFIG_TEMPLATE = {
   minimal: {
     code: {
       enabled: true,
-      patterns: ["TODO", "FIXME"]
+      patterns: ["TODO", "FIXME"],
     },
     exclude: [
       "node_modules/**",
       "dist/**",
-      "build/**"
-    ]
+      "build/**",
+    ],
   },
   standard: {
     "$schema": "./pcheck.schema.json",
     include: [
       "**/*.md",
       "src/**/*",
-      "tests/**/*"
+      "tests/**/*",
     ],
     exclude: [
       "node_modules/**",
@@ -54,21 +54,21 @@ const CONFIG_TEMPLATE = {
       "build/**",
       "coverage/**",
       "*.min.js",
-      ".git/**"
+      ".git/**",
     ],
     code: {
       enabled: true,
       patterns: ["TODO", "FIXME", "HACK", "NOTE"],
-      includeTests: false
+      includeTests: false,
     },
     display: {
       showLineNumbers: true,
-      groupByFile: true
+      groupByFile: true,
     },
     output: {
       format: "tree",
-      colors: true
-    }
+      colors: true,
+    },
   },
   full: {
     "$schema": "./pcheck.schema.json",
@@ -76,7 +76,7 @@ const CONFIG_TEMPLATE = {
       "**/*.md",
       "src/**/*",
       "tests/**/*",
-      "docs/**/*.md"
+      "docs/**/*.md",
     ],
     exclude: [
       "node_modules/**",
@@ -90,51 +90,70 @@ const CONFIG_TEMPLATE = {
       ".git/**",
       ".next/**",
       ".nuxt/**",
-      ".cache/**"
+      ".cache/**",
     ],
     code: {
       enabled: true,
-      patterns: ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE", "REFACTOR"],
+      patterns: [
+        "TODO",
+        "FIXME",
+        "HACK",
+        "NOTE",
+        "BUG",
+        "OPTIMIZE",
+        "REFACTOR",
+      ],
       includeTests: false,
       fileExtensions: [
-        "js", "jsx", "ts", "tsx", "mjs", "cjs",
-        "py", "pyw",
+        "js",
+        "jsx",
+        "ts",
+        "tsx",
+        "mjs",
+        "cjs",
+        "py",
+        "pyw",
         "rs",
         "go",
         "java",
-        "c", "cpp", "cc", "cxx", "h", "hpp"
-      ]
+        "c",
+        "cpp",
+        "cc",
+        "cxx",
+        "h",
+        "hpp",
+      ],
     },
     display: {
       showLineNumbers: true,
       showEmptyTodos: false,
       groupByFile: true,
       showSectionTitles: true,
-      maxDepth: 10
+      maxDepth: 10,
     },
     output: {
       format: "tree",
       colors: true,
-      quiet: false
+      quiet: false,
     },
     search: {
       engine: "auto",
       parallel: true,
-      ignoreCase: false
+      ignoreCase: false,
     },
     markdown: {
       extensions: ["md", "mdx", "markdown"],
-      checklistOnly: true
+      checklistOnly: true,
     },
     languages: {
       typescript: {
         detectTests: true,
         testPatterns: ["Deno.test", "it(", "test(", "describe("],
-        includeSkipped: true
-      }
+        includeSkipped: true,
+      },
     },
-    indentSize: 2
-  }
+    indentSize: 2,
+  },
 };
 
 export async function runInitCommand(
@@ -256,20 +275,24 @@ export async function runInitCommand(
     const configExists = await exists(configPath);
 
     if (!configExists) {
-      console.log("\n" + yellow("Would you like to create a pcheck configuration file?"));
-      console.log("This allows you to customize file scanning, output formats, and more.");
+      console.log(
+        "\n" + yellow("Would you like to create a pcheck configuration file?"),
+      );
+      console.log(
+        "This allows you to customize file scanning, output formats, and more.",
+      );
       console.log("\nOptions:");
       console.log("  1) No configuration (use defaults)");
       console.log("  2) Minimal configuration (basic exclude patterns)");
       console.log("  3) Standard configuration (recommended)");
       console.log("  4) Full configuration (all options)");
-      
+
       const configChoice = prompt("\nSelect an option (1-4, default: 1):");
-      
+
       if (configChoice && configChoice !== "1") {
         let selectedConfig;
         let configType = "minimal";
-        
+
         switch (configChoice) {
           case "2":
             selectedConfig = CONFIG_TEMPLATE.minimal;
@@ -286,29 +309,36 @@ export async function runInitCommand(
           default:
             selectedConfig = null;
         }
-        
+
         if (selectedConfig) {
           // Ask about enabling code scanning
           if (configChoice !== "4") {
-            console.log("\nEnable scanning for TODO comments in code files? (y/n, default: y)");
+            console.log(
+              "\nEnable scanning for TODO comments in code files? (y/n, default: y)",
+            );
             const enableCode = prompt(">");
             if (enableCode?.toLowerCase() === "n") {
               selectedConfig.code.enabled = false;
             }
           }
-          
+
           // Write config file
           const configContent = JSON.stringify(selectedConfig, null, 2);
           await Deno.writeTextFile(configPath, configContent);
-          console.log(green(`✓ Created ${configPath} (${configType} configuration)`));
-          
+          console.log(
+            green(`✓ Created ${configPath} (${configType} configuration)`),
+          );
+
           // Also create schema file if it doesn't exist and config uses it
-          if ('$schema' in selectedConfig && selectedConfig.$schema) {
+          if ("$schema" in selectedConfig && selectedConfig.$schema) {
             const schemaPath = join(directory, "pcheck.schema.json");
             if (!await exists(schemaPath)) {
               try {
                 // Copy schema from package
-                const schemaUrl = new URL("../pcheck.schema.json", import.meta.url);
+                const schemaUrl = new URL(
+                  "../pcheck.schema.json",
+                  import.meta.url,
+                );
                 const schemaContent = await Deno.readTextFile(schemaUrl);
                 await Deno.writeTextFile(schemaPath, schemaContent);
                 console.log(green(`✓ Created ${schemaPath}`));

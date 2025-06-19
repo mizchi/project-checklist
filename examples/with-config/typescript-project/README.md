@@ -1,6 +1,7 @@
 # TypeScript Project Configuration Example
 
-This example demonstrates a comprehensive configuration for TypeScript projects with:
+This example demonstrates a comprehensive configuration for TypeScript projects
+with:
 
 - Code scanning enabled for TypeScript and JavaScript files
 - Test file exclusion (*.test.ts, *.spec.ts)

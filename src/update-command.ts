@@ -14,6 +14,7 @@ interface UpdateOptions {
   fix?: boolean;
   skipValidation?: boolean;
   vacuum?: boolean;
+  "force-clear"?: boolean;
 }
 
 interface ParsedSection {
@@ -422,7 +423,8 @@ ${checklists.join("\n")}
     !options.sort &&
     !options.priority &&
     !options.completed &&
-    !options.vacuum
+    !options.vacuum &&
+    !options["force-clear"]
   ) {
     console.log(bold("What would you like to do?"));
 
@@ -495,32 +497,49 @@ ${checklists.join("\n")}
     const { sections, lines } = parseMarkdownFile(content);
     const newLines: string[] = [];
     const vacuumedTasks: { section: string; tasks: string[] }[] = [];
-    
+
     // Process each section
     for (const section of sections) {
-      const sectionNameUpper = section.name.toUpperCase();
+      // const sectionNameUpper = section.name.toUpperCase();
       const completedTasksInSection: string[] = [];
-      
+
       // Collect completed tasks in this section
-      const collectCompletedTasks = (task: ParsedTask, depth: number = 0): void => {
+      const collectCompletedTasks = (
+        task: ParsedTask,
+        depth: number = 0,
+      ): void => {
         if (task.checked) {
           const indent = "  ".repeat(depth);
           completedTasksInSection.push(`${indent}- [x] ${task.content}`);
-          
+
           // Include all children of completed tasks
           if (task.children) {
             for (const child of task.children) {
               const childIndent = "  ".repeat(depth + 1);
-              completedTasksInSection.push(`${childIndent}- [${child.checked ? 'x' : ' '}] ${child.content}`);
-              
+              completedTasksInSection.push(
+                `${childIndent}- [${
+                  child.checked ? "x" : " "
+                }] ${child.content}`,
+              );
+
               // Recursively include grandchildren
               if (child.children) {
-                const collectGrandchildren = (tasks: ParsedTask[], currentDepth: number) => {
+                const collectGrandchildren = (
+                  tasks: ParsedTask[],
+                  currentDepth: number,
+                ) => {
                   for (const grandchild of tasks) {
                     const grandchildIndent = "  ".repeat(currentDepth);
-                    completedTasksInSection.push(`${grandchildIndent}- [${grandchild.checked ? 'x' : ' '}] ${grandchild.content}`);
+                    completedTasksInSection.push(
+                      `${grandchildIndent}- [${
+                        grandchild.checked ? "x" : " "
+                      }] ${grandchild.content}`,
+                    );
                     if (grandchild.children) {
-                      collectGrandchildren(grandchild.children, currentDepth + 1);
+                      collectGrandchildren(
+                        grandchild.children,
+                        currentDepth + 1,
+                      );
                     }
                   }
                 };
@@ -535,29 +554,29 @@ ${checklists.join("\n")}
           }
         }
       };
-      
+
       // Process top-level tasks only
       for (const task of section.tasks) {
         if (!task.parentLineNumber) {
           collectCompletedTasks(task);
         }
       }
-      
+
       if (completedTasksInSection.length > 0) {
         vacuumedTasks.push({
           section: section.name,
-          tasks: completedTasksInSection
+          tasks: completedTasksInSection,
         });
       }
     }
-    
+
     // Output vacuumed tasks to stdout
     if (vacuumedTasks.length > 0) {
       console.log("# Vacuumed Tasks");
       console.log(`Date: ${new Date().toISOString()}`);
       console.log(`File: ${filePath}`);
       console.log("");
-      
+
       for (const { section, tasks } of vacuumedTasks) {
         console.log(`## ${section}`);
         console.log("");
@@ -566,10 +585,10 @@ ${checklists.join("\n")}
         }
         console.log("");
       }
-      
+
       // Now remove completed tasks from the file
       const skipLines = new Set<number>();
-      
+
       // Mark all completed tasks and their children for removal
       for (const section of sections) {
         const markForRemoval = (task: ParsedTask): void => {
@@ -594,33 +613,35 @@ ${checklists.join("\n")}
             }
           }
         };
-        
+
         for (const task of section.tasks) {
           if (!task.parentLineNumber) {
             markForRemoval(task);
           }
         }
       }
-      
+
       // Build new content without completed tasks
       for (let i = 0; i < lines.length; i++) {
         if (!skipLines.has(i)) {
           newLines.push(lines[i]);
         }
       }
-      
+
       // Normalize and write back
       const finalContent = normalizeMarkdownFormat(newLines.join("\n"));
       await Deno.writeTextFile(filePath, finalContent);
-      
+
       // Count total vacuumed tasks
-      const totalVacuumed = vacuumedTasks.reduce((sum, vt) => sum + vt.tasks.length, 0);
+      const totalVacuumed = vacuumedTasks.reduce(
+        (sum, vt) => sum + vt.tasks.length,
+        0,
+      );
       operations.push(`vacuumed ${totalVacuumed} completed tasks`);
     } else {
       console.log("No completed tasks to vacuum.");
     }
-  }
-  // Handle --completed option
+  } // Handle --completed option
   else if (options.completed) {
     const { sections, lines } = parseMarkdownFile(content);
     const newLines: string[] = [];
@@ -628,7 +649,9 @@ ${checklists.join("\n")}
     const completedTasks: string[] = [];
 
     // Find or create completed section
-    completedSection = sections.find((s) => s.name.toUpperCase() === "COMPLETED") ||
+    completedSection = sections.find((s) =>
+      s.name.toUpperCase() === "COMPLETED"
+    ) ||
       null;
 
     // Process lines and collect completed tasks with hierarchy
@@ -784,7 +807,6 @@ ${checklists.join("\n")}
         }
       }
 
-
       // Skip completed tasks from other sections
       if (skipLines.has(i)) {
         continue;
@@ -808,7 +830,10 @@ ${checklists.join("\n")}
         newLines.push("");
       } else {
         // Find where to insert in existing completed section
-        const sectionPattern = new RegExp(`^##\\s+(${completedSection.name})$`, "i");
+        const sectionPattern = new RegExp(
+          `^##\\s+(${completedSection.name})$`,
+          "i",
+        );
         let insertIndex = newLines.findIndex((line) => {
           return sectionPattern.test(line);
         });
@@ -889,6 +914,53 @@ ${checklists.join("\n")}
       operations.push(
         `moved ${completedTaskCount} completed tasks to ${sectionName}`,
       );
+    }
+  }
+
+  // Handle --force-clear option
+  if (options["force-clear"]) {
+    const { lines } = parseMarkdownFile(content);
+    const newLines: string[] = [];
+    let inCompletedSection = false;
+    let completedSectionFound = false;
+    let completedSectionName = "";
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const headerMatch = line.match(/^(#+)\s+(.+)$/);
+
+      if (headerMatch) {
+        const sectionName = headerMatch[2].trim();
+        const sectionNameUpper = sectionName.toUpperCase();
+
+        // Check if this is COMPLETED or DONE section
+        if (sectionNameUpper === "COMPLETED" || sectionNameUpper === "DONE") {
+          inCompletedSection = true;
+          completedSectionFound = true;
+          completedSectionName = sectionName;
+          continue; // Skip the header line
+        } else if (inCompletedSection) {
+          // We've reached a new section after COMPLETED/DONE
+          inCompletedSection = false;
+        }
+      }
+
+      // Skip lines that are in the completed section
+      if (!inCompletedSection) {
+        newLines.push(line);
+      }
+    }
+
+    if (completedSectionFound) {
+      // Remove trailing empty lines
+      while (
+        newLines.length > 0 && newLines[newLines.length - 1].trim() === ""
+      ) {
+        newLines.pop();
+      }
+
+      await Deno.writeTextFile(filePath, newLines.join("\n"));
+      operations.push(`cleared ${completedSectionName} section`);
     }
   }
 

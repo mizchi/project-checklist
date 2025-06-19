@@ -75,7 +75,9 @@ Output: Test report in structured format
 ## アクションタイプ
 
 ### COMMAND
+
 シェルコマンドの実行
+
 ```json
 {
   "type": "COMMAND",
@@ -87,7 +89,9 @@ Output: Test report in structured format
 ```
 
 ### FILE_CREATE
+
 ファイルの作成
+
 ```json
 {
   "type": "FILE_CREATE",
@@ -98,7 +102,9 @@ Output: Test report in structured format
 ```
 
 ### FILE_EDIT
+
 ファイルの編集
+
 ```json
 {
   "type": "FILE_EDIT",
@@ -110,7 +116,9 @@ Output: Test report in structured format
 ```
 
 ### API_CALL
+
 API呼び出し
+
 ```json
 {
   "type": "API_CALL",
@@ -122,7 +130,9 @@ API呼び出し
 ```
 
 ### WAIT
+
 条件待機
+
 ```json
 {
   "type": "WAIT",
@@ -157,11 +167,13 @@ On Error:
 ## ベストプラクティス
 
 ### 1. 明示的な待機
+
 ```markdown
 3. サーバーを起動し、ポート3000が開くまで待機（最大30秒）
 ```
 
 ### 2. 検証可能な出力
+
 ```markdown
 4. `npm test`を実行し、すべてのテストがパスすることを確認
    - 出力に "All tests passed" が含まれること
@@ -169,6 +181,7 @@ On Error:
 ```
 
 ### 3. エラーメッセージの活用
+
 ```markdown
 5. ビルドを実行（`npm run build`）
    - エラーが出た場合は、エラーメッセージを記録

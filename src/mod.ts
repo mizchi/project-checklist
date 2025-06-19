@@ -220,8 +220,10 @@ export async function findTodos(
     // Apply filters to search engine results
     const filteredTodos = codeTodos.filter((todo) => {
       // Normalize path (remove ./ prefix if present)
-      const normalizedPath = todo.path.startsWith("./") ? todo.path.slice(2) : todo.path;
-      
+      const normalizedPath = todo.path.startsWith("./")
+        ? todo.path.slice(2)
+        : todo.path;
+
       // Skip test files unless includeTestCases is true
       if (!mergedOptions.includeTestCases && isTestFile(normalizedPath)) {
         return false;
@@ -238,7 +240,8 @@ export async function findTodos(
       // Filter by directory
       if (filterDirs) {
         const inFilterDir = filterDirs.some((dir) =>
-          normalizedPath.startsWith(dir + "/") || normalizedPath.includes("/" + dir + "/")
+          normalizedPath.startsWith(dir + "/") ||
+          normalizedPath.includes("/" + dir + "/")
         );
         if (!inFilterDir) return false;
       }
@@ -246,7 +249,8 @@ export async function findTodos(
       // Exclude directories
       if (excludeDirs) {
         const inExcludeDir = excludeDirs.some((dir) =>
-          normalizedPath.startsWith(dir + "/") || normalizedPath.includes("/" + dir + "/")
+          normalizedPath.startsWith(dir + "/") ||
+          normalizedPath.includes("/" + dir + "/")
         );
         if (inExcludeDir) return false;
       }
@@ -256,7 +260,9 @@ export async function findTodos(
         for (const pattern of mergedOptions.config.exclude) {
           if (pattern.endsWith("/**")) {
             const dir = pattern.slice(0, -3);
-            if (normalizedPath.startsWith(dir + "/") || normalizedPath === dir) {
+            if (
+              normalizedPath.startsWith(dir + "/") || normalizedPath === dir
+            ) {
               return false;
             }
           } else if (pattern.includes("*")) {
@@ -270,7 +276,10 @@ export async function findTodos(
             }
           } else {
             // Exact match
-            if (normalizedPath === pattern || normalizedPath.startsWith(pattern + "/")) {
+            if (
+              normalizedPath === pattern ||
+              normalizedPath.startsWith(pattern + "/")
+            ) {
               return false;
             }
           }
@@ -293,7 +302,7 @@ export async function findTodos(
       skipPatterns.push(new RegExp(`^${dir}[\\/\\\\]`));
     });
   }
-  
+
   // Add patterns from config exclude
   if (mergedOptions.config?.exclude) {
     mergedOptions.config.exclude.forEach((pattern) => {
@@ -348,13 +357,17 @@ export async function findTodos(
     }
 
     const lowerEntryName = entry.name.toLowerCase();
-    
+
     // Check if it's a markdown file we should scan
-    const isTodoOrReadme = lowerEntryName === "todo.md" || lowerEntryName === "readme.md";
+    const isTodoOrReadme = lowerEntryName === "todo.md" ||
+      lowerEntryName === "readme.md";
     const isMarkdownFile = entry.name.toLowerCase().endsWith(".md");
-    
+
     // If we have include patterns, check if this file should be included
-    if (mergedOptions.config?.include && mergedOptions.config.include.length > 0 && !isTodoOrReadme) {
+    if (
+      mergedOptions.config?.include &&
+      mergedOptions.config.include.length > 0 && !isTodoOrReadme
+    ) {
       let matches = false;
       for (const pattern of mergedOptions.config.include) {
         if (pattern.includes("*")) {

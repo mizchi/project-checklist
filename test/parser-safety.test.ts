@@ -2,10 +2,10 @@ import { assertEquals, assertNotEquals } from "@std/assert";
 import { join } from "@std/path";
 import {
   addTaskToSection,
-  clearDoneSection,
+  clearCompletedSection,
   findSection,
   insertSection,
-  moveCompletedTasksToDone,
+  moveCompletedTasksToCompleted,
   type ParsedMarkdown,
   type ParsedSection,
   type ParsedTask,
@@ -443,7 +443,7 @@ Deno.test("更新処理の精度テスト - 行番号の管理精度", async () 
   assertEquals(task4?.lineNumber, 4, "4行目のタスクの行番号が正しくありません");
 });
 
-Deno.test("更新処理の精度テスト - moveCompletedTasksToDone の安全性", () => {
+Deno.test("更新処理の精度テスト - moveCompletedTasksToCompleted の安全性", () => {
   const content = `# TODO
 
 - [ ] 未完了タスク
@@ -457,7 +457,7 @@ Deno.test("更新処理の精度テスト - moveCompletedTasksToDone の安全�
 ## ICEBOX
 - [x] アイスボックスの完了タスク`;
 
-  const result = moveCompletedTasksToDone(content);
+  const result = moveCompletedTasksToCompleted(content);
 
   // 実際の完了タスクのみが移動されることを確認
   assertEquals(result.movedCount, 3, "移動されたタスク数が正しくありません");

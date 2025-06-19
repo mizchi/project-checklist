@@ -1,13 +1,15 @@
 # Monorepo Configuration Example
 
-This example shows how to configure pcheck for a monorepo structure with multiple packages and apps.
+This example shows how to configure pcheck for a monorepo structure with
+multiple packages and apps.
 
 ## Features
 
 - **Package-aware scanning**: Searches specific package directories
 - **Workspace support**: Handles nested TODO.md files across packages
 - **Test exclusion**: Ignores test directories in all packages
-- **Build artifact exclusion**: Skips dist, build, and framework-specific directories
+- **Build artifact exclusion**: Skips dist, build, and framework-specific
+  directories
 
 ## Structure
 

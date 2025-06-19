@@ -30,7 +30,7 @@ Deno.test("update --done preserves nested structure", async () => {
   );
 
   console.log("Running update command with --done option");
-  await runUpdateCommand(todoFile, { done: true });
+  await runUpdateCommand(todoFile, { completed: true });
 
   const content = await Deno.readTextFile(todoFile);
   console.log("Updated content:\n", content);
@@ -76,7 +76,7 @@ Deno.test("update --done avoids duplicates using fuzzy matching", async () => {
 `,
   );
 
-  await runUpdateCommand(todoFile, { done: true });
+  await runUpdateCommand(todoFile, { completed: true });
 
   const content = await Deno.readTextFile(todoFile);
 
@@ -137,7 +137,7 @@ Deno.test("update --done handles deeply nested tasks", async () => {
 `,
   );
 
-  await runUpdateCommand(todoFile, { done: true });
+  await runUpdateCommand(todoFile, { completed: true });
 
   const content = await Deno.readTextFile(todoFile);
   console.log("Content after update:\n", content);
@@ -194,7 +194,7 @@ Deno.test("update --done preserves task priority markers", async () => {
 `,
   );
 
-  await runUpdateCommand(todoFile, { done: true });
+  await runUpdateCommand(todoFile, { completed: true });
 
   const content = await Deno.readTextFile(todoFile);
 

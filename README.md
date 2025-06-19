@@ -114,7 +114,7 @@ $ pcheck
    - `# TODO: Refactor this function`
    - `// - [ ] Implement feature` (checklist in comments)
    - `// - [x] Completed task`
-   
+
    Supported comment styles:
    - Single-line: `//`, `#`, `--`
    - Multi-line: `/* */`, `""" """`, `<!-- -->`
@@ -138,7 +138,8 @@ $ pcheck
 
 ## Configuration
 
-`pcheck` can be configured using a `pcheck.config.json` file in your project root:
+`pcheck` can be configured using a `pcheck.config.json` file in your project
+root:
 
 ```json
 {
@@ -213,7 +214,10 @@ workflow. `project-checklist` is designed to:
 
 ## Document-Driven Testing
 
-This project includes a document-driven testing framework that allows AI assistants to understand and execute test cases written in natural language. The framework has been generalized and is available in the `doc-driven-test/` directory.
+This project includes a document-driven testing framework that allows AI
+assistants to understand and execute test cases written in natural language. The
+framework has been generalized and is available in the `doc-driven-test/`
+directory.
 
 ### Quick Start
 
@@ -246,7 +250,8 @@ test/use-cases/           # Project-specific tests
 └── 01-create-initial-todo.md
 ```
 
-See [doc-driven-test/README.md](./doc-driven-test/README.md) for detailed documentation.
+See [doc-driven-test/README.md](./doc-driven-test/README.md) for detailed
+documentation.
 
 ## License
 

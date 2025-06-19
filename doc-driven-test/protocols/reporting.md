@@ -9,17 +9,19 @@
 ```markdown
 # Test Report: [Test Name]
 
-**Status**: ✅ PASSED / ❌ FAILED  
-**Duration**: 45.3 seconds  
+**Status**: ✅ PASSED / ❌ FAILED\
+**Duration**: 45.3 seconds\
 **Timestamp**: 2024-01-15 10:30:00 UTC
 
 ## Summary
+
 - Total Steps: 5
 - Passed: 4
 - Failed: 1
 - Skipped: 0
 
 ## Key Findings
+
 - ✅ Environment setup completed successfully
 - ✅ Dependencies installed without errors
 - ✅ Application started on port 3000
@@ -27,6 +29,7 @@
 - ⚠️ Warning: Deprecated packages detected
 
 ## Recommendations
+
 1. Fix the database connection issue causing 500 error
 2. Update deprecated packages to latest versions
 ```
@@ -37,6 +40,7 @@
 # Detailed Test Report
 
 ## Test Case Information
+
 - **Name**: User Registration Flow
 - **File**: tests/user-registration.md
 - **Version**: 1.2.0
@@ -46,33 +50,30 @@
 
 ### 13:45:00 - Environment Setup
 ```
-$ mkdir -p test-workspace
-$ cd test-workspace
-$ git init
-✓ Initialized empty Git repository
-```
 
+$ mkdir -p test-workspace $ cd test-workspace $ git init ✓ Initialized empty Git
+repository
+
+```
 ### 13:45:05 - Dependencies Installation
 ```
-$ npm install
-added 234 packages in 12.3s
-✓ All dependencies installed
-```
 
+$ npm install added 234 packages in 12.3s ✓ All dependencies installed
+
+```
 ### 13:45:18 - Server Start
 ```
-$ npm start
-Server listening on port 3000
-✓ Server started successfully
-```
 
+$ npm start Server listening on port 3000 ✓ Server started successfully
+
+```
 ### 13:45:20 - API Test
 ```
-$ curl -X POST http://localhost:3000/api/users
-Status: 500 Internal Server Error
-✗ Expected status 201, got 500
-```
 
+$ curl -X POST http://localhost:3000/api/users Status: 500 Internal Server Error
+✗ Expected status 201, got 500
+
+```
 ## Error Analysis
 The server returned 500 due to missing database configuration.
 Stack trace indicates connection refused to PostgreSQL.
@@ -288,8 +289,8 @@ This is an automated message from doc-driven-test
 // custom-reporter.js
 class CustomReporter {
   constructor(options) {
-    this.format = options.format || 'markdown';
-    this.output = options.output || 'console';
+    this.format = options.format || "markdown";
+    this.output = options.output || "console";
   }
 
   generateReport(testResult) {
@@ -299,11 +300,11 @@ class CustomReporter {
 
   formatReport(result) {
     switch (this.format) {
-      case 'markdown':
+      case "markdown":
         return this.toMarkdown(result);
-      case 'json':
+      case "json":
         return JSON.stringify(result, null, 2);
-      case 'html':
+      case "html":
         return this.toHTML(result);
       default:
         return result.toString();
@@ -312,13 +313,13 @@ class CustomReporter {
 
   outputReport(report) {
     switch (this.output) {
-      case 'console':
+      case "console":
         console.log(report);
         break;
-      case 'file':
-        fs.writeFileSync('report.md', report);
+      case "file":
+        fs.writeFileSync("report.md", report);
         break;
-      case 'api':
+      case "api":
         this.sendToAPI(report);
         break;
     }

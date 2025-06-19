@@ -202,14 +202,14 @@ export async function runDiagnostics(): Promise<void> {
   const { validateConfigFile } = await import("./config-validator.ts");
   const { loadConfig, DEFAULT_CONFIG } = await import("./config.ts");
   const configPath = "./pcheck.config.json";
-  
+
   let config = DEFAULT_CONFIG;
-  let hasConfigFile = false;
-  
+  // let hasConfigFile = false;
+
   try {
     const stat = await Deno.stat(configPath);
     if (stat.isFile) {
-      hasConfigFile = true;
+      // hasConfigFile = true;
       const result = await validateConfigFile(configPath);
       if (result.valid) {
         console.log(`  ✅ pcheck.config.json (valid)`);
@@ -217,7 +217,9 @@ export async function runDiagnostics(): Promise<void> {
       } else {
         console.log(`  ❌ pcheck.config.json (invalid)`);
         for (const error of result.errors || []) {
-          console.log(`     - ${error.path ? error.path + ": " : ""}${error.message}`);
+          console.log(
+            `     - ${error.path ? error.path + ": " : ""}${error.message}`,
+          );
         }
       }
     }
@@ -228,23 +230,38 @@ export async function runDiagnostics(): Promise<void> {
       console.log(`  ❌ Error checking config: ${error}`);
     }
   }
-  
+
   // Display recognized file patterns
   console.log("\nRecognized patterns:");
-  
+
   // Markdown files
   console.log("  Markdown files:");
-  if (config.include && config.include.some(p => p.includes(".md") || p.includes("*.md"))) {
-    console.log("    ✓ Pattern-based: " + config.include.filter(p => p.includes(".md")).join(", "));
+  if (
+    config.include &&
+    config.include.some((p) => p.includes(".md") || p.includes("*.md"))
+  ) {
+    console.log(
+      "    ✓ Pattern-based: " +
+        config.include.filter((p) => p.includes(".md")).join(", "),
+    );
   } else {
     console.log("    ✓ TODO.md, README.md (always scanned)");
   }
-  
+
   // Code files
   if (config.code?.enabled) {
     console.log("  Code files:");
-    console.log(`    ✓ Extensions: ${config.code.fileExtensions?.map(ext => `.${ext}`).join(", ") || "default set"}`);
-    console.log(`    ✓ Patterns: ${config.code.patterns?.join(", ") || "TODO, FIXME, HACK, NOTE"}`);
+    console.log(
+      `    ✓ Extensions: ${
+        config.code.fileExtensions?.map((ext) => `.${ext}`).join(", ") ||
+        "default set"
+      }`,
+    );
+    console.log(
+      `    ✓ Patterns: ${
+        config.code.patterns?.join(", ") || "TODO, FIXME, HACK, NOTE"
+      }`,
+    );
     if (config.code.includeTests) {
       console.log("    ✓ Test files included");
     } else {
@@ -254,7 +271,7 @@ export async function runDiagnostics(): Promise<void> {
     console.log("  Code files:");
     console.log("    ✗ Disabled (use --code or enable in config)");
   }
-  
+
   // Excluded patterns
   console.log("  Excluded:");
   const excludePatterns = config.exclude || [];

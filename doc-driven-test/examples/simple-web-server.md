@@ -1,14 +1,17 @@
 # テストケース: シンプルなWebサーバーの構築
 
 ## 概要
+
 プログラミング言語に依存しない、基本的なWebサーバーの構築とAPIエンドポイントの動作確認を行います。
 
 ## 前提条件
+
 - Python 3.x、Node.js、またはその他のWeb開発環境
 - curl コマンドが利用可能
 - 空いているポート（デフォルト: 8080）
 
 ## 手順
+
 1. プロジェクトディレクトリの作成
    ```bash
    mkdir simple-web-server
@@ -21,7 +24,7 @@
    from http.server import HTTPServer, BaseHTTPRequestHandler
    import json
    import time
-   
+
    class SimpleHandler(BaseHTTPRequestHandler):
        def do_GET(self):
            if self.path == '/':
@@ -55,7 +58,7 @@
        
        def log_message(self, format, *args):
            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {format % args}")
-   
+
    if __name__ == '__main__':
        PORT = 8080
        server = HTTPServer(('0.0.0.0', PORT), SimpleHandler)
@@ -73,7 +76,7 @@
    python server.py &
    SERVER_PID=$!
    echo $SERVER_PID > .server.pid
-   
+
    # サーバーの起動を待つ
    echo "Waiting for server to start..."
    sleep 2
@@ -84,21 +87,22 @@
    # ルートパスのテスト
    echo "Testing root endpoint..."
    curl -s http://localhost:8080/
-   
+
    # ヘルスチェックエンドポイント
    echo -e "\nTesting health endpoint..."
    curl -s http://localhost:8080/api/health | python -m json.tool
-   
+
    # 情報エンドポイント
    echo -e "\nTesting info endpoint..."
    curl -s http://localhost:8080/api/info | python -m json.tool
-   
+
    # 404エラーのテスト
    echo -e "\nTesting 404 error..."
    curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/not-found
    ```
 
 ## 期待結果
+
 - サーバーがポート8080で起動する
 - ルートパス(/)でHTMLウェルカムメッセージが表示される
 - /api/healthでJSON形式のヘルスステータスが返される
@@ -106,6 +110,7 @@
 - 存在しないパスで404エラーが返される
 
 ## 検証方法
+
 ```bash
 # サーバープロセスの確認
 ps aux | grep -v grep | grep -q "python server.py" || { echo "Server not running"; exit 1; }
@@ -135,6 +140,7 @@ fi
 ```
 
 ## トラブルシューティング
+
 - **問題**: Address already in use
   - **解決策**: `lsof -ti:8080 | xargs kill -9` でポートを解放
 
@@ -145,5 +151,6 @@ fi
   - **解決策**: `jq` コマンドをインストールするか、Pythonのjson.toolを使用
 
 ## 参考情報
+
 - HTTPステータスコード: https://developer.mozilla.org/docs/Web/HTTP/Status
 - RESTful API設計: https://restfulapi.net/

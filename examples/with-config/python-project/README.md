@@ -6,7 +6,7 @@ This example demonstrates pcheck configuration for Python projects.
 
 - **Python-specific patterns**: Includes .py, .pyx, .pyw files
 - **Virtual environment exclusion**: Ignores venv, env, .venv directories
-- **Python build artifacts**: Excludes __pycache__, *.pyc, dist, build
+- **Python build artifacts**: Excludes **pycache**, *.pyc, dist, build
 - **Notebook support**: Can include Jupyter notebooks
 - **Documentation formats**: Supports both .md and .rst files
 

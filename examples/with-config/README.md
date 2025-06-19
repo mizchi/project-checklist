@@ -12,7 +12,8 @@ This directory contains various configuration examples for pcheck.
 
 ## Usage
 
-Copy any of these configuration files to your project root as `pcheck.config.json`:
+Copy any of these configuration files to your project root as
+`pcheck.config.json`:
 
 ```bash
 # Copy minimal configuration
@@ -24,7 +25,8 @@ cp examples/with-config/typescript-project/pcheck.config.json ./
 
 ## Testing Examples
 
-Each example directory contains a sample project structure with TODO.md files to demonstrate how the configuration works:
+Each example directory contains a sample project structure with TODO.md files to
+demonstrate how the configuration works:
 
 ```bash
 # Test the TypeScript configuration

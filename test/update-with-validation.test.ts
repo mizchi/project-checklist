@@ -32,7 +32,7 @@ Deno.test("update validates file before processing", async () => {
 
   try {
     // Try to update without fix - should fail
-    await runUpdateCommand(todoPath, { done: true });
+    await runUpdateCommand(todoPath, { completed: true });
 
     console.log = originalLog;
     console.error = originalError;
@@ -67,7 +67,7 @@ Deno.test("update with --fix fixes validation issues", async () => {
 `,
   );
 
-  await runUpdateCommand(todoPath, { done: true, fix: true });
+  await runUpdateCommand(todoPath, { completed: true, fix: true });
 
   const content = await Deno.readTextFile(todoPath);
 
@@ -106,7 +106,7 @@ Deno.test("update with --skip-validation bypasses validation", async () => {
   );
 
   // Should succeed even with validation issues
-  await runUpdateCommand(todoPath, { done: true, skipValidation: true });
+  await runUpdateCommand(todoPath, { completed: true, skipValidation: true });
 
   const content = await Deno.readTextFile(todoPath);
 

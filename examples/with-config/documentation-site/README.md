@@ -1,6 +1,7 @@
 # Documentation Site Configuration Example
 
-This example shows configuration optimized for documentation sites and content management.
+This example shows configuration optimized for documentation sites and content
+management.
 
 ## Features
 
