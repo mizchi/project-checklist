@@ -17,6 +17,7 @@
 
 ### Distribution & Packaging
 
+- [ ] Refactor CLI for npm compatibility (export runCli function)
 - [ ] Publish to npm using @deno/dnt
 - [ ] Create GitHub Action for automated releases
 - [ ] Set up JSR (JavaScript Registry) publishing

@@ -1,6 +1,6 @@
 {
   "name": "@mizchi/project-checklist",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "nodeModulesDir": "auto",
   "tasks": {
     "dev": "deno run --watch --allow-read --allow-env --allow-run src/cli.ts",
@@ -9,7 +9,8 @@
     "check": "deno check **/*.ts && deno lint && deno fmt --check && deno test --allow-read --allow-write --allow-env --allow-run --reporter=dot src/ test/",
     "compile": "deno compile --allow-read --allow-env --allow-run --output=pcheck src/cli.ts",
     "doc:dev": "deno run -A npm:vitepress dev docs --port=9999",
-    "doc:build": "deno run -A npm:vitepress build"
+    "doc:build": "deno run -A npm:vitepress build",
+    "build:npm": "deno run -A scripts/build-npm.ts"
   },
   "imports": {
     "@david/dax": "jsr:@david/dax@^0.43.2",
@@ -25,7 +26,8 @@
     "unist-util-visit": "npm:unist-util-visit@^5.0.0",
     "mdast": "npm:mdast@^3.0.0",
     "dax": "jsr:@david/dax@^0.42.0",
-    "vue": "npm:vue@^3.5.17"
+    "vue": "npm:vue@^3.5.17",
+    "@deno/dnt": "jsr:@deno/dnt@^0.41.3"
   },
   "exports": {
     ".": "./src/mod.ts",

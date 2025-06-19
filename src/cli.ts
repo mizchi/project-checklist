@@ -8,7 +8,7 @@ import {
   type TreeDisplayOptions,
 } from "./cli/tree-display.ts";
 
-const VERSION = "0.3.1";
+const VERSION = "0.3.2";
 
 function printHelp() {
   console.log(
@@ -139,21 +139,21 @@ For more info: https://github.com/mizchi/project-checklist
   );
 }
 
-if (import.meta.main) {
+export async function runCli(args: string[] = Deno.args) {
   // Check for command-specific help
   if (
-    Deno.args.length >= 2 &&
-    (Deno.args[1] === "--help" || Deno.args[1] === "-h")
+    parsedArgs.length >= 2 &&
+    (parsedArgs[1] === "--help" || parsedArgs[1] === "-h")
   ) {
     const { showCommandHelp } = await import("./cli/help.ts");
-    showCommandHelp(Deno.args[0]);
+    showCommandHelp(parsedArgs[0]);
     Deno.exit(0);
   }
 
   // Check if it's init command
-  if (Deno.args[0] === "init") {
+  if (parsedArgs[0] === "init") {
     const { runInitCommand } = await import("./init-command.ts");
-    const args = parseArgs(Deno.args.slice(1), {
+    const parsedArgs = parseArgs(parsedArgs.slice(1), {
       boolean: ["force", "skip-config"],
       string: ["template"],
       alias: {
@@ -162,30 +162,30 @@ if (import.meta.main) {
       },
     });
 
-    const directory = args._[0]?.toString() || ".";
+    const directory = parsedArgs._[0]?.toString() || ".";
     await runInitCommand(directory, {
-      force: args.force,
-      template: args.template,
-      skipConfig: args["skip-config"],
+      force: parsedArgs.force,
+      template: parsedArgs.template,
+      skipConfig: parsedArgs["skip-config"],
     });
     Deno.exit(0);
   }
 
   // Check if it's doctor command
-  if (Deno.args[0] === "doctor") {
+  if (parsedArgs[0] === "doctor") {
     const { runDiagnostics } = await import("./doctor.ts");
     await runDiagnostics();
     Deno.exit(0);
   }
 
   // Check if it's validate command
-  if (Deno.args[0] === "validate") {
+  if (parsedArgs[0] === "validate") {
     // Special case: validate config file
-    if (Deno.args[1] === "--config" || Deno.args[1]?.endsWith(".json")) {
+    if (parsedArgs[1] === "--config" || parsedArgs[1]?.endsWith(".json")) {
       const { validateConfigFile } = await import("./config-validator.ts");
-      const configPath = Deno.args[1] === "--config"
-        ? (Deno.args[2] || "./pcheck.config.json")
-        : Deno.args[1];
+      const configPath = parsedArgs[1] === "--config"
+        ? (parsedArgs[2] || "./pcheck.config.json")
+        : parsedArgs[1];
 
       const result = await validateConfigFile(configPath);
       if (result.valid) {
@@ -203,13 +203,13 @@ if (import.meta.main) {
     }
 
     const { runValidateCommand } = await import("./cli/commands/validate.ts");
-    await runValidateCommand(Deno.args.slice(1));
+    await runValidateCommand(parsedArgs.slice(1));
     Deno.exit(0);
   }
 
   // Check if it's check command
-  if (Deno.args[0] === "check") {
-    const itemId = Deno.args[1];
+  if (parsedArgs[0] === "check") {
+    const itemId = parsedArgs[1];
     if (!itemId) {
       console.error("Error: Item ID is required for check command");
       console.error("Usage: pcheck check <id>");
@@ -217,7 +217,7 @@ if (import.meta.main) {
     }
 
     const { runCheckCommand } = await import("./check-command.ts");
-    const args = parseArgs(Deno.args.slice(2), {
+    const parsedArgs = parseArgs(parsedArgs.slice(2), {
       boolean: ["off", "gitroot", "private"],
       alias: {
         g: "gitroot",
@@ -229,13 +229,13 @@ if (import.meta.main) {
   }
 
   // Check if it's sort command
-  if (Deno.args[0] === "sort") {
+  if (parsedArgs[0] === "sort") {
     const { runSortCommand } = await import("./sort-command.ts");
     let filePath = "TODO.md"; // Default to TODO.md
 
     // Check if file path is provided
-    if (Deno.args.length > 1 && !Deno.args[1].startsWith("-")) {
-      filePath = Deno.args[1];
+    if (parsedArgs.length > 1 && !parsedArgs[1].startsWith("-")) {
+      filePath = parsedArgs[1];
     }
 
     await runSortCommand(filePath);
@@ -243,10 +243,10 @@ if (import.meta.main) {
   }
 
   // Check if it's update command (or alias 'u')
-  if (Deno.args[0] === "update" || Deno.args[0] === "u") {
+  if (parsedArgs[0] === "update" || parsedArgs[0] === "u") {
     const { runUpdateCommand } = await import("./update-command.ts");
     let filePath = "TODO.md"; // Default to TODO.md
-    const remainingArgs = Deno.args.slice(1);
+    const remainingArgs = parsedArgs.slice(1);
 
     // Check if file path is provided
     if (remainingArgs.length > 0 && !remainingArgs[0].startsWith("-")) {
@@ -254,7 +254,7 @@ if (import.meta.main) {
       remainingArgs.shift();
     }
 
-    const args = parseArgs(remainingArgs, {
+    const parsedArgs = parseArgs(remainingArgs, {
       boolean: [
         "sort",
         "completed",
@@ -276,39 +276,39 @@ if (import.meta.main) {
     // Map 'done' to 'completed' for backward compatibility
     const updateOptions = {
       ...args,
-      completed: args.completed || args.done,
+      completed: parsedArgs.completed || parsedArgs.done,
     };
     await runUpdateCommand(filePath, updateOptions);
     Deno.exit(0);
   }
 
   // Check if it's test command
-  if (Deno.args[0] === "test") {
+  if (parsedArgs[0] === "test") {
     const { runTestCommand } = await import("./test-command.ts");
-    const targetPath = Deno.args[1] || ".";
+    const targetPath = parsedArgs[1] || ".";
 
-    const args = parseArgs(Deno.args.slice(2), {
+    const parsedArgs = parseArgs(parsedArgs.slice(2), {
       boolean: ["json", "pretty", "include-all"],
       string: ["filter-dir", "exclude-dir"],
     });
 
     await runTestCommand({
       path: targetPath,
-      includeSkipped: !args["include-all"],
-      json: args.json,
-      pretty: args.pretty,
-      filterDir: args["filter-dir"],
-      excludeDir: args["exclude-dir"],
+      includeSkipped: !parsedArgs["include-all"],
+      json: parsedArgs.json,
+      pretty: parsedArgs.pretty,
+      filterDir: parsedArgs["filter-dir"],
+      excludeDir: parsedArgs["exclude-dir"],
     });
     Deno.exit(0);
   }
 
   // Check if it's code-checklist command
-  if (Deno.args[0] === "code-checklist") {
+  if (parsedArgs[0] === "code-checklist") {
     const { runCodeChecklistCommand } = await import(
       "./cli/commands/code-checklists.ts"
     );
-    const args = parseArgs(Deno.args.slice(1), {
+    const parsedArgs = parseArgs(parsedArgs.slice(1), {
       boolean: ["stats", "group-by-file", "checked", "unchecked"],
       string: ["patterns"],
       alias: {
@@ -319,23 +319,23 @@ if (import.meta.main) {
       },
     });
 
-    const targetPath = args._[0]?.toString() || ".";
+    const targetPath = parsedArgs._[0]?.toString() || ".";
 
     await runCodeChecklistCommand({
       path: targetPath,
-      stats: args.stats,
-      "group-by-file": args["group-by-file"],
-      checked: args.checked,
-      unchecked: args.unchecked,
-      patterns: args.patterns?.split(","),
+      stats: parsedArgs.stats,
+      "group-by-file": parsedArgs["group-by-file"],
+      checked: parsedArgs.checked,
+      unchecked: parsedArgs.unchecked,
+      patterns: parsedArgs.patterns?.split(","),
     });
     Deno.exit(0);
   }
 
   // Check if it's merge command
-  if (Deno.args[0] === "merge") {
+  if (parsedArgs[0] === "merge") {
     const { runMergeCommand } = await import("./merge-command.ts");
-    const args = parseArgs(Deno.args.slice(1), {
+    const parsedArgs = parseArgs(parsedArgs.slice(1), {
       boolean: ["dry-run", "preserve", "skip-empty", "all"],
       string: ["target"],
       alias: {
@@ -346,22 +346,22 @@ if (import.meta.main) {
       },
     });
 
-    const targetPath = args._[0]?.toString() || ".";
+    const targetPath = parsedArgs._[0]?.toString() || ".";
 
     await runMergeCommand(targetPath, {
-      targetFile: args.target,
-      dryRun: args["dry-run"],
-      preserveSource: args.preserve,
-      skipEmpty: args["skip-empty"],
-      interactive: !args.all, // If --all is specified, run non-interactively
+      targetFile: parsedArgs.target,
+      dryRun: parsedArgs["dry-run"],
+      preserveSource: parsedArgs.preserve,
+      skipEmpty: parsedArgs["skip-empty"],
+      interactive: !parsedArgs.all, // If --all is specified, run non-interactively
     });
     Deno.exit(0);
   }
 
   // Check if it's add command
-  if (Deno.args[0] === "add") {
+  if (parsedArgs[0] === "add") {
     const { runAddCommand } = await import("./add-command.ts");
-    let remainingArgs = Deno.args.slice(1);
+    let remainingArgs = parsedArgs.slice(1);
     let filePath = "TODO.md"; // Default to TODO.md in current directory
 
     // Check if first arg is a file path (ends with .md or contains /)
@@ -381,7 +381,7 @@ if (import.meta.main) {
       argsStart = 1;
     }
 
-    const args = parseArgs(remainingArgs.slice(argsStart), {
+    const parsedArgs = parseArgs(remainingArgs.slice(argsStart), {
       string: ["message", "priority"],
       alias: {
         m: "message",
@@ -389,7 +389,7 @@ if (import.meta.main) {
       },
     });
 
-    if (!args.message) {
+    if (!parsedArgs.message) {
       console.error("Error: Message is required for add command");
       console.error("Usage: pcheck add [file] [type] -m <message>");
       Deno.exit(1);
@@ -398,13 +398,13 @@ if (import.meta.main) {
     await runAddCommand(
       filePath,
       sectionType,
-      args.message as string,
-      args.priority as string,
+      parsedArgs.message as string,
+      parsedArgs.priority as string,
     );
     Deno.exit(0);
   }
 
-  const args = parseArgs(Deno.args, {
+  const parsedArgs = parseArgs(Deno.args, {
     boolean: [
       "help",
       "version",
@@ -453,18 +453,18 @@ if (import.meta.main) {
     },
   });
 
-  if (args.help) {
+  if (parsedArgs.help) {
     printHelp();
     Deno.exit(0);
   }
 
-  if (args.version) {
+  if (parsedArgs.version) {
     console.log(`pcheck v${VERSION}`);
     Deno.exit(0);
   }
 
   // Quick reference card
-  if (args._ && args._[0] === "help" && args._[1] === "quick") {
+  if (parsedArgs._ && parsedArgs._[0] === "help" && parsedArgs._[1] === "quick") {
     console.log(`pcheck Quick Reference Card
 
 MOST COMMON:
@@ -499,7 +499,7 @@ CONFIG:
     Deno.exit(0);
   }
 
-  if (args["list-engines"]) {
+  if (parsedArgs["list-engines"]) {
     console.log("Available search engines:");
     const engines = ["rg (ripgrep)", "git-grep", "grep", "native (Deno)"];
     for (const engine of engines) {
@@ -509,16 +509,16 @@ CONFIG:
   }
 
   // Determine target path based on options
-  let targetPath = args._[0]?.toString() || ".";
+  let targetPath = parsedArgs._[0]?.toString() || ".";
 
-  if (args.gitroot && args.private) {
+  if (parsedArgs.gitroot && parsedArgs.private) {
     console.error(
       "Error: Cannot use both --gitroot and --private options together",
     );
     Deno.exit(1);
   }
 
-  if (args.gitroot) {
+  if (parsedArgs.gitroot) {
     // Find git root
     try {
       const command = new Deno.Command("git", {
@@ -537,7 +537,7 @@ CONFIG:
       console.error("Error: Git command failed");
       Deno.exit(1);
     }
-  } else if (args.private) {
+  } else if (parsedArgs.private) {
     // Use ~/.todo directory
     const homeDir = Deno.env.get("HOME");
     if (!homeDir) {
@@ -580,11 +580,11 @@ CONFIG:
 
   // Get search engine
   let searchEngine;
-  if (args.engine) {
-    searchEngine = await getEngineByName(args.engine);
+  if (parsedArgs.engine) {
+    searchEngine = await getEngineByName(parsedArgs.engine);
     if (!searchEngine) {
       console.error(
-        `Error: Search engine '${args.engine}' is not available or not found.`,
+        `Error: Search engine '${parsedArgs.engine}' is not available or not found.`,
       );
       console.error("Run 'pcheck --list-engines' to see available engines.");
       Deno.exit(1);
@@ -600,19 +600,19 @@ CONFIG:
   );
 
   // Skip config loading if --no-config is specified
-  if (!args["no-config"]) {
-    config = await loadConfig(args.config);
+  if (!parsedArgs["no-config"]) {
+    config = await loadConfig(parsedArgs.config);
     // Apply CLI options to override config
     config = applyCliOptions(config, args);
 
-    if (args.debug) {
+    if (parsedArgs.debug) {
       console.log("Loaded config:", JSON.stringify(config, null, 2));
     }
   } else {
     // Use default config but apply CLI options
     config = applyCliOptions(DEFAULT_CONFIG, args);
 
-    if (args.debug) {
+    if (parsedArgs.debug) {
       console.log(
         "Using default config with CLI options:",
         JSON.stringify(config, null, 2),
@@ -621,7 +621,7 @@ CONFIG:
   }
 
   // Check if ast-grep is available when scan-tests is requested
-  if (args["scan-tests"]) {
+  if (parsedArgs["scan-tests"]) {
     const { checkAstGrepInstalled } = await import("./ast-test-detector.ts");
     if (!(await checkAstGrepInstalled())) {
       console.error(
@@ -636,16 +636,16 @@ CONFIG:
   }
 
   const options = {
-    scanFiles: !args["no-files"],
-    scanCode: args["code"] ?? config?.code?.enabled ?? false,
-    includeTestCases: args["cases"] ?? config?.code?.includeTests ?? false,
-    scanTests: args["scan-tests"],
+    scanFiles: !parsedArgs["no-files"],
+    scanCode: parsedArgs["code"] ?? config?.code?.enabled ?? false,
+    includeTestCases: parsedArgs["cases"] ?? config?.code?.includeTests ?? false,
+    scanTests: parsedArgs["scan-tests"],
     searchEngine,
-    filterType: args["filter-type"],
-    filterDir: args["filter-dir"],
-    excludeDir: args["exclude-dir"],
+    filterType: parsedArgs["filter-type"],
+    filterDir: parsedArgs["filter-dir"],
+    excludeDir: parsedArgs["exclude-dir"],
     config,
-    ignore: args["ignore"],
+    ignore: parsedArgs["ignore"],
   };
 
   if (options.scanCode) {
@@ -653,7 +653,7 @@ CONFIG:
   }
 
   // Handle --list-files option
-  if (args["list-files"]) {
+  if (parsedArgs["list-files"]) {
     const { listScanFiles } = await import("./list-files.ts");
     const files = await listScanFiles(targetPath, options);
     for (const file of files) {
@@ -688,22 +688,22 @@ CONFIG:
       throw error;
     }
 
-    if (args.interactive) {
+    if (parsedArgs.interactive) {
       // Run interactive mode
       const { runInteractiveMode } = await import("./interactive.ts");
       await runInteractiveMode(todos, basePath);
-    } else if (args["select-multiple"]) {
+    } else if (parsedArgs["select-multiple"]) {
       // Run multi-select mode
       const { runMultiSelectMode } = await import("./multi-select.ts");
-      await runMultiSelectMode(todos, basePath, args.unchecked);
-    } else if (args.select !== undefined) {
+      await runMultiSelectMode(todos, basePath, parsedArgs.unchecked);
+    } else if (parsedArgs.select !== undefined) {
       // Run select mode
       const { runSelectMode } = await import("./select.ts");
-      await runSelectMode(todos, basePath, args.select);
-    } else if (args.json) {
+      await runSelectMode(todos, basePath, parsedArgs.select);
+    } else if (parsedArgs.json) {
       // JSON output mode
       const jsonOutput = formatTodosAsJson(todos, args);
-      if (args.pretty) {
+      if (parsedArgs.pretty) {
         console.log(JSON.stringify(jsonOutput, null, 2));
       } else {
         console.log(JSON.stringify(jsonOutput));
@@ -718,10 +718,10 @@ CONFIG:
         // Convert to tree nodes and display
         const treeNodes = todos.map(convertTodoToTreeNode);
         const treeOptions: TreeDisplayOptions = {
-          showIds: args["show-ids"],
-          maxItems: args["max-items"] ? parseInt(args["max-items"]) : undefined,
-          maxDepth: args["max-depth"] ? parseInt(args["max-depth"]) : undefined,
-          uncheckedOnly: args.unchecked,
+          showIds: parsedArgs["show-ids"],
+          maxItems: parsedArgs["max-items"] ? parseInt(parsedArgs["max-items"]) : undefined,
+          maxDepth: parsedArgs["max-depth"] ? parseInt(parsedArgs["max-depth"]) : undefined,
+          uncheckedOnly: parsedArgs.unchecked,
         };
 
         for (const node of treeNodes) {
