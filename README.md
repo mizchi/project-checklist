@@ -25,6 +25,8 @@ deno install -Afg --name pcheck jsr:@mizchi/project-checklist/cli
 - 📊 Progress tracking with completed/uncompleted task filtering
 - 🩺 Built-in diagnostics with `pcheck doctor`
 - 🧪 TypeScript test case detection with `pcheck test` (requires ast-grep)
+- ✅ Validation and auto-fix for consistent formatting
+- 🚀 Advanced task management with `update`, `init`, and `validate` commands
 
 ## Usage
 
@@ -110,6 +112,22 @@ $ pcheck
    - `// TODO(username): Assigned task`
    - `// - [ ] Implement feature`
    - `// - [x] Completed task`
+
+6. **Manage TODO.md files**:
+   ```bash
+   # Initialize a new TODO.md with GTD template
+   $ pcheck init
+
+   # Update TODO.md (move completed tasks, sort by priority)
+   $ pcheck update --done --priority
+
+   # Extract code checklists to TODO.md
+   $ pcheck update --code
+
+   # Validate and auto-fix formatting issues
+   $ pcheck validate --fix
+   $ pcheck update --fix  # Validate and fix before updating
+   ```
 
 ## Why project-checklist?
 
