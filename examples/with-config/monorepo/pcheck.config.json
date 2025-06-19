@@ -1,0 +1,35 @@
+{
+  "$schema": "../../../pcheck.schema.json",
+  "include": [
+    "**/TODO.md",
+    "**/README.md",
+    "packages/*/src/**/*",
+    "apps/*/src/**/*"
+  ],
+  "exclude": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/coverage/**",
+    "**/.turbo/**",
+    "**/.next/**",
+    "**/out/**",
+    "packages/*/test/**",
+    "apps/*/test/**"
+  ],
+  "code": {
+    "enabled": true,
+    "patterns": ["TODO", "FIXME", "HACK", "NOTE"],
+    "includeTests": false
+  },
+  "display": {
+    "showLineNumbers": true,
+    "groupByFile": true,
+    "showSectionTitles": true
+  },
+  "output": {
+    "format": "tree",
+    "colors": true
+  },
+  "indentSize": 2
+}

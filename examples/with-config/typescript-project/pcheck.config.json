@@ -1,0 +1,43 @@
+{
+  "$schema": "../../../pcheck.schema.json",
+  "include": [
+    "**/*.md",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    "*.min.js",
+    "*.test.ts",
+    "*.spec.ts",
+    ".git/**",
+    ".next/**",
+    "out/**"
+  ],
+  "code": {
+    "enabled": true,
+    "patterns": ["TODO", "FIXME", "HACK", "NOTE", "BUG", "OPTIMIZE"],
+    "includeTests": false,
+    "fileExtensions": ["ts", "tsx", "js", "jsx"]
+  },
+  "display": {
+    "showLineNumbers": true,
+    "groupByFile": true,
+    "maxDepth": 5
+  },
+  "output": {
+    "format": "tree",
+    "colors": true
+  },
+  "languages": {
+    "typescript": {
+      "detectTests": true,
+      "testPatterns": ["describe(", "it(", "test(", "expect("],
+      "includeSkipped": true
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "$schema": "../../../pcheck.schema.json",
+  "include": [
+    "**/*.md",
+    "**/*.py",
+    "notebooks/**/*.ipynb"
+  ],
+  "exclude": [
+    "__pycache__/**",
+    "*.pyc",
+    ".pytest_cache/**",
+    "venv/**",
+    "env/**",
+    ".venv/**",
+    "dist/**",
+    "build/**",
+    "*.egg-info/**",
+    ".tox/**",
+    ".mypy_cache/**"
+  ],
+  "code": {
+    "enabled": true,
+    "patterns": ["TODO", "FIXME", "HACK", "NOTE", "XXX", "BUG"],
+    "includeTests": false,
+    "fileExtensions": ["py", "pyx", "pyw"]
+  },
+  "display": {
+    "showLineNumbers": true,
+    "groupByFile": true
+  },
+  "markdown": {
+    "extensions": ["md", "rst", "markdown"],
+    "checklistOnly": true
+  }
+}

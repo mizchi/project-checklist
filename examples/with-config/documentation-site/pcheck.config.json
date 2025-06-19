@@ -1,0 +1,36 @@
+{
+  "$schema": "../../../pcheck.schema.json",
+  "include": [
+    "**/*.md",
+    "**/*.mdx",
+    "content/**/*",
+    "docs/**/*",
+    "blog/**/*"
+  ],
+  "exclude": [
+    "node_modules/**",
+    ".docusaurus/**",
+    ".next/**",
+    "build/**",
+    "public/**",
+    "static/**",
+    ".cache/**"
+  ],
+  "code": {
+    "enabled": false
+  },
+  "display": {
+    "showLineNumbers": false,
+    "groupByFile": true,
+    "showEmptyTodos": false
+  },
+  "markdown": {
+    "extensions": ["md", "mdx", "markdown"],
+    "checklistOnly": true
+  },
+  "output": {
+    "format": "tree",
+    "colors": true,
+    "quiet": false
+  }
+}

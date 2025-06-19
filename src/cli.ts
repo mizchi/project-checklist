@@ -8,7 +8,7 @@ import {
   type TreeDisplayOptions,
 } from "./cli/tree-display.ts";
 
-const VERSION = "0.1.0";
+const VERSION = "0.3.0";
 
 function printHelp() {
   console.log(`pcheck - Project TODO and checklist scanner v${VERSION}
@@ -57,6 +57,7 @@ Options:
   --exclude <patterns> Exclude glob patterns (e.g., "examples/**,test/**,*.test.ts")
   --config <path>     Path to pcheck.config.json (defaults to ./pcheck.config.json)
   --no-config         Skip loading pcheck.config.json
+  --list-files        List files that would be scanned
   -n, --max-items <n> Maximum number of items to display per level
   -d, --max-depth <n> Maximum depth to display
   --ignore <patterns> Comma-separated patterns to ignore (e.g., "tmp/,*.bak,test-*")
@@ -87,6 +88,8 @@ Examples:
   pcheck validate           # Validate TODO.md structure
   pcheck validate README.md # Validate specific file
   pcheck validate --json    # Output validation results as JSON
+  pcheck validate pcheck.config.json  # Validate configuration file
+  pcheck validate --config  # Validate default config file
   pcheck add -m "New task"  # Add to TODO section
   pcheck add ICEBOX -m "Future idea"  # Add to ICEBOX
   pcheck add -m "Bug fix" -p high  # Add with priority
@@ -138,6 +141,26 @@ if (import.meta.main) {
 
   // Check if it's validate command
   if (Deno.args[0] === "validate") {
+    // Special case: validate config file
+    if (Deno.args[1] === "--config" || Deno.args[1]?.endsWith(".json")) {
+      const { validateConfigFile } = await import("./config-validator.ts");
+      const configPath = Deno.args[1] === "--config" 
+        ? (Deno.args[2] || "./pcheck.config.json")
+        : Deno.args[1];
+      
+      const result = await validateConfigFile(configPath);
+      if (result.valid) {
+        console.log(`✓ Configuration file is valid: ${configPath}`);
+      } else {
+        console.log(`✗ Configuration file has errors: ${configPath}`);
+        for (const error of result.errors || []) {
+          console.log(`  - ${error.path ? error.path + ": " : ""}${error.message}`);
+        }
+        Deno.exit(1);
+      }
+      Deno.exit(0);
+    }
+    
     const { runValidateCommand } = await import("./cli/commands/validate.ts");
     await runValidateCommand(Deno.args.slice(1));
     Deno.exit(0);
@@ -311,6 +334,7 @@ if (import.meta.main) {
       "cases",
       "scan-tests",
       "list-engines",
+      "list-files",
       "interactive",
       "unchecked",
       "select-multiple",
@@ -506,6 +530,16 @@ if (import.meta.main) {
 
   if (options.scanCode) {
     console.log(`Using search engine: ${searchEngine.name}`);
+  }
+
+  // Handle --list-files option
+  if (args["list-files"]) {
+    const { listScanFiles } = await import("./list-files.ts");
+    const files = await listScanFiles(targetPath, options);
+    for (const file of files) {
+      console.log(file);
+    }
+    Deno.exit(0);
   }
 
   try {

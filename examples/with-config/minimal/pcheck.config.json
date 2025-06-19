@@ -1,0 +1,11 @@
+{
+  "exclude": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    ".git/**"
+  ],
+  "code": {
+    "enabled": false
+  }
+}
