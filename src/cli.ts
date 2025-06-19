@@ -24,6 +24,7 @@ Usage:
   pcheck update [file]     # Update TODO.md with various operations
   pcheck u [file]          # Alias for update
   pcheck test [path]       # Find test cases in TypeScript files (requires ast-grep)
+  pcheck merge [path]      # Merge TODO.md files from subdirectories
 
 Arguments:
   path                Path to scan (file or directory, defaults to current directory)
@@ -72,6 +73,7 @@ Commands:
   update/u [file]   Update TODO.md (--priority, --completed, --code, --fix, --vacuum)
   test [path]       Find test cases in TypeScript files (--include-all, --json)
   code-checklist    Find checklist items in code comments
+  merge [path]      Merge TODO.md files from subdirectories (--dry-run, --preserve)
 
 Examples:
   pcheck init               # Create TODO.md in current directory
@@ -107,6 +109,9 @@ Examples:
   pcheck code-checklist    # Find checklists in code comments
   pcheck code-checklist --stats  # Show statistics
   pcheck code-checklist --group-by-file  # Group by file
+  pcheck merge             # Merge TODO.md files from subdirectories
+  pcheck merge --dry-run   # Preview merge without making changes
+  pcheck merge --preserve  # Keep source files after merge
 `);
 }
 
@@ -289,6 +294,30 @@ if (import.meta.main) {
       checked: args.checked,
       unchecked: args.unchecked,
       patterns: args.patterns?.split(","),
+    });
+    Deno.exit(0);
+  }
+
+  // Check if it's merge command
+  if (Deno.args[0] === "merge") {
+    const { runMergeCommand } = await import("./merge-command.ts");
+    const args = parseArgs(Deno.args.slice(1), {
+      boolean: ["dry-run", "preserve", "skip-empty"],
+      string: ["target"],
+      alias: {
+        d: "dry-run",
+        p: "preserve",
+        t: "target",
+      },
+    });
+
+    const targetPath = args._[0]?.toString() || ".";
+
+    await runMergeCommand(targetPath, {
+      targetFile: args.target,
+      dryRun: args["dry-run"],
+      preserveSource: args.preserve,
+      skipEmpty: args["skip-empty"],
     });
     Deno.exit(0);
   }

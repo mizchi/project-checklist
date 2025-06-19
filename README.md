@@ -6,6 +6,22 @@ tasks through Markdown checklists.
 Designed for seamless integration with AI assistants like Claude, ChatGPT, and
 other LLMs to enhance project planning and task management workflows.
 
+## AI Assistant Usage
+
+When using `pcheck` with AI assistants (Claude, ChatGPT, etc.), use these
+commands:
+
+```bash
+# Show all TODOs in the project
+pcheck
+
+# Update TODO.md - organize completed tasks into COMPLETED section
+pcheck u
+
+# Vacuum completed tasks - remove them and output for git commit
+pcheck u --vacuum
+```
+
 ## Installation
 
 ```bash
@@ -252,6 +268,43 @@ test/use-cases/           # Project-specific tests
 
 See [doc-driven-test/README.md](./doc-driven-test/README.md) for detailed
 documentation.
+
+## AI Assistant Prompts
+
+### For AI tools that don't know about `pcheck`
+
+Copy and paste these instructions to your AI assistant:
+
+```
+pcheck is a TODO management tool installed in this project. Use these commands:
+
+- `pcheck` - Show all TODO items in the project
+- `pcheck u` - Update TODO.md by moving completed tasks to COMPLETED section  
+- `pcheck u --vacuum` - Remove completed tasks and output them (for git commits)
+- `pcheck --code` - Include TODO comments from source code
+- `pcheck validate` - Check TODO.md formatting
+- `pcheck add -m "Task description"` - Add a new task
+- `pcheck check <id>` - Toggle a task by its ID
+
+When I ask you to check or update tasks, use these commands.
+```
+
+### Example workflow for AI assistants
+
+```bash
+# 1. Check current tasks
+pcheck
+
+# 2. After completing tasks, update TODO.md
+pcheck u
+
+# 3. Before committing, vacuum completed tasks
+pcheck u --vacuum
+# Copy the output and include in git commit message
+
+# 4. Find TODOs in code
+pcheck --code
+```
 
 ## License
 
