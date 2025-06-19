@@ -302,12 +302,13 @@ if (import.meta.main) {
   if (Deno.args[0] === "merge") {
     const { runMergeCommand } = await import("./merge-command.ts");
     const args = parseArgs(Deno.args.slice(1), {
-      boolean: ["dry-run", "preserve", "skip-empty"],
+      boolean: ["dry-run", "preserve", "skip-empty", "all"],
       string: ["target"],
       alias: {
         d: "dry-run",
         p: "preserve",
         t: "target",
+        a: "all",
       },
     });
 
@@ -318,6 +319,7 @@ if (import.meta.main) {
       dryRun: args["dry-run"],
       preserveSource: args.preserve,
       skipEmpty: args["skip-empty"],
+      interactive: !args.all, // If --all is specified, run non-interactively
     });
     Deno.exit(0);
   }

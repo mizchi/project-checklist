@@ -1,6 +1,10 @@
 import { join, relative } from "@std/path";
 import { walk } from "@std/fs/walk";
-import { type ParsedSection, parseMarkdown } from "./core/markdown-parser.ts";
+import {
+  type ParsedSection,
+  type ParsedTask,
+  parseMarkdown,
+} from "./core/markdown-parser.ts";
 
 export interface MergeOptions {
   targetFile?: string;
@@ -212,14 +216,8 @@ async function mergeFiles(
 
       const targetSection = sectionMap.get(sectionKey)!;
 
-      // Add tasks from source (maintaining hierarchy)
+      // Add all tasks from source
       for (const task of sourceSection.tasks) {
-        // Skip if task is a child (will be included with parent)
-        if (task.parentLineNumber !== undefined) {
-          continue;
-        }
-
-        // Add task and its children
         targetSection.tasks.push(task);
       }
     }
@@ -266,26 +264,15 @@ async function mergeFiles(
     lines.push(`## ${section.name}`);
     lines.push("");
 
-    // Add tasks with proper indentation
-    const addTask = (task: any, indent: number = 0) => {
-      const prefix = "  ".repeat(indent);
+    // Add tasks with their original indentation
+    for (const task of section.tasks) {
+      // Use the actual leading whitespace from the original line
+      const match = task.line.match(/^(\s*)-\s*\[/);
+      const prefix = match ? match[1] : "  ".repeat(task.indent);
       const checkbox = task.checked ? "[x]" : "[ ]";
       const priority = task.priority ? ` [${task.priority}]` : "";
 
       lines.push(`${prefix}- ${checkbox}${priority} ${task.content}`);
-
-      // Add children
-      if (task.children) {
-        for (const child of task.children) {
-          addTask(child, indent + 1);
-        }
-      }
-    };
-
-    for (const task of section.tasks) {
-      if (task.parentLineNumber === undefined) {
-        addTask(task);
-      }
     }
 
     lines.push("");
