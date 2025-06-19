@@ -1,10 +1,6 @@
 import { join, relative } from "@std/path";
 import { walk } from "@std/fs/walk";
-import {
-  type ParsedSection,
-  type ParsedTask,
-  parseMarkdown,
-} from "./core/markdown-parser.ts";
+import { type ParsedSection, parseMarkdown } from "./core/markdown-parser.ts";
 
 export interface MergeOptions {
   targetFile?: string;
@@ -72,10 +68,13 @@ export async function runMergeCommand(
 
     // Optionally remove source files
     if (!options.preserveSource) {
-      console.log("\nRemove merged source files? (y/n)");
-      const answer = prompt(">");
+      const { $ } = await import("dax");
+      const shouldRemove = await $.confirm({
+        message: "Remove merged source files?",
+        default: false,
+      });
 
-      if (answer?.toLowerCase() === "y") {
+      if (shouldRemove) {
         for (const file of filesToProcess) {
           await Deno.remove(file.path);
           console.log(`✓ Removed ${file.relativePath}`);
@@ -127,37 +126,30 @@ async function findTodoFiles(
 async function selectFilesInteractively(
   files: TodoFile[],
 ): Promise<TodoFile[]> {
-  console.log(
-    "\nSelect files to merge (use arrow keys and space to select, enter to confirm):\n",
-  );
+  const { $ } = await import("dax");
 
-  // Display files with task counts
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
+  // Prepare options for multiSelect
+  const options = files.map((file) => {
     const taskCount = file.sections.reduce((sum, s) => sum + s.tasks.length, 0);
     const sectionNames = file.sections.map((s) => s.name).join(", ");
 
-    console.log(`${i + 1}. [ ] ${file.relativePath}`);
-    console.log(`     Tasks: ${taskCount} | Sections: ${sectionNames}`);
-    console.log();
-  }
+    return {
+      text: `${file.relativePath} (${taskCount} tasks | ${sectionNames})`,
+      value: file,
+    };
+  });
 
-  // Simple selection prompt (in real implementation, would use interactive UI)
-  console.log(
-    "Enter file numbers to merge (comma-separated, or 'all' for all files):",
-  );
-  const input = prompt(">");
+  const selectedIndices = await $.multiSelect({
+    message: "Select files to merge:",
+    options,
+  });
 
-  if (!input) {
+  if (!selectedIndices || selectedIndices.length === 0) {
     return [];
   }
 
-  if (input.toLowerCase() === "all") {
-    return files;
-  }
-
-  const indices = input.split(",").map((s) => parseInt(s.trim()) - 1);
-  return files.filter((_, i) => indices.includes(i));
+  // Convert indices to actual files
+  return selectedIndices.map((index) => options[index].value);
 }
 
 async function mergeFiles(
@@ -270,9 +262,16 @@ async function mergeFiles(
       const match = task.line.match(/^(\s*)-\s*\[/);
       const prefix = match ? match[1] : "  ".repeat(task.indent);
       const checkbox = task.checked ? "[x]" : "[ ]";
+
+      // Remove priority from content if it exists
+      let content = task.content;
+      if (task.priority) {
+        // Remove priority tag from the beginning of content
+        content = content.replace(/^\s*\[[^\]]+\]\s*/, "");
+      }
       const priority = task.priority ? ` [${task.priority}]` : "";
 
-      lines.push(`${prefix}- ${checkbox}${priority} ${task.content}`);
+      lines.push(`${prefix}- ${checkbox}${priority} ${content}`);
     }
 
     lines.push("");

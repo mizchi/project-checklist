@@ -11,111 +11,145 @@ import {
 const VERSION = "0.3.0";
 
 function printHelp() {
-  console.log(`pcheck - Project TODO and checklist scanner v${VERSION}
+  console.log(
+    `pcheck v${VERSION} - AI-friendly TODO management for modern projects
 
-Usage:
-  pcheck [options] [path]
-  pcheck init [path]       # Initialize TODO.md and optionally pcheck.config.json
-  pcheck doctor            # Run diagnostics
-  pcheck validate [file]   # Validate Markdown checklist structure
-  pcheck check <id>        # Toggle a checklist item by ID
-  pcheck add [file] [type] -m <message>  # Add task to TODO.md
-  pcheck sort [file]       # Sort tasks by priority
-  pcheck update [file]     # Update TODO.md with various operations
-  pcheck u [file]          # Alias for update
-  pcheck test [path]       # Find test cases in TypeScript files (requires ast-grep)
-  pcheck merge [path]      # Merge TODO.md files from subdirectories
+USAGE:
+  pcheck [options] [path]              # Scan for TODOs
+  pcheck <command> [args] [options]    # Run a specific command
 
-Arguments:
-  path                Path to scan (file or directory, defaults to current directory)
-  id                  Checklist item ID for check command
-  file                TODO.md file path (optional, defaults to ./TODO.md)
-  type                Section type (TODO, ICEBOX, etc.) defaults to TODO
-  message             Task content (use -m or --message)
+COMMANDS:
+  Scanning & Display:
+    pcheck [path]              Show all TODO items in project
+    pcheck --code              Include TODO comments from source code
+    pcheck --list-files        List files that would be scanned
+    pcheck doctor              Check environment and search engines
+    
+  Task Management:
+    add [file] [type] -m MSG   Add a new task to TODO.md
+    check <id>                 Toggle a task by its ID
+    update/u [file]            Update TODO.md (organize completed tasks)
+    sort [file]                Sort tasks by priority
+    merge [path]               Merge TODO.md files from subdirectories
+    
+  Validation & Testing:
+    validate [file]            Check TODO.md structure and formatting
+    test [path]                Find test cases in TypeScript files
+    code-checklist             Find checklist items in code comments
+    
+  Project Setup:
+    init [directory]           Create TODO.md and optionally pcheck.config.json
 
-Options:
+COMMON OPTIONS:
   -h, --help          Show this help message
   -v, --version       Show version
-  --no-files          Skip TODO.md files
-  --code              Include TODO comments in code (default: off)
-  --cases             Include TODO comments from test cases when using --code
-  --scan-tests        Scan TypeScript test files for skipped tests (requires ast-grep)
-  --engine <name>     Use specific search engine (rg, git-grep, grep, native)
-  --list-engines      List available search engines
-  -i, --interactive   Interactive mode for managing checklist items
-  -s, --select <n>    Toggle a specific checklist item by number
-  -u, --unchecked     Show only unchecked items (maintains hierarchy)
-  -m, --select-multiple  Select multiple items and return changes for AI interaction
+  -j, --json          Output in JSON format
+  --no-config         Skip loading pcheck.config.json
+  --config <path>     Use custom config file (default: ./pcheck.config.json)
+
+SCANNING OPTIONS:
+  --code              Include TODO comments from source code
+  --no-files          Skip TODO.md and README.md files
+  --list-files        List files that would be scanned
+  --exclude <pats>    Exclude patterns (e.g., "test/**,*.min.js")
+  --engine <name>     Search engine: rg, git-grep, grep, native
+
+DISPLAY OPTIONS:
+  -u, --unchecked     Show only unchecked items
+  --show-ids          Show internal IDs for checklist items
+  -n, --max-items <n> Max items per level
+  -d, --max-depth <n> Max nesting depth
+  --pretty            Pretty print JSON output
+
+LOCATION OPTIONS:
   -g, --gitroot       Search from git repository root
   -p, --private       Search from ~/.todo directory
-  --show-ids          Show internal IDs for checklist items
-  -j, --json          Output in JSON format
-  --pretty            Pretty print JSON output
-  --fields <fields>   Comma-separated list of fields to include in JSON
-  --filter-type <ext> Filter by file extensions (e.g., .ts,.js)
-  --filter-dir <dirs> Only include specific directories (e.g., src,lib)
-  --exclude-dir <dirs> Exclude specific directories (e.g., dist,build)
-  --exclude <patterns> Exclude glob patterns (e.g., "examples/**,test/**,*.test.ts")
-  --config <path>     Path to pcheck.config.json (defaults to ./pcheck.config.json)
-  --no-config         Skip loading pcheck.config.json
-  --list-files        List files that would be scanned
-  -n, --max-items <n> Maximum number of items to display per level
-  -d, --max-depth <n> Maximum depth to display
-  --ignore <patterns> Comma-separated patterns to ignore (e.g., "tmp/,*.bak,test-*")
 
-Commands:
-  init [directory]  Initialize TODO.md file (--force, --template)
-  doctor            Check your environment and available search engines
-  validate [file]   Validate Markdown checklist structure and hierarchy
-  check <id>        Toggle a checklist item by ID (use --off to uncheck)
-  add [file] [type] Add a new task to TODO.md (use -m for message, -p for priority)
-  sort [file]       Sort tasks by priority within each section
-  update/u [file]   Update TODO.md (--priority, --completed, --code, --fix, --vacuum)
-  test [path]       Find test cases in TypeScript files (--include-all, --json)
-  code-checklist    Find checklist items in code comments
-  merge [path]      Merge TODO.md files from subdirectories (--dry-run, --preserve)
+COMMAND-SPECIFIC OPTIONS:
+  init:
+    --force           Overwrite existing TODO.md
+    --template <name> Use template: default, gtd
+    --skip-config     Don't create pcheck.config.json
+    
+  add:
+    -m, --message     Task description (required)
+    -p, --priority    Priority: high, mid, low, or 1-99
+    
+  update/u:
+    --completed       Move completed tasks to COMPLETED section
+    --priority        Sort tasks by priority
+    --code            Extract TODOs from code to TODO.md
+    --fix             Validate and fix formatting before update
+    --vacuum          Remove completed tasks and output them
+    
+  check:
+    --off             Uncheck instead of toggle
+    
+  validate:
+    --fix             Auto-fix formatting issues
+    --json            Output validation results as JSON
+    
+  merge:
+    --all             Merge all files non-interactively
+    --dry-run         Preview without making changes
+    --preserve        Keep source files after merge
+    --skip-empty      Skip files with no tasks
+    --target <file>   Merge into specific file
+    
+  test:
+    --include-all     Include all tests, not just skipped
+    --json            Output as JSON
+    
+  code-checklist:
+    --stats           Show statistics
+    --group-by-file   Group results by file
+    --patterns <pats> Custom patterns (e.g., "CHECKLIST,TASK")
 
-Examples:
-  pcheck init               # Create TODO.md in current directory
-  pcheck init --template gtd # Create with GTD template
-  pcheck init --force       # Overwrite existing TODO.md
-  pcheck                    # Scan current directory
-  pcheck ./src              # Scan specific directory
-  pcheck TODO.md            # Scan specific file
-  pcheck src/main.ts        # Scan specific code file
-  pcheck --code             # Include TODO comments in code
-  pcheck --engine rg        # Use ripgrep for searching
-  pcheck --engine git-grep  # Use git grep (in git repos)
-  pcheck doctor             # Check environment
-  pcheck validate           # Validate TODO.md structure
-  pcheck validate README.md # Validate specific file
-  pcheck validate --json    # Output validation results as JSON
-  pcheck validate pcheck.config.json  # Validate configuration file
-  pcheck validate --config  # Validate default config file
-  pcheck add -m "New task"  # Add to TODO section
-  pcheck add ICEBOX -m "Future idea"  # Add to ICEBOX
-  pcheck add -m "Bug fix" -p high  # Add with priority
-  pcheck check ff5d5f83     # Toggle task by ID
-  pcheck sort              # Sort tasks by priority
-  pcheck update --completed # Move completed tasks to COMPLETED
-  pcheck update --fix      # Validate and fix issues before updating
-  pcheck u --priority --completed  # Sort by priority and move completed tasks
-  pcheck update --code     # Extract checklists from code to TODO.md
-  pcheck update --vacuum   # Remove completed tasks and output them
-  pcheck test              # Find skipped tests in current directory
-  pcheck test src          # Find skipped tests in src directory
-  pcheck test --json       # Output test cases as JSON
-  pcheck test --include-all # Include all tests, not just skipped
-  pcheck code-checklist    # Find checklists in code comments
-  pcheck code-checklist --stats  # Show statistics
-  pcheck code-checklist --group-by-file  # Group by file
-  pcheck merge             # Merge TODO.md files from subdirectories
-  pcheck merge --dry-run   # Preview merge without making changes
-  pcheck merge --preserve  # Keep source files after merge
-`);
+EXAMPLES:
+  Basic Usage:
+    pcheck                    # Show all TODOs in current directory
+    pcheck ./src              # Scan specific directory
+    pcheck --code             # Include TODO comments from code
+    pcheck --unchecked        # Show only incomplete tasks
+    
+  Task Management:
+    pcheck add -m "Fix login bug" -p high
+    pcheck check ff5d5f83     # Toggle task by ID
+    pcheck update             # Organize completed tasks
+    pcheck update --vacuum    # Remove completed tasks (for git commits)
+    
+  Project Setup:
+    pcheck init               # Create TODO.md
+    pcheck init --template gtd --force
+    pcheck merge --all        # Merge all TODO.md files
+    
+  AI Assistant Workflow:
+    pcheck                    # 1. Show current tasks
+    pcheck u                  # 2. Update after completing tasks
+    pcheck u --vacuum         # 3. Clean up for git commit
+    
+  Advanced:
+    pcheck --gitroot --code   # Scan entire git repo including code
+    pcheck validate --fix     # Fix TODO.md formatting
+    pcheck test --json        # Find skipped tests as JSON
+    pcheck merge --dry-run    # Preview merge operation
+
+For more info: https://github.com/mizchi/project-checklist
+`,
+  );
 }
 
 if (import.meta.main) {
+  // Check for command-specific help
+  if (
+    Deno.args.length >= 2 &&
+    (Deno.args[1] === "--help" || Deno.args[1] === "-h")
+  ) {
+    const { showCommandHelp } = await import("./cli/help.ts");
+    showCommandHelp(Deno.args[0]);
+    Deno.exit(0);
+  }
+
   // Check if it's init command
   if (Deno.args[0] === "init") {
     const { runInitCommand } = await import("./init-command.ts");
@@ -426,6 +460,42 @@ if (import.meta.main) {
 
   if (args.version) {
     console.log(`pcheck v${VERSION}`);
+    Deno.exit(0);
+  }
+
+  // Quick reference card
+  if (args._ && args._[0] === "help" && args._[1] === "quick") {
+    console.log(`pcheck Quick Reference Card
+
+MOST COMMON:
+  pcheck              # Show all TODOs
+  pcheck u            # Update TODO.md
+  pcheck u --vacuum   # Clean completed tasks
+
+ADD TASKS:
+  pcheck add -m "Task description"
+  pcheck add -m "Bug fix" -p high
+  pcheck add ICEBOX -m "Future idea"
+
+CHECK TASKS:
+  pcheck --show-ids   # Show task IDs
+  pcheck check <id>   # Toggle task
+
+SCAN OPTIONS:
+  pcheck --code       # Include code TODOs
+  pcheck --unchecked  # Only incomplete
+  pcheck --json       # JSON output
+
+LOCATIONS:
+  pcheck ./src        # Specific directory
+  pcheck --gitroot    # From git root
+  pcheck --private    # From ~/.todo
+
+CONFIG:
+  pcheck init         # Create TODO.md
+  pcheck doctor       # Check setup
+  pcheck validate     # Check format
+`);
     Deno.exit(0);
   }
 

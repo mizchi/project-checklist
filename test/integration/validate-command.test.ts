@@ -153,8 +153,8 @@ Deno.test("validate command - help", async () => {
   assertEquals(result.code, 0);
   assertStringIncludes(result.stdout, "pcheck validate");
   assertStringIncludes(result.stdout, "Validate Markdown checklist structure");
-  assertStringIncludes(result.stdout, "Usage:");
-  assertStringIncludes(result.stdout, "Examples:");
+  assertStringIncludes(result.stdout, "USAGE:");
+  assertStringIncludes(result.stdout, "EXAMPLES:");
 });
 
 Deno.test("validate command - custom indent size", async () => {
