@@ -2,9 +2,9 @@
 
 /**
  * Example usage of the checklist-in-code searcher
- * 
+ *
  * This example demonstrates how to find checklist items in code comments.
- * 
+ *
  * TODO List for this example:
  * - [x] Import the necessary modules
  * - [x] Create example with basic search
@@ -15,9 +15,9 @@
 
 import {
   ChecklistInCodeSearcher,
+  filterByLanguage,
   getChecklistStats,
   groupChecklistsByFile,
-  filterByLanguage,
 } from "../src/checklist-in-code.ts";
 
 // Example 1: Basic search
@@ -54,7 +54,9 @@ console.log("\n=== Example 3: Statistics ===");
 const stats = getChecklistStats(allChecklists);
 console.log("Checklist Statistics:");
 console.log(`  Total: ${stats.total}`);
-console.log(`  Completed: ${stats.checked} (${stats.completionRate.toFixed(1)}%)`);
+console.log(
+  `  Completed: ${stats.checked} (${stats.completionRate.toFixed(1)}%)`,
+);
 console.log(`  Remaining: ${stats.unchecked}`);
 console.log("\nBy Language:");
 Object.entries(stats.byLanguage).forEach(([lang, count]) => {

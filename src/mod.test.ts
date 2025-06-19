@@ -177,7 +177,7 @@ Deno.test("findTodos should match TODO with colon and username patterns", async 
   expect(todos.length).toBe(1);
   expect(todos[0].type).toBe("file");
   expect(todos[0].todos!.length).toBe(6);
-  
+
   expect(todos[0].todos![0].content).toBe("Basic todo with colon");
   expect(todos[0].todos![1].content).toBe("Todo with username");
   expect(todos[0].todos![2].content).toBe("Fix this");
@@ -195,35 +195,35 @@ Deno.test("findTodos should exclude test files by default with --code", async ()
     join(testDir, "code.ts"),
     `// TODO: Regular code todo`,
   );
-  
+
   await Deno.writeTextFile(
     join(testDir, "code.test.ts"),
     `// TODO: Test file todo`,
   );
-  
+
   await Deno.writeTextFile(
     join(testDir, "code.spec.ts"),
     `// TODO: Spec file todo`,
   );
 
   // Without includeTestCases
-  const todosWithoutTests = await findTodos(testDir, { 
-    scanFiles: false, 
-    scanCode: true 
+  const todosWithoutTests = await findTodos(testDir, {
+    scanFiles: false,
+    scanCode: true,
   });
-  
+
   expect(todosWithoutTests.length).toBe(1);
   expect(todosWithoutTests[0].path).toBe("code.ts");
 
   // With includeTestCases
-  const todosWithTests = await findTodos(testDir, { 
-    scanFiles: false, 
+  const todosWithTests = await findTodos(testDir, {
+    scanFiles: false,
     scanCode: true,
-    includeTestCases: true 
+    includeTestCases: true,
   });
-  
+
   expect(todosWithTests.length).toBe(3);
-  const paths = todosWithTests.map(t => t.path).sort();
+  const paths = todosWithTests.map((t) => t.path).sort();
   expect(paths).toEqual(["code.spec.ts", "code.test.ts", "code.ts"]);
 
   await Deno.remove(testDir, { recursive: true });

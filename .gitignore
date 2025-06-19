@@ -3,3 +3,4 @@ ptodo
 *.log
 node_modules/
 tmp/
+__pycache__

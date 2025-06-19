@@ -23,7 +23,20 @@ export class ChecklistInCodeSearcher {
     const {
       includeChecked = true,
       includeUnchecked = true,
-      filePatterns = ["*.ts", "*.tsx", "*.js", "*.jsx", "*.py", "*.go", "*.rs", "*.java", "*.c", "*.cpp", "*.h", "*.hpp"],
+      filePatterns = [
+        "*.ts",
+        "*.tsx",
+        "*.js",
+        "*.jsx",
+        "*.py",
+        "*.go",
+        "*.rs",
+        "*.java",
+        "*.c",
+        "*.cpp",
+        "*.h",
+        "*.hpp",
+      ],
     } = options;
 
     const checklists: CodeChecklist[] = [];
@@ -78,15 +91,17 @@ export class ChecklistInCodeSearcher {
         const lineNum = parseInt(lineNumStr, 10);
 
         // Extract checklist items from the line
-        const checklistMatches = lineContent.matchAll(/- \[([ x])\]\s*(.+?)(?=(?:- \[|$))/g);
-        
+        const checklistMatches = lineContent.matchAll(
+          /- \[([ x])\]\s*(.+?)(?=(?:- \[|$))/g,
+        );
+
         for (const checklistMatch of checklistMatches) {
           const checked = checklistMatch[1] === "x";
           const content = checklistMatch[2].trim();
 
           // Determine language from file extension
           const ext = filePath.split(".").pop() || "";
-          
+
           checklists.push({
             path: filePath,
             line: lineNum,
@@ -112,13 +127,26 @@ export class ChecklistInCodeSearcher {
     const {
       includeChecked = true,
       includeUnchecked = true,
-      filePatterns = ["*.ts", "*.tsx", "*.js", "*.jsx", "*.py", "*.go", "*.rs", "*.java", "*.c", "*.cpp", "*.h", "*.hpp"],
+      filePatterns = [
+        "*.ts",
+        "*.tsx",
+        "*.js",
+        "*.jsx",
+        "*.py",
+        "*.go",
+        "*.rs",
+        "*.java",
+        "*.c",
+        "*.cpp",
+        "*.h",
+        "*.hpp",
+      ],
     } = options;
 
     const checklists: CodeChecklist[] = [];
 
     // Convert glob patterns to regex
-    const fileRegexes = filePatterns.map(pattern => 
+    const fileRegexes = filePatterns.map((pattern) =>
       new RegExp("^" + pattern.replace(/\*/g, ".*").replace(/\?/g, ".") + "$")
     );
 
@@ -126,9 +154,9 @@ export class ChecklistInCodeSearcher {
 
     for await (const entry of walk(directory, { includeDirs: false })) {
       const fileName = entry.name;
-      
+
       // Check if file matches any pattern
-      if (!fileRegexes.some(regex => regex.test(fileName))) {
+      if (!fileRegexes.some((regex) => regex.test(fileName))) {
         continue;
       }
 
@@ -139,8 +167,10 @@ export class ChecklistInCodeSearcher {
 
         lines.forEach((line, index) => {
           // Search for checklist patterns
-          const checklistMatches = line.matchAll(/- \[([ x])\]\s*(.+?)(?=(?:- \[|$))/g);
-          
+          const checklistMatches = line.matchAll(
+            /- \[([ x])\]\s*(.+?)(?=(?:- \[|$))/g,
+          );
+
           for (const match of checklistMatches) {
             const checked = match[1] === "x";
             const itemContent = match[2].trim();
@@ -178,7 +208,7 @@ export class ChecklistInCodeSearcher {
         stderr: "null",
       });
       const { success } = await command.output();
-      
+
       if (success) {
         return await this.searchWithRipgrep(directory, options);
       }
@@ -192,27 +222,32 @@ export class ChecklistInCodeSearcher {
 }
 
 // Helper function to group checklists by file
-export function groupChecklistsByFile(checklists: CodeChecklist[]): Map<string, CodeChecklist[]> {
+export function groupChecklistsByFile(
+  checklists: CodeChecklist[],
+): Map<string, CodeChecklist[]> {
   const grouped = new Map<string, CodeChecklist[]>();
-  
+
   for (const checklist of checklists) {
     if (!grouped.has(checklist.path)) {
       grouped.set(checklist.path, []);
     }
     grouped.get(checklist.path)!.push(checklist);
   }
-  
+
   // Sort by line number within each file
   for (const [, items] of grouped) {
     items.sort((a, b) => a.line - b.line);
   }
-  
+
   return grouped;
 }
 
 // Helper function to filter by language
-export function filterByLanguage(checklists: CodeChecklist[], languages: string[]): CodeChecklist[] {
-  return checklists.filter(item => 
+export function filterByLanguage(
+  checklists: CodeChecklist[],
+  languages: string[],
+): CodeChecklist[] {
+  return checklists.filter((item) =>
     item.language && languages.includes(item.language)
   );
 }
@@ -220,16 +255,16 @@ export function filterByLanguage(checklists: CodeChecklist[], languages: string[
 // Helper function to get summary statistics
 export function getChecklistStats(checklists: CodeChecklist[]) {
   const total = checklists.length;
-  const checked = checklists.filter(item => item.checked).length;
+  const checked = checklists.filter((item) => item.checked).length;
   const unchecked = total - checked;
   const byLanguage = new Map<string, number>();
-  
+
   for (const item of checklists) {
     if (item.language) {
       byLanguage.set(item.language, (byLanguage.get(item.language) || 0) + 1);
     }
   }
-  
+
   return {
     total,
     checked,

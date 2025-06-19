@@ -64,7 +64,7 @@ Commands:
   check <id>        Toggle a checklist item by ID (use --off to uncheck)
   add [file] [type] Add a new task to TODO.md (use -m for message, -p for priority)
   sort [file]       Sort tasks by priority within each section
-  update/u [file]   Update TODO.md (--priority, --done, --force-clear)
+  update/u [file]   Update TODO.md (--priority, --done, --force-clear, --code)
   test [path]       Find test cases in TypeScript files (--include-all, --json)
   code-checklist    Find checklist items in code comments
 
@@ -87,6 +87,7 @@ Examples:
   pcheck sort              # Sort tasks by priority
   pcheck update --done     # Move completed tasks to DONE
   pcheck u --priority --done  # Sort by priority and move completed tasks
+  pcheck update --code     # Extract checklists from code to TODO.md
   pcheck test              # Find skipped tests in current directory
   pcheck test src          # Find skipped tests in src directory
   pcheck test --json       # Output test cases as JSON
@@ -160,7 +161,7 @@ if (import.meta.main) {
     }
 
     const args = parseArgs(remainingArgs, {
-      boolean: ["sort", "done", "force-clear", "priority"],
+      boolean: ["sort", "done", "force-clear", "priority", "code"],
     });
 
     await runUpdateCommand(filePath, args);
@@ -190,7 +191,9 @@ if (import.meta.main) {
 
   // Check if it's code-checklist command
   if (Deno.args[0] === "code-checklist") {
-    const { runCodeChecklistCommand } = await import("./cli/commands/code-checklists.ts");
+    const { runCodeChecklistCommand } = await import(
+      "./cli/commands/code-checklists.ts"
+    );
     const args = parseArgs(Deno.args.slice(1), {
       boolean: ["stats", "group-by-file", "checked", "unchecked"],
       string: ["patterns"],
@@ -203,7 +206,7 @@ if (import.meta.main) {
     });
 
     const targetPath = args._[0]?.toString() || ".";
-    
+
     await runCodeChecklistCommand({
       path: targetPath,
       stats: args.stats,

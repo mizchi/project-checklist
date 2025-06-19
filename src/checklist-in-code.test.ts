@@ -2,9 +2,9 @@ import { assertEquals, assertExists } from "@std/assert";
 import { join } from "@std/path";
 import {
   ChecklistInCodeSearcher,
-  groupChecklistsByFile,
   filterByLanguage,
   getChecklistStats,
+  groupChecklistsByFile,
 } from "./checklist-in-code.ts";
 
 // Create test files with checklists in comments
@@ -135,7 +135,11 @@ Deno.test("ChecklistInCodeSearcher - search with ripgrep", async () => {
       assertExists(item.line, "Should have line number");
       assertExists(item.content, "Should have content");
       assertExists(item.context, "Should have context");
-      assertEquals(typeof item.checked, "boolean", "Should have checked status");
+      assertEquals(
+        typeof item.checked,
+        "boolean",
+        "Should have checked status",
+      );
     }
   } finally {
     await Deno.remove(testDir, { recursive: true });
@@ -152,25 +156,51 @@ Deno.test("ChecklistInCodeSearcher - search with native implementation", async (
     const results = await searcher.searchWithNative(testDir);
 
     // Should find all checklists
-    assertEquals(results.length >= 15, true, "Should find at least 15 checklists");
+    assertEquals(
+      results.length >= 15,
+      true,
+      "Should find at least 15 checklists",
+    );
 
     // Verify TypeScript file results
-    const tsResults = results.filter((item) => item.path.endsWith("example.ts"));
-    assertEquals(tsResults.length >= 8, true, "Should find at least 8 items in TypeScript file");
+    const tsResults = results.filter((item) =>
+      item.path.endsWith("example.ts")
+    );
+    assertEquals(
+      tsResults.length >= 8,
+      true,
+      "Should find at least 8 items in TypeScript file",
+    );
 
     // Verify Python file results
-    const pyResults = results.filter((item) => item.path.endsWith("example.py"));
-    assertEquals(pyResults.length >= 5, true, "Should find at least 5 items in Python file");
+    const pyResults = results.filter((item) =>
+      item.path.endsWith("example.py")
+    );
+    assertEquals(
+      pyResults.length >= 5,
+      true,
+      "Should find at least 5 items in Python file",
+    );
 
     // Verify JavaScript file results
-    const jsResults = results.filter((item) => item.path.endsWith("example.js"));
-    assertEquals(jsResults.length >= 4, true, "Should find at least 4 items in JavaScript file");
+    const jsResults = results.filter((item) =>
+      item.path.endsWith("example.js")
+    );
+    assertEquals(
+      jsResults.length >= 4,
+      true,
+      "Should find at least 4 items in JavaScript file",
+    );
 
     // Should not find items in no-checklist.ts
     const noChecklistResults = results.filter((item) =>
       item.path.endsWith("no-checklist.ts")
     );
-    assertEquals(noChecklistResults.length, 0, "Should not find items in no-checklist.ts");
+    assertEquals(
+      noChecklistResults.length,
+      0,
+      "Should not find items in no-checklist.ts",
+    );
   } finally {
     await Deno.remove(testDir, { recursive: true });
   }
@@ -314,7 +344,11 @@ Deno.test("ChecklistInCodeSearcher - auto detection", async () => {
     // This should use either ripgrep or native implementation
     const results = await searcher.search(testDir);
 
-    assertEquals(results.length > 0, true, "Should find checklists with auto-detection");
+    assertEquals(
+      results.length > 0,
+      true,
+      "Should find checklists with auto-detection",
+    );
 
     // Basic validation
     const hasChecked = results.some((item) => item.checked);
@@ -354,7 +388,8 @@ Deno.test("ChecklistInCodeSearcher - multiple items on same line", async () => {
 
     // Verify content extraction
     const contents = results.map((item) => item.content).sort();
-    const expected = ["Done task", "Pending task", "Task 1", "Task 2", "Task 3"].sort();
+    const expected = ["Done task", "Pending task", "Task 1", "Task 2", "Task 3"]
+      .sort();
     assertEquals(contents, expected, "Should extract correct content");
   } finally {
     await Deno.remove(testDir, { recursive: true });

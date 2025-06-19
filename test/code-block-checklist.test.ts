@@ -3,9 +3,11 @@ import { join } from "@std/path";
 
 Deno.test("detect checklists in code comments - ast-grep", async () => {
   const testFile = join(Deno.cwd(), "test/fixtures/code-with-checklist.ts");
-  
+
   // Create test file with checklists in comments
-  await Deno.writeTextFile(testFile, `
+  await Deno.writeTextFile(
+    testFile,
+    `
 // This is a sample TypeScript file with checklists in comments
 export function processData() {
   // TODO: Implement data processing
@@ -33,7 +35,8 @@ function helperFunction() {
   // - [x] Add JSDoc comments
   // - [ ] Refactor for readability
 }
-`);
+`,
+  );
 
   // Test with ast-grep - using pattern to match checklist items
   // Note: ast-grep uses structural patterns, not regex
@@ -41,7 +44,7 @@ function helperFunction() {
     args: [
       "run",
       "--pattern",
-      "$$$",  // Match any content
+      "$$$", // Match any content
       "--lang",
       "typescript",
       testFile,
@@ -54,25 +57,27 @@ function helperFunction() {
     const { success, stdout, stderr } = await astGrepCommand.output();
     const output = new TextDecoder().decode(stdout);
     const errorOutput = new TextDecoder().decode(stderr);
-    
+
     if (!success) {
       console.error("ast-grep stderr:", errorOutput);
     }
-    
+
     // ast-grep should find the checklists in comments
     assertEquals(success, true, "ast-grep command should succeed");
-    
+
     // For ast-grep, we'll just check if it runs successfully
     // ast-grep is better suited for finding code patterns, not text patterns in comments
     console.log("ast-grep output:", output.substring(0, 200));
-    
+
     // Since ast-grep is structural, it won't find text patterns in comments
     // We'll just verify the command runs
     console.log("ast-grep test completed - tool is available");
   } catch (error) {
     if (error instanceof Error) {
       console.log("ast-grep error:", error.message);
-      console.log("Skipping ast-grep test - tool may not be properly configured");
+      console.log(
+        "Skipping ast-grep test - tool may not be properly configured",
+      );
     } else {
       throw error;
     }
@@ -84,9 +89,11 @@ function helperFunction() {
 
 Deno.test("detect checklists in code comments - ripgrep", async () => {
   const testFile = join(Deno.cwd(), "test/fixtures/code-with-checklist.ts");
-  
+
   // Create test file with checklists in comments
-  await Deno.writeTextFile(testFile, `
+  await Deno.writeTextFile(
+    testFile,
+    `
 // This is a sample TypeScript file with checklists in comments
 export function processData() {
   // TODO: Implement data processing
@@ -114,14 +121,16 @@ function helperFunction() {
   // - [x] Add JSDoc comments
   // - [ ] Refactor for readability
 }
-`);
+`,
+  );
 
   // Test with ripgrep
   const rgCommand = new Deno.Command("rg", {
     args: [
       "-n", // Show line numbers
       "--no-heading",
-      "-e", "- \\[[x ]\\]",
+      "-e",
+      "- \\[[x ]\\]",
       testFile,
     ],
     stdout: "piped",
@@ -131,26 +140,28 @@ function helperFunction() {
   try {
     const { success, stdout } = await rgCommand.output();
     const output = new TextDecoder().decode(stdout);
-    
+
     assertEquals(success, true, "ripgrep command should succeed");
-    
+
     // Parse ripgrep output
     const lines = output.trim().split("\n").filter(Boolean);
-    
+
     console.log("Ripgrep output lines:", lines.length);
     console.log("First few lines:", lines.slice(0, 3));
-    
+
     // We should find all 10 checklist items (there's actually 10, not 9)
     assertEquals(lines.length, 10, "Should find all 10 checklist items");
-    
+
     // Verify line numbers are included
-    const hasLineNumbers = lines.every(line => /^\d+:/.test(line));
+    const hasLineNumbers = lines.every((line) => /^\d+:/.test(line));
     assertEquals(hasLineNumbers, true, "All lines should have line numbers");
-    
+
     // Count checked and unchecked items
-    const uncheckedCount = lines.filter(line => line.includes("- [ ]")).length;
-    const checkedCount = lines.filter(line => line.includes("- [x]")).length;
-    
+    const uncheckedCount = lines.filter((line) =>
+      line.includes("- [ ]")
+    ).length;
+    const checkedCount = lines.filter((line) => line.includes("- [x]")).length;
+
     assertEquals(uncheckedCount, 7, "Should find 7 unchecked items");
     assertEquals(checkedCount, 3, "Should find 3 checked items");
   } finally {
@@ -210,7 +221,8 @@ Tasks:
     const rgCommand = new Deno.Command("rg", {
       args: [
         "-c", // Count matches
-        "-e", "- \\[[x ]\\]",
+        "-e",
+        "- \\[[x ]\\]",
         testFile,
       ],
       stdout: "piped",
@@ -220,13 +232,13 @@ Tasks:
     try {
       const { success, stdout } = await rgCommand.output();
       const output = new TextDecoder().decode(stdout).trim();
-      
+
       assertEquals(success, true, `ripgrep should succeed for ${filename}`);
-      
+
       // Each file has 4 checklist items
       // When searching a single file, ripgrep -c just outputs the count
       const count = parseInt(output) || 0;
-      
+
       assertEquals(count, 4, `Should find 4 checklist items in ${filename}`);
     } finally {
       // Cleanup
@@ -237,9 +249,11 @@ Tasks:
 
 Deno.test("distinguish between code and comment checklists", async () => {
   const testFile = join(Deno.cwd(), "test/fixtures/mixed-checklist.ts");
-  
+
   // Create test file with checklists both in code and comments
-  await Deno.writeTextFile(testFile, `
+  await Deno.writeTextFile(
+    testFile,
+    `
 // This file has checklists in both code and comments
 
 // Comment checklist:
@@ -265,7 +279,8 @@ function processMarkdown() {
   
   return template;
 }
-`);
+`,
+  );
 
   // Use ripgrep with context to see where matches are
   const rgCommand = new Deno.Command("rg", {
@@ -273,7 +288,8 @@ function processMarkdown() {
       "-n",
       "-B1", // 1 line before
       "-A1", // 1 line after
-      "-e", "- \\[[x ]\\]",
+      "-e",
+      "- \\[[x ]\\]",
       testFile,
     ],
     stdout: "piped",
@@ -283,14 +299,14 @@ function processMarkdown() {
   try {
     const { success, stdout } = await rgCommand.output();
     const output = new TextDecoder().decode(stdout);
-    
+
     assertEquals(success, true, "ripgrep command should succeed");
-    
+
     // Parse the output to identify different contexts
     const lines = output.split("\n").filter(Boolean);
     let totalCount = 0;
     let commentCount = 0;
-    
+
     for (const line of lines) {
       if (line.includes("- [")) {
         totalCount++;
@@ -300,17 +316,25 @@ function processMarkdown() {
         }
       }
     }
-    
+
     const codeCount = totalCount - commentCount;
-    
+
     console.log("Total found:", totalCount);
     console.log("In comments:", commentCount);
     console.log("In code/strings:", codeCount);
-    
+
     // We have 8 total: 4 in comments and 4 in code
     assertEquals(totalCount, 8, "Should find 8 total checklist items");
-    assertEquals(commentCount >= 4, true, "Should find at least 4 checklists in comments");
-    assertEquals(codeCount >= 4, true, "Should find at least 4 checklists in code");
+    assertEquals(
+      commentCount >= 4,
+      true,
+      "Should find at least 4 checklists in comments",
+    );
+    assertEquals(
+      codeCount >= 4,
+      true,
+      "Should find at least 4 checklists in code",
+    );
   } finally {
     // Cleanup
     await Deno.remove(testFile);
@@ -320,9 +344,11 @@ function processMarkdown() {
 Deno.test("update --code extracts checklists and creates TODO.md", async () => {
   const testDir = await Deno.makeTempDir();
   const codeFile = join(testDir, "app.ts");
-  
+
   // Create code file with checklists
-  await Deno.writeTextFile(codeFile, `
+  await Deno.writeTextFile(
+    codeFile,
+    `
 // Implementation checklist:
 // - [ ] Set up authentication
 // - [x] Configure database
@@ -335,24 +361,25 @@ function main() {
    */
   console.log("App started");
 }
-`);
+`,
+  );
 
   // Import and run update command
   const { runUpdateCommand } = await import("../src/update-command.ts");
-  
+
   // Mock prompt to return 'y'
   const originalPrompt = globalThis.prompt;
   globalThis.prompt = () => "y";
-  
+
   try {
     await runUpdateCommand(join(testDir, "TODO.md"), { code: true });
-    
+
     // Check TODO.md was created
     const todoExists = await Deno.stat(join(testDir, "TODO.md"))
       .then(() => true)
       .catch(() => false);
     assertEquals(todoExists, true, "TODO.md should be created");
-    
+
     // Read and verify content
     const todoContent = await Deno.readTextFile(join(testDir, "TODO.md"));
     assertEquals(todoContent.includes("- [ ] Set up authentication"), true);
@@ -370,9 +397,11 @@ Deno.test("update --code adds to existing README.md with TODO section", async ()
   const testDir = await Deno.makeTempDir();
   const codeFile = join(testDir, "utils.ts");
   const readmeFile = join(testDir, "README.md");
-  
+
   // Create README.md with existing TODO section
-  await Deno.writeTextFile(readmeFile, `# My Project
+  await Deno.writeTextFile(
+    readmeFile,
+    `# My Project
 
 This is my project description.
 
@@ -384,35 +413,39 @@ This is my project description.
 ## Installation
 
 Run npm install.
-`);
-  
+`,
+  );
+
   // Create code file with new checklists
-  await Deno.writeTextFile(codeFile, `
+  await Deno.writeTextFile(
+    codeFile,
+    `
 // Utility functions checklist:
 // - [ ] Add input validation
 // - [x] Add type definitions
 // - [ ] Write documentation
-`);
+`,
+  );
 
   const { runUpdateCommand } = await import("../src/update-command.ts");
-  
+
   await runUpdateCommand(join(testDir, "TODO.md"), { code: true });
-  
+
   // Check README.md was updated
   const readmeContent = await Deno.readTextFile(readmeFile);
-  
+
   // Should keep existing tasks
   assertEquals(readmeContent.includes("- [ ] Existing task 1"), true);
   assertEquals(readmeContent.includes("- [x] Existing completed task"), true);
-  
+
   // Should add new tasks
   assertEquals(readmeContent.includes("- [ ] Add input validation"), true);
   assertEquals(readmeContent.includes("- [x] Add type definitions"), true);
   assertEquals(readmeContent.includes("- [ ] Write documentation"), true);
-  
+
   // Should keep other sections
   assertEquals(readmeContent.includes("## Installation"), true);
-  
+
   await Deno.remove(testDir, { recursive: true });
 });
 
@@ -420,45 +453,56 @@ Deno.test("update --code finds nearest parent TODO.md", async () => {
   const testDir = await Deno.makeTempDir();
   const subDir = join(testDir, "src", "components");
   await Deno.mkdir(subDir, { recursive: true });
-  
+
   // Create TODO.md in parent directory
   const todoFile = join(testDir, "TODO.md");
-  await Deno.writeTextFile(todoFile, `# Project TODO
+  await Deno.writeTextFile(
+    todoFile,
+    `# Project TODO
 
 ## Tasks
 - [ ] Set up project
-`);
-  
+`,
+  );
+
   // Create code file in subdirectory
   const codeFile = join(subDir, "button.tsx");
-  await Deno.writeTextFile(codeFile, `
+  await Deno.writeTextFile(
+    codeFile,
+    `
 // Button component checklist:
 // - [ ] Add click handler
 // - [x] Add styling
 // - [ ] Add accessibility attributes
-`);
+`,
+  );
 
   const { runUpdateCommand } = await import("../src/update-command.ts");
-  
+
   // Run from subdirectory
   await runUpdateCommand(join(subDir, "TODO.md"), { code: true });
-  
+
   // Check parent TODO.md was updated
   const todoContent = await Deno.readTextFile(todoFile);
   assertEquals(todoContent.includes("- [ ] Set up project"), true);
   assertEquals(todoContent.includes("- [ ] Add click handler"), true);
   assertEquals(todoContent.includes("- [x] Add styling"), true);
-  assertEquals(todoContent.includes("- [ ] Add accessibility attributes"), true);
-  
+  assertEquals(
+    todoContent.includes("- [ ] Add accessibility attributes"),
+    true,
+  );
+
   await Deno.remove(testDir, { recursive: true });
 });
 
 Deno.test("update --code handles no checklist items gracefully", async () => {
   const testDir = await Deno.makeTempDir();
   const codeFile = join(testDir, "no-checklist.ts");
-  
+
   // Create code file without checklists
-  await Deno.writeTextFile(codeFile, `
+  await Deno.writeTextFile(
+    codeFile,
+    `
 // This file has no checklists
 // TODO: Add some features
 // FIXME: Fix some bugs
@@ -466,26 +510,33 @@ Deno.test("update --code handles no checklist items gracefully", async () => {
 function doSomething() {
   return 42;
 }
-`);
+`,
+  );
 
   const { runUpdateCommand } = await import("../src/update-command.ts");
-  
+
   // Capture console output
   let output = "";
   const originalLog = console.log;
-  console.log = (msg: string) => { output += msg + "\n"; };
-  
+  console.log = (msg: string) => {
+    output += msg + "\n";
+  };
+
   try {
     await runUpdateCommand(join(testDir, "TODO.md"), { code: true });
-    
+
     // Should show message about no checklists found
     assertEquals(output.includes("No checklist items found"), true);
-    
+
     // TODO.md should not be created
     const todoExists = await Deno.stat(join(testDir, "TODO.md"))
       .then(() => true)
       .catch(() => false);
-    assertEquals(todoExists, false, "TODO.md should not be created when no checklists");
+    assertEquals(
+      todoExists,
+      false,
+      "TODO.md should not be created when no checklists",
+    );
   } finally {
     console.log = originalLog;
     await Deno.remove(testDir, { recursive: true });
@@ -754,16 +805,20 @@ namespace App
   ];
 
   for (const testCase of testCases) {
-    const testFile = join(Deno.cwd(), "test/fixtures", `ast-test${testCase.ext}`);
-    
+    const testFile = join(
+      Deno.cwd(),
+      "test/fixtures",
+      `ast-test${testCase.ext}`,
+    );
+
     try {
       // Write the test file
       await Deno.writeTextFile(testFile, testCase.code);
-      
+
       // Try to parse/compile the file based on language
       let parseSuccess = false;
       let parseError = null;
-      
+
       switch (testCase.lang) {
         case "typescript":
         case "javascript":
@@ -780,7 +835,7 @@ namespace App
             parseError = e;
           }
           break;
-          
+
         case "python":
           // Use Python to check syntax
           try {
@@ -796,7 +851,7 @@ namespace App
             parseSuccess = true; // Skip test
           }
           break;
-          
+
         case "bash":
           // Use bash -n to check syntax
           try {
@@ -811,28 +866,38 @@ namespace App
             parseSuccess = true; // Skip if bash not available
           }
           break;
-          
+
         default:
           // For other languages, just verify the file was created
           parseSuccess = true;
       }
-      
+
       // Also verify we can find checklists in the file
       const rgCommand = new Deno.Command("rg", {
         args: ["-c", "-e", "- \\[[x ]\\]", testFile],
         stdout: "piped",
         stderr: "piped",
       });
-      
+
       const { success: rgSuccess, stdout } = await rgCommand.output();
-      const checklistCount = parseInt(new TextDecoder().decode(stdout).trim()) || 0;
-      
+      const checklistCount =
+        parseInt(new TextDecoder().decode(stdout).trim()) || 0;
+
       // Each test case should have multiple checklists
-      assertEquals(rgSuccess, true, `Should find checklists in ${testCase.lang} file`);
-      assertEquals(checklistCount > 0, true, `Should find at least one checklist in ${testCase.lang} file`);
-      
-      console.log(`✓ ${testCase.lang}: Found ${checklistCount} checklists, parse OK: ${parseSuccess}`);
-      
+      assertEquals(
+        rgSuccess,
+        true,
+        `Should find checklists in ${testCase.lang} file`,
+      );
+      assertEquals(
+        checklistCount > 0,
+        true,
+        `Should find at least one checklist in ${testCase.lang} file`,
+      );
+
+      console.log(
+        `✓ ${testCase.lang}: Found ${checklistCount} checklists, parse OK: ${parseSuccess}`,
+      );
     } finally {
       // Clean up
       try {
@@ -958,31 +1023,42 @@ fn example() {} // Inline comment - [ ] Refactor this
   ];
 
   for (const testCase of testCases) {
-    const testFile = join(Deno.cwd(), "test/fixtures", `edge-case-${testCase.name}${testCase.ext}`);
-    
+    const testFile = join(
+      Deno.cwd(),
+      "test/fixtures",
+      `edge-case-${testCase.name}${testCase.ext}`,
+    );
+
     try {
       // Write the test file
       await Deno.writeTextFile(testFile, testCase.code);
-      
+
       // Use ripgrep to find checklists
       const rgCommand = new Deno.Command("rg", {
         args: ["-n", "--no-heading", "-e", "- \\[[xX ]\\]", testFile],
         stdout: "piped",
         stderr: "piped",
       });
-      
+
       const { success, stdout } = await rgCommand.output();
       const output = new TextDecoder().decode(stdout);
       const lines = output.trim().split("\n").filter(Boolean);
-      
+
       console.log(`\nTest case: ${testCase.name}`);
       console.log(`Found ${lines.length} checklists:`);
-      lines.forEach(line => console.log(`  ${line}`));
-      
+      lines.forEach((line) => console.log(`  ${line}`));
+
       // Verify we can find at least some checklists
-      assertEquals(success, true, `ripgrep should succeed for ${testCase.name}`);
-      assertEquals(lines.length > 0, true, `Should find at least one checklist in ${testCase.name}`);
-      
+      assertEquals(
+        success,
+        true,
+        `ripgrep should succeed for ${testCase.name}`,
+      );
+      assertEquals(
+        lines.length > 0,
+        true,
+        `Should find at least one checklist in ${testCase.name}`,
+      );
     } finally {
       // Clean up
       try {

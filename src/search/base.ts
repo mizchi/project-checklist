@@ -46,8 +46,8 @@ export function extractTodoContent(
   for (const pattern of checklistPatterns) {
     const match = line.match(pattern);
     if (match) {
-      const checked = match[1] === 'x';
-      const prefix = checked ? '[✓]' : '[ ]';
+      const checked = match[1] === "x";
+      const prefix = checked ? "[✓]" : "[ ]";
       return {
         type: "CHECKLIST",
         content: `${prefix} ${match[2].trim()}`,

@@ -100,11 +100,11 @@ $ pcheck
    ```bash
    # Find TODO:, FIXME:, and checklist items in code
    $ pcheck --code
-   
+
    # Include test files
    $ pcheck --code --cases
    ```
-   
+
    Supports patterns like:
    - `// TODO: Fix this issue`
    - `// TODO(username): Assigned task`

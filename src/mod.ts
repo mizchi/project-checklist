@@ -10,7 +10,14 @@ export interface LegacyTodoItem {
   line?: number;
   content?: string;
   todos?: LegacyTodoItem[];
-  commentType?: "TODO" | "FIXME" | "HACK" | "NOTE" | "XXX" | "WARNING" | "CHECKLIST";
+  commentType?:
+    | "TODO"
+    | "FIXME"
+    | "HACK"
+    | "NOTE"
+    | "XXX"
+    | "WARNING"
+    | "CHECKLIST";
   id?: string;
   checked?: boolean;
 }
@@ -163,17 +170,17 @@ export async function findTodosInFile(
     if (!mergedOptions.includeTestCases && isTestFile(filePath)) {
       return todos;
     }
-    
+
     // For single files, always use native search
     // Search engines are designed for directory searches
     const codeTodos = await findTodosInCode(filePath);
     if (codeTodos.length > 0) {
       // Update paths to use fileName
-      const updatedTodos = codeTodos.map(todo => ({
+      const updatedTodos = codeTodos.map((todo) => ({
         ...todo,
         path: fileName,
       }));
-      
+
       todos.push({
         type: "file" as const,
         path: fileName,
@@ -216,7 +223,7 @@ export async function findTodos(
       if (!mergedOptions.includeTestCases && isTestFile(todo.path)) {
         return false;
       }
-      
+
       // Filter by extension
       if (
         filterExtensions &&
@@ -307,7 +314,7 @@ export async function findTodos(
       if (!mergedOptions.includeTestCases && isTestFile(entry.path)) {
         continue;
       }
-      
+
       // Apply extension filter
       if (
         filterExtensions &&
@@ -330,7 +337,7 @@ export async function findTodos(
   if (mergedOptions.scanCode) {
     const groupedTodos: LegacyTodoItem[] = [];
     const codeByFile = new Map<string, LegacyTodoItem[]>();
-    
+
     // Separate code todos from other types
     for (const todo of todos) {
       if (todo.type === "code") {
@@ -341,7 +348,7 @@ export async function findTodos(
         groupedTodos.push(todo);
       }
     }
-    
+
     // Create file-type todo items for each file with code todos
     for (const [filePath, fileTodos] of codeByFile) {
       // Sort by line number
@@ -352,7 +359,7 @@ export async function findTodos(
         todos: fileTodos,
       });
     }
-    
+
     return groupedTodos;
   }
 
@@ -365,13 +372,13 @@ function isCodeFile(path: string): boolean {
 
 function isTestFile(path: string): boolean {
   const lowerPath = path.toLowerCase();
-  return lowerPath.includes('.test.') || 
-         lowerPath.includes('.spec.') ||
-         lowerPath.includes('_test.') ||
-         lowerPath.includes('_spec.') ||
-         lowerPath.includes('/test/') ||
-         lowerPath.includes('/tests/') ||
-         lowerPath.includes('/__tests__/');
+  return lowerPath.includes(".test.") ||
+    lowerPath.includes(".spec.") ||
+    lowerPath.includes("_test.") ||
+    lowerPath.includes("_spec.") ||
+    lowerPath.includes("/test/") ||
+    lowerPath.includes("/tests/") ||
+    lowerPath.includes("/__tests__/");
 }
 
 import { parseTodoFileWithChecklist } from "./markdown-parser.ts";
@@ -437,13 +444,13 @@ async function findTodosInCode(filePath: string): Promise<LegacyTodoItem[]> {
       /\/\*\s*-\s*\[([ x])\]\s*(.+)/i,
       /\*\s*-\s*\[([ x])\]\s*(.+)/i,
     ];
-    
+
     let matched = false;
     for (const pattern of checklistPatterns) {
       const match = line.match(pattern);
       if (match) {
-        const checked = match[1] === 'x';
-        const prefix = checked ? '[✓]' : '[ ]';
+        const checked = match[1] === "x";
+        const prefix = checked ? "[✓]" : "[ ]";
         todos.push({
           type: "code" as const,
           path: filePath,
@@ -455,9 +462,9 @@ async function findTodosInCode(filePath: string): Promise<LegacyTodoItem[]> {
         break;
       }
     }
-    
+
     if (matched) return;
-    
+
     // Then check for traditional TODO patterns
     const todoPatterns = [
       /\/\/\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)/i,
@@ -467,7 +474,7 @@ async function findTodosInCode(filePath: string): Promise<LegacyTodoItem[]> {
       /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING):\s*(.+)\*\//i,
       /\/\*\s*(TODO|FIXME|HACK|NOTE|XXX|WARNING)\([^)]+\):\s*(.+)\*\//i,
     ];
-    
+
     for (const pattern of todoPatterns) {
       const match = line.match(pattern);
       if (match) {

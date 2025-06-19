@@ -1,5 +1,9 @@
-import { ChecklistInCodeSearcher, getChecklistStats, groupChecklistsByFile } from "../../checklist-in-code.ts";
-import { bold, green, yellow, gray } from "@std/fmt/colors";
+import {
+  ChecklistInCodeSearcher,
+  getChecklistStats,
+  groupChecklistsByFile,
+} from "../../checklist-in-code.ts";
+import { bold, gray, green, yellow } from "@std/fmt/colors";
 
 export interface CodeChecklistArgs {
   path?: string;
@@ -21,7 +25,9 @@ export async function runCodeChecklistCommand(args: CodeChecklistArgs) {
     filePatterns: args.patterns,
   };
 
-  console.log(`Searching for checklists in code comments in ${bold(targetPath)}...\n`);
+  console.log(
+    `Searching for checklists in code comments in ${bold(targetPath)}...\n`,
+  );
 
   try {
     const results = await searcher.search(targetPath, options);
@@ -36,7 +42,11 @@ export async function runCodeChecklistCommand(args: CodeChecklistArgs) {
       const stats = getChecklistStats(results);
       console.log(bold("📊 Checklist Statistics:"));
       console.log(`  Total items: ${stats.total}`);
-      console.log(`  ✅ Checked: ${green(stats.checked.toString())} (${stats.completionRate.toFixed(1)}%)`);
+      console.log(
+        `  ✅ Checked: ${green(stats.checked.toString())} (${
+          stats.completionRate.toFixed(1)
+        }%)`,
+      );
       console.log(`  ⬜ Unchecked: ${yellow(stats.unchecked.toString())}`);
       console.log("\n  By language:");
       for (const [lang, count] of Object.entries(stats.byLanguage)) {
@@ -48,7 +58,7 @@ export async function runCodeChecklistCommand(args: CodeChecklistArgs) {
     // Group by file if requested
     if (args["group-by-file"]) {
       const grouped = groupChecklistsByFile(results);
-      
+
       for (const [filePath, items] of grouped) {
         console.log(`\n${bold(filePath)}:`);
         for (const item of items) {
@@ -69,8 +79,11 @@ export async function runCodeChecklistCommand(args: CodeChecklistArgs) {
 
     // Show summary
     const stats = getChecklistStats(results);
-    console.log(`\n${bold("Summary:")} ${stats.total} items (${green(stats.checked.toString())} completed, ${yellow(stats.unchecked.toString())} remaining)`);
-
+    console.log(
+      `\n${bold("Summary:")} ${stats.total} items (${
+        green(stats.checked.toString())
+      } completed, ${yellow(stats.unchecked.toString())} remaining)`,
+    );
   } catch (error) {
     console.error("Error searching for checklists:", error);
     Deno.exit(1);
