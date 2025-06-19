@@ -2,8 +2,6 @@
 
 ## TODO
 
-- [ ] [HIGH] Fix: --code オプションで test.js の TODO が表示されない
-
 ### Core Features
 
 - [ ] Create MCP (Model Context Protocol) server integration
@@ -37,5 +35,7 @@
 - [ ] Add support for team collaboration features
 
 ## COMPLETED
+
+- [x] [HIGH] Fix: --code オプションで test.js の TODO が表示されない (2025-06-19)
 
 _See release notes for completed features_

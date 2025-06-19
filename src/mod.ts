@@ -212,12 +212,10 @@ export async function findTodos(
 
   // Use search engine for code if provided
   if (mergedOptions.scanCode && mergedOptions.searchEngine) {
-    console.error(`[DEBUG] Using search engine for code TODOs: ${mergedOptions.searchEngine.name}`);
     const codeTodos = await mergedOptions.searchEngine.searchTodos(
       directory,
       TODO_PATTERNS,
     );
-    console.error(`[DEBUG] Search engine returned ${codeTodos.length} TODOs`);
 
     // Apply filters to search engine results
     const filteredTodos = codeTodos.filter((todo) => {
@@ -226,8 +224,6 @@ export async function findTodos(
         ? todo.path.slice(2)
         : todo.path;
       
-      console.error(`[DEBUG] Checking todo in ${normalizedPath}`);
-
       // Skip test files unless includeTestCases is true
       if (!mergedOptions.includeTestCases && isTestFile(normalizedPath)) {
         return false;
@@ -238,9 +234,6 @@ export async function findTodos(
       const extensionsToCheck = filterExtensions || 
         (mergedOptions.config?.code?.fileExtensions?.map(ext => ext.startsWith('.') ? ext : `.${ext}`)) ||
         CODE_EXTENSIONS;
-      
-      console.error(`[DEBUG] Extensions to check: ${extensionsToCheck.join(', ')}`);
-      console.error(`[DEBUG] File extension check for ${normalizedPath}: ${extensionsToCheck.some((ext) => normalizedPath.endsWith(ext))}`);
       
       if (!extensionsToCheck.some((ext) => normalizedPath.endsWith(ext))) {
         return false;
@@ -298,7 +291,6 @@ export async function findTodos(
       return true;
     });
 
-    console.error(`[DEBUG] After filtering: ${filteredTodos.length} TODOs`);
     todos.push(...filteredTodos);
   }
 

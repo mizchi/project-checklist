@@ -106,8 +106,8 @@ function test() {
       item.type === "file" && item.path.endsWith("test.js")
     );
     
-    // TODO: This test currently fails due to known issue
-    // assertEquals(codeTodos.length > 0, true, "No code TODOs found in test.js");
+    // Test is now fixed - test.js TODOs should be detected
+    assertEquals(codeTodos.length > 0, true, "No code TODOs found in test.js");
   } finally {
     await Deno.remove(testDir, { recursive: true });
   }

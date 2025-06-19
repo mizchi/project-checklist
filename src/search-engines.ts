@@ -106,17 +106,10 @@ export class RipgrepEngine implements SearchEngine {
 
     const output = new TextDecoder().decode(stdout);
     const lines = output.trim().split("\n");
-    
-    // DEBUG: Log results
-    console.error(`[DEBUG] Ripgrep raw output lines: ${lines.length}`);
-    if (lines.length > 0 && lines[0]) {
-      console.error(`[DEBUG] First line: ${lines[0]}`);
-    }
 
     for (const line of lines) {
       if (!line) continue;
       
-      console.error(`[DEBUG] Processing line: "${line}"`);
 
       // Handle single file output (no filename prefix)
       const singleFileMatch = line.match(/^(\d+):(.*)$/);
@@ -138,11 +131,9 @@ export class RipgrepEngine implements SearchEngine {
 
       // Handle multi-file output (with filename prefix)
       const parsed = parseGrepLine(line);
-      console.error(`[DEBUG] parseGrepLine for "${line}": ${parsed ? 'parsed' : 'null'}`);
       if (parsed) {
         const extracted = extractTodoContent(parsed.content);
         if (extracted) {
-          console.error(`[DEBUG] Found TODO in ${parsed.file}:${parsed.lineNum} - ${extracted.type}: ${extracted.content}`);
           todos.push({
             type: "code",
             path: parsed.file,
