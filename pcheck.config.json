@@ -1,7 +1,5 @@
 {
-  "include": [
-    "**/*.md"
-  ],
+  "include": ["**/*.md"],
   "exclude": [
     "node_modules/**",
     "dist/**",
@@ -11,6 +9,8 @@
     "*.min.js",
     "*.test.ts",
     "*.test.js",
+    "test-scenarios",
+    "docs",
     "deno.lock"
   ],
   "code": {

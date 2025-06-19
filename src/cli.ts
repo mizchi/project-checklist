@@ -230,7 +230,11 @@ if (import.meta.main) {
       strict: false,
       allowPositionals: true,
     });
-    await runCheckCommand(itemId, values);
+    await runCheckCommand(itemId, {
+      off: values.off as boolean,
+      gitroot: values.gitroot as boolean,
+      private: values.private as boolean,
+    });
     Deno.exit(0);
   }
 
@@ -279,8 +283,14 @@ if (import.meta.main) {
 
     // Map 'done' to 'completed' for backward compatibility
     const updateOptions = {
-      ...values,
-      completed: values.completed || values.done,
+      sort: values.sort as boolean,
+      completed: (values.completed || values.done) as boolean,
+      priority: values.priority as boolean,
+      code: values.code as boolean,
+      fix: values.fix as boolean,
+      skipValidation: values["skip-validation"] as boolean,
+      vacuum: values.vacuum as boolean,
+      forceClear: values["force-clear"] as boolean,
     };
     await runUpdateCommand(filePath, updateOptions);
     Deno.exit(0);
@@ -651,15 +661,15 @@ CONFIG:
 
   const options = {
     scanFiles: !values["no-files"],
-    scanCode: values.code ?? config?.code?.enabled ?? false,
-    includeTestCases: values.cases ?? config?.code?.includeTests ?? false,
-    scanTests: values["scan-tests"],
+    scanCode: (values.code ?? config?.code?.enabled ?? false) as boolean,
+    includeTestCases: (values.cases ?? config?.code?.includeTests ?? false) as boolean,
+    scanTests: values["scan-tests"] as boolean,
     searchEngine,
-    filterType: values["filter-type"],
-    filterDir: values["filter-dir"],
-    excludeDir: values["exclude-dir"],
+    filterType: values["filter-type"] as string,
+    filterDir: values["filter-dir"] as string,
+    excludeDir: values["exclude-dir"] as string,
     config,
-    ignore: values.ignore,
+    ignore: values.ignore as string,
   };
 
   if (options.scanCode) {
@@ -716,7 +726,10 @@ CONFIG:
       await runSelectMode(todos, basePath, values.select as string);
     } else if (values.json) {
       // JSON output mode
-      const jsonOutput = formatTodosAsJson(todos, values);
+      const jsonOutput = formatTodosAsJson(todos, {
+        fields: values.fields as string,
+        unchecked: values.unchecked as boolean,
+      });
       if (values.pretty) {
         console.log(JSON.stringify(jsonOutput, null, 2));
       } else {

@@ -19,7 +19,7 @@ interface UpdateOptions {
   fix?: boolean;
   skipValidation?: boolean;
   vacuum?: boolean;
-  "force-clear"?: boolean;
+  forceClear?: boolean;
   autoResponse?: AutoResponse;
 }
 
@@ -448,7 +448,7 @@ ${checklists.join("\n")}
     !options.priority &&
     !options.completed &&
     !options.vacuum &&
-    !options["force-clear"]
+    !options.forceClear
   ) {
     console.log(bold("What would you like to do?"));
 
@@ -973,7 +973,7 @@ ${checklists.join("\n")}
   }
 
   // Handle --force-clear option
-  if (options["force-clear"]) {
+  if (options.forceClear) {
     const { lines } = parseMarkdownFile(content);
     const newLines: string[] = [];
     let inCompletedSection = false;
